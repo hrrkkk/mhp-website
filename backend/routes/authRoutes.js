@@ -1,0 +1,161 @@
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const db = require('../config/db');
+const { generateToken, authenticateToken } = require('../middleware/auth');
+
+const router = express.Router();
+
+// Customer Register (Phone + Password)
+router.post('/register', async (req, res) => {
+  try {
+    const { name, password, phone, studentId, hostelInfo } = req.body;
+
+    const cleanPhone = phone ? phone.trim() : '';
+
+    if (!cleanPhone || !password) {
+      return res.status(400).json({ error: 'Phone number and password are required' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    }
+
+    // Check unique phone number
+    const existingUser = db.findOne('users', { phone: cleanPhone });
+    if (existingUser) {
+      return res.status(400).json({ error: 'This phone number is already registered. Please log in.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = db.insert('users', {
+      name: name && name.trim() ? name.trim() : `Student (${cleanPhone})`,
+      phone: cleanPhone,
+      email: '',
+      password: hashedPassword,
+      studentId: studentId ? studentId.trim() : '',
+      hostelInfo: hostelInfo ? hostelInfo.trim() : '',
+      role: 'customer',
+      avatar: ''
+    });
+
+    const token = generateToken(newUser);
+
+    const { password: _, ...userWithoutPassword } = newUser;
+    res.status(201).json({
+      message: 'Account created successfully',
+      token,
+      user: userWithoutPassword
+    });
+  } catch (err) {
+    console.error('Register error:', err);
+    res.status(500).json({ error: 'Failed to create account' });
+  }
+});
+
+// Login (Student via Phone, Admin via Email)
+router.post('/login', async (req, res) => {
+  try {
+    const { phone, email, password } = req.body;
+
+    if (!password || (!phone && !email)) {
+      return res.status(400).json({ error: 'Phone number (or email) and password are required' });
+    }
+
+    let user = null;
+
+    if (phone && phone.trim()) {
+      user = db.findOne('users', { phone: phone.trim() });
+      if (!user) {
+        return res.status(401).json({ error: 'Invalid phone number or password' });
+      }
+    } else if (email && email.trim()) {
+      user = db.findOne('users', { email: email.toLowerCase().trim() });
+      if (!user) {
+        return res.status(401).json({ error: 'Invalid email or password' });
+      }
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      const errorMsg = phone ? 'Invalid phone number or password' : 'Invalid email or password';
+      return res.status(401).json({ error: errorMsg });
+    }
+
+    const token = generateToken(user);
+    const { password: _, ...userWithoutPassword } = user;
+
+    res.json({
+      message: 'Login successful',
+      token,
+      user: userWithoutPassword
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// Get current profile
+router.get('/me', authenticateToken, (req, res) => {
+  const { password, ...userWithoutPassword } = req.user;
+  res.json({ user: userWithoutPassword });
+});
+
+// Update Profile
+router.put('/profile', authenticateToken, async (req, res) => {
+  try {
+    const { name, phone, studentId, hostelInfo, avatar } = req.body;
+    const userId = req.user._id;
+
+    const updated = db.updateById('users', userId, {
+      name: name ? name.trim() : req.user.name,
+      phone: phone !== undefined ? phone.trim() : req.user.phone,
+      studentId: studentId !== undefined ? studentId.trim() : req.user.studentId,
+      hostelInfo: hostelInfo !== undefined ? hostelInfo.trim() : req.user.hostelInfo,
+      avatar: avatar !== undefined ? avatar : req.user.avatar
+    });
+
+    const { password, ...userWithoutPassword } = updated;
+    res.json({ message: 'Profile updated successfully', user: userWithoutPassword });
+  } catch (err) {
+    console.error('Profile update error:', err);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// Change Password (Authenticated)
+router.post('/change-password', authenticateToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user._id;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+    }
+
+    const user = db.findById('users', userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Incorrect current password' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    db.updateById('users', userId, { password: hashedPassword });
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (err) {
+    console.error('Change password error:', err);
+    res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
+module.exports = router;

@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --mhp-black: #0B0909;
+    --mhp-charcoal: #140D0D;
+    --mhp-espresso: #241313;
+    --mhp-burgundy: #3A191A;
+    --mhp-accent-dark: #6F3027;
+    --mhp-accent-mid: #B95738;
+    --mhp-copper: #D77A4D;
+    --mhp-gold: #D8A04D;
+    --mhp-cream: #F4E5D5;
+  }
+
+  body {
+    background-color: #0B0909;
+    color: #F4E5D5;
+    overflow-x: hidden;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'DM Serif Display', serif;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* 3D Spatial Environment Utilities */
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.perspective-1200 {
+  perspective: 1200px;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* High-Conversion Extruded Physical 3D Buttons */
+.btn-mhp-primary {
+  background: linear-gradient(135deg, #E2895A 0%, #D77A4D 100%);
+  color: #F4E5D5;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  border-radius: 14px;
+  min-height: 50px;
+  padding: 0.8rem 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  border-bottom: 4px solid #A65530;
+  box-shadow: 0 12px 32px rgba(215, 122, 77, 0.45);
+  cursor: pointer;
+  transform: translateZ(15px);
+}
+
+.btn-mhp-primary:hover {
+  transform: translateY(-4px) scale(1.02) translateZ(20px);
+  background: linear-gradient(135deg, #EE9567 0%, #E2895A 100%);
+  box-shadow: 0 18px 40px rgba(215, 122, 77, 0.6);
+  border-bottom-width: 5px;
+}
+
+.btn-mhp-primary:active {
+  transform: translateY(2px) scale(0.99) translateZ(5px);
+  border-bottom-width: 2px;
+  box-shadow: 0 4px 12px rgba(215, 122, 77, 0.3);
+}
+
+.btn-mhp-secondary {
+  background: #140D0D;
+  color: #F4E5D5;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  border-radius: 14px;
+  min-height: 50px;
+  padding: 0.8rem 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1.5px solid #3A191A;
+  border-bottom: 4px solid #241313;
+  box-shadow: 0 8px 24px rgba(11, 9, 9, 0.85);
+  cursor: pointer;
+  transform: translateZ(10px);
+}
+
+.btn-mhp-secondary:hover {
+  transform: translateY(-4px) scale(1.02) translateZ(15px);
+  border-color: #D77A4D;
+  color: #F4E5D5;
+  box-shadow: 0 14px 32px rgba(58, 25, 26, 0.7);
+}
+
+.btn-mhp-secondary:active {
+  transform: translateY(2px) scale(0.99) translateZ(5px);
+  border-bottom-width: 2px;
+}
+
+/* 2D Clean Food Cards (Preserved 2D as requested for fast usability) */
+.mhp-food-card {
+  background-color: #140D0D;
+  border: 1.5px solid #3A191A;
+  border-radius: 20px;
+  color: #F4E5D5;
+  box-shadow: 0 10px 30px rgba(11, 9, 9, 0.85);
+  transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1), border-color 250ms ease, box-shadow 250ms ease;
+}
+
+.mhp-food-card:hover {
+  transform: scale(1.03) translateY(-4px);
+  border-color: #D77A4D;
+  box-shadow: 0 20px 40px rgba(58, 25, 26, 0.75);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0B0909;
+}
+::-webkit-scrollbar-thumb {
+  background: #3A191A;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #D77A4D;
+}
+

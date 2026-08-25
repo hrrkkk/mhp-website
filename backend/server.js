@@ -1,0 +1,68 @@
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+const authRoutes = require('./routes/authRoutes');
+const contentRoutes = require('./routes/contentRoutes');
+const futureMenuRoutes = require('./routes/futureMenuRoutes');
+const billingWebhookRoutes = require('./routes/billingWebhookRoutes');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// CORS setup
+app.use(cors());
+
+// Body Parsers
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+
+// Static uploads folder
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api', contentRoutes);
+app.use('/api/future-menu', futureMenuRoutes);
+app.use('/api/webhooks', billingWebhookRoutes);
+
+// Root route
+app.get('/', (req, res) => {
+  res.send(`
+    <div style="font-family: system-ui, sans-serif; text-align: center; padding: 50px; background: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <h1 style="color: #38bdf8; margin-bottom: 8px;">🚀 MHP REST API Server is Running</h1>
+      <p style="color: #94a3b8; font-size: 1.1rem; margin-bottom: 24px;">This is the backend API service (Port 5000).</p>
+      <a href="http://localhost:3000" style="background: #4f46e5; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);">
+        Open Web Application (http://localhost:3000) &rarr;
+      </a>
+    </div>
+  `);
+});
+
+// Health Check
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    service: 'MHP Backend REST API',
+    institution: 'VFSTR, Vadlamudi, Guntur, AP',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal Server Error'
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`==================================================`);
+  console.log(`🚀 MHP REST API Server running on port ${PORT}`);
+  console.log(`📍 VFSTR Campus, Vadlamudi, Guntur, AP`);
+  console.log(`==================================================`);
+});
