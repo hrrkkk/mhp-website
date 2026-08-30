@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import LoadingSkeleton from '../../components/common/LoadingSkeleton';
-import { Mic, Plus, Edit2, Trash2, X, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Mic, Plus, Edit2, Trash2, X, Sparkles } from 'lucide-react';
+import { MHPCard, MHPButton, MHPBadge, MHPInput, MHPTextarea } from '../../components/admin/MHPAdminComponents';
 
 const AdminSynergy = () => {
   const { showToast } = useToast();
@@ -98,155 +99,121 @@ const AdminSynergy = () => {
   };
 
   return (
-    <div className="space-y-6 pb-16">
-      
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-[#FFFDF8] flex items-center gap-2">
-            <Mic className="w-6 h-6 text-[#F4A62A]" />
-            Synergy Talent Showcase Manager
-          </h1>
-          <p className="text-xs text-[#BDB7AD] mt-1">Manage monthly student talent stage themes, talent categories, and performance dates</p>
-        </div>
+    <div className="space-y-6 pb-16 text-[#202522]">
+      <MHPCard className="!p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-black text-[#F47B20] uppercase tracking-widest mb-1">
+              <Mic className="w-4 h-4 text-[#F47B20]" />
+              STUDENT TALENT STAGE
+            </div>
+            <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-[#183A2A]">
+              Synergy Showcase Manager
+            </h1>
+            <p className="text-xs text-[#7D967E] font-medium mt-0.5">
+              Manage monthly MHP open mic talent stage events and featured performances
+            </p>
+          </div>
 
-        <button
-          onClick={() => handleOpenModal()}
-          className="btn-mhp-primary px-4 py-2.5 text-xs flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Synergy Edition</span>
-        </button>
-      </div>
+          <MHPButton onClick={() => handleOpenModal(null)} variant="primary" size="sm">
+            <Plus className="w-4 h-4" />
+            <span>Add Synergy Showcase</span>
+          </MHPButton>
+        </div>
+      </MHPCard>
 
       {loading ? (
-        <LoadingSkeleton count={2} />
+        <LoadingSkeleton count={2} height="h-40" />
       ) : synergyList.length === 0 ? (
-        <div className="mhp-card-dark p-12 text-center rounded-3xl border border-[#2E2A27] text-[#BDB7AD] text-sm">
-          No Synergy showcases created yet. Click "New Synergy Edition" to publish.
-        </div>
+        <MHPCard className="!p-12 text-center text-[#7D967E]">
+          <Mic className="w-12 h-12 text-[#F47B20]/50 mx-auto mb-2" />
+          <h3 className="text-base font-extrabold text-[#183A2A]">No Synergy showcases listed</h3>
+          <p className="text-xs text-[#7D967E] font-medium">Add Synergy entries to feature student talent on the site.</p>
+        </MHPCard>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {synergyList.map((item) => (
-            <div key={item._id} className="mhp-card-dark p-6 rounded-2xl border border-[#2E2A27] hover:border-[#F4A62A]/40 space-y-4 shadow-lg">
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#F4A62A]/20 text-[#F4A62A] text-[10px] font-bold uppercase border border-[#F4A62A]/30">
-                    {item.status}
-                  </span>
-                  <h3 className="text-xl font-bold text-[#FFFDF8] mt-1">{item.title}</h3>
-                  <p className="text-xs text-[#F4A62A] font-extrabold italic">{item.tagline}</p>
+            <MHPCard key={item._id} className="!p-5 space-y-4 hover:border-[#F47B20] transition-all flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-2 border-b border-[#7D967E]/20 pb-3">
+                  <div>
+                    <h3 className="font-display font-extrabold text-lg text-[#183A2A]">{item.title}</h3>
+                    <p className="text-xs text-[#F47B20] font-extrabold italic">{item.tagline}</p>
+                  </div>
+                  <MHPBadge variant="orange">Monthly Stage</MHPBadge>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => handleOpenModal(item)} className="p-2 rounded-lg bg-[#171717] text-[#F4A62A] border border-[#2E2A27]">
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => handleDelete(item._id)} className="p-2 rounded-lg bg-rose-950/40 text-rose-300 border border-rose-900/50">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+
+                <p className="text-xs text-[#202522]/80 font-medium leading-relaxed">
+                  {item.description}
+                </p>
               </div>
 
-              <p className="text-xs text-[#BDB7AD] leading-relaxed">{item.description}</p>
-
-              <div className="pt-2 border-t border-[#2E2A27] flex items-center justify-between text-xs text-[#BDB7AD]">
-                <span>Schedule: {item.time}</span>
-                <span>Date: {item.date}</span>
+              <div className="pt-3 border-t border-[#7D967E]/20 flex items-center justify-end gap-3">
+                <button
+                  onClick={() => handleOpenModal(item)}
+                  className="text-[#F47B20] font-extrabold text-xs flex items-center gap-1 hover:underline cursor-pointer"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                  <span>Edit</span>
+                </button>
+                <button
+                  onClick={() => handleDelete(item._id)}
+                  className="text-rose-600 font-extrabold text-xs flex items-center gap-1 hover:underline cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete</span>
+                </button>
               </div>
-            </div>
+            </MHPCard>
           ))}
         </div>
       )}
 
       {/* Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#131211]/80 backdrop-blur-md">
-          <div className="max-w-xl w-full bg-[#1D1B19] border border-[#2E2A27] rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#2E2A27] pb-3">
-              <h2 className="text-lg font-bold text-[#FFFDF8]">{editingId ? 'Edit Synergy Entry' : 'New Synergy Entry'}</h2>
-              <button onClick={() => setModalOpen(false)} className="text-[#BDB7AD] hover:text-[#FFFDF8]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="max-w-lg w-full bg-[#FFFFFF] border-2 border-[#7D967E]/40 rounded-3xl p-6 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#7D967E]/20 pb-3">
+              <h2 className="font-display font-extrabold text-lg text-[#183A2A]">
+                {editingId ? 'Edit Synergy Entry' : 'Add Synergy Showcase'}
+              </h2>
+              <button onClick={() => setModalOpen(false)} className="text-[#7D967E] hover:text-[#183A2A]">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#BDB7AD]">Title *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs focus:outline-none focus:border-[#F4A62A]"
-                />
-              </div>
+            <form onSubmit={handleSave} className="space-y-3.5 text-xs">
+              <MHPInput
+                label="Stage Title *"
+                type="text"
+                required
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              />
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#BDB7AD]">Tagline *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.tagline}
-                  onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
-                  className="w-full px-4 py-2 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#F4A62A] font-bold text-xs focus:outline-none focus:border-[#F4A62A]"
-                />
-              </div>
+              <MHPInput
+                label="Tagline *"
+                type="text"
+                required
+                value={formData.tagline}
+                onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+              />
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-[#BDB7AD]">Showcase Date</label>
-                  <input
-                    type="text"
-                    value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs focus:outline-none focus:border-[#F4A62A]"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-[#BDB7AD]">Schedule / Frequency</label>
-                  <input
-                    type="text"
-                    value={formData.time}
-                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs focus:outline-none focus:border-[#F4A62A]"
-                  />
-                </div>
-              </div>
+              <MHPTextarea
+                label="Description *"
+                required
+                rows={3}
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              />
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#BDB7AD]">Image URL</label>
-                <input
-                  type="text"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  className="w-full px-4 py-2 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs focus:outline-none focus:border-[#F4A62A]"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#BDB7AD]">Description *</label>
-                <textarea
-                  rows={4}
-                  required
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs focus:outline-none focus:border-[#F4A62A]"
-                ></textarea>
-              </div>
-
-              <div className="pt-3 border-t border-[#2E2A27] flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-[#22201D] text-[#BDB7AD] text-xs font-bold"
-                >
+              <div className="pt-3 border-t border-[#7D967E]/20 flex justify-end gap-3">
+                <MHPButton type="button" variant="outline" onClick={() => setModalOpen(false)}>
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn-mhp-primary px-6 py-2 text-xs"
-                >
-                  Save Showcase
-                </button>
+                </MHPButton>
+                <MHPButton type="submit" variant="primary">
+                  Save Synergy Showcase
+                </MHPButton>
               </div>
             </form>
           </div>

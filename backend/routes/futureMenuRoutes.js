@@ -1,8 +1,60 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const db = require('../config/db');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const billingService = require('../services/billingService');
+const paymentService = require('../services/paymentService');
+const MenuItem = require('../models/MenuItem');
+const { getIsConnected } = require('../config/mongodb');
+
+async function findMenuItem(item) {
+  const targetId = item._id || item.foodId || item.id;
+  let dbItem = null;
+
+  if (getIsConnected()) {
+    try {
+      if (targetId && mongoose.Types.ObjectId.isValid(targetId)) {
+        dbItem = await MenuItem.findById(targetId).lean();
+      }
+      if (!dbItem && item.name) {
+        dbItem = await MenuItem.findOne({ name: item.name }).lean();
+      }
+    } catch (e) {}
+  }
+
+  if (!dbItem) {
+    dbItem = db.findById('foodItems', targetId) || 
+             db.findOne('foodItems', { _id: targetId }) || 
+             (item.name ? db.findOne('foodItems', { name: item.name }) : null);
+  }
+
+  if (!dbItem && item && item.name && item.price !== undefined) {
+    dbItem = {
+      _id: targetId || item.name,
+      name: item.name,
+      category: item.category || '',
+      subcategory: item.subcategory || '',
+      price: Number(item.price || 0),
+      isAvailable: item.isAvailable !== false && item.available !== false,
+      available: item.available !== false && item.isAvailable !== false
+    };
+  }
+
+  return dbItem;
+}
+
+function isRestrictedForDining(categoryName, subcategoryName = '', itemTitle = '') {
+  const cat = (categoryName || '').toLowerCase().trim();
+  const sub = (subcategoryName || '').toLowerCase().trim();
+  const title = (itemTitle || '').toLowerCase().trim();
+
+  if (cat.includes('breakfast') || sub.includes('breakfast') || title.includes('breakfast')) return true;
+  if (cat.includes('burger') || sub.includes('burger') || title.includes('burger')) return true;
+  if (cat.includes('pizza') || sub.includes('pizza') || title.includes('pizza')) return true;
+  if (cat.includes('sandwich') || sub.includes('sandwich') || title.includes('sandwich')) return true;
+  return false;
+}
 
 // =========================================================================
 // PUBLIC & CUSTOMER MENU ENDPOINTS
@@ -73,13 +125,14 @@ router.get('/categories', (req, res) => {
 });
 
 // @route   POST /api/future-menu/orders/initiate-payment
-// @desc    Initiate a prepaid order payment session (UPI or Net Banking)
-router.post('/orders/initiate-payment', (req, res) => {
+// @desc    Initiate a prepaid order payment session with paymentService signature
+router.post('/orders/initiate-payment', async (req, res) => {
   try {
     const slotConfig = db.getOrderingSlot();
     const slotStatus = db.checkOrderingSlotStatus(slotConfig);
     if (!slotStatus.isOpen) {
       return res.status(400).json({ 
+        error: slotStatus.message,
         message: slotStatus.message,
         orderingStatus: slotStatus
       });
@@ -93,86 +146,179 @@ router.post('/orders/initiate-payment', (req, res) => {
       items, 
       orderType, 
       paymentMethod,
-      notes 
+      notes,
+      pickupLocation,
+      pickupPoint
     } = req.body;
 
     if (!items || items.length === 0) {
-      return res.status(400).json({ message: 'Cart cannot be empty' });
+      return res.status(400).json({ error: 'Cart cannot be empty', message: 'Cart cannot be empty' });
     }
 
     const method = paymentMethod === 'Net Banking' ? 'Net Banking' : 'UPI';
-    const type = orderType === 'Parcel' ? 'Parcel' : 'Pickup';
-    const totalItemCount = items.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
-    const subtotal = items.reduce((sum, item) => sum + (Number(item.unitPrice || item.price || 0) * Number(item.quantity || 1)), 0);
+    const type = orderType === 'Dining' ? 'Dining' : (orderType === 'Parcel' ? 'Parcel' : 'Pickup');
+
+    const VALID_PICKUP_LOCATIONS = ['A BLOCK', 'N BLOCK', 'P BLOCK', 'H BLOCK', 'U BLOCK'];
+    let finalPickupLocation = null;
+
+    if (type !== 'Dining') {
+      const rawLoc = (pickupLocation || pickupPoint || '').toString().trim().toUpperCase();
+      let matchedLoc = VALID_PICKUP_LOCATIONS.find(loc => rawLoc.includes(loc.split(' ')[0]));
+      if (!matchedLoc && VALID_PICKUP_LOCATIONS.includes(rawLoc)) {
+        matchedLoc = rawLoc;
+      }
+      if (!matchedLoc || !VALID_PICKUP_LOCATIONS.includes(matchedLoc)) {
+        return res.status(400).json({ 
+          error: 'Please select a valid pickup location (A BLOCK, N BLOCK, P BLOCK, H BLOCK, U BLOCK).',
+          message: 'Please select a valid pickup location (A BLOCK, N BLOCK, P BLOCK, H BLOCK, U BLOCK).' 
+        });
+      }
+      finalPickupLocation = matchedLoc;
+    } else {
+      finalPickupLocation = null;
+      const restrictedItems = items.filter(item => {
+        let category = item.category || '';
+        let subcategory = item.subcategory || '';
+        let name = item.name || '';
+        if (!category && (item.foodId || item._id)) {
+          const dbItem = db.findById('foodItems', item.foodId || item._id);
+          if (dbItem) {
+            category = dbItem.category || '';
+            subcategory = dbItem.subcategory || '';
+            name = dbItem.name || name;
+          }
+        }
+        return isRestrictedForDining(category, subcategory, name);
+      });
+
+      if (restrictedItems.length > 0) {
+        const itemNames = restrictedItems.map(i => i.name || 'Restricted Item').join(', ');
+        return res.status(400).json({
+          error: `The following items are not available for Dining orders: ${itemNames}. Please remove them or switch to Delivery mode.`,
+          message: `The following items are not available for Dining orders: ${itemNames}. Please remove them or switch to Delivery mode.`
+        });
+      }
+    }
+
+    // Authoritative Server-Side Price & Availability Calculation from DB / Atlas
+    let trustedSubtotal = 0;
+    const validatedItems = [];
+
+    for (const item of items) {
+      const dbItem = await findMenuItem(item);
+      
+      if (!dbItem || dbItem.isAvailable === false || dbItem.available === false) {
+        return res.status(400).json({ 
+          error: `Item "${item.name || 'Selected item'}" is currently unavailable. Please remove it from your cart.`,
+          message: `Item "${item.name || 'Selected item'}" is currently unavailable. Please remove it from your cart.`
+        });
+      }
+
+      let unitPrice = Number(dbItem.price || 0);
+      if (item.selectedOptionLabel && dbItem.priceOptions && dbItem.priceOptions.length > 0) {
+        const matchedOption = dbItem.priceOptions.find(opt => opt.label === item.selectedOptionLabel);
+        if (matchedOption) {
+          unitPrice = Number(matchedOption.price);
+        }
+      }
+
+      const qty = Math.max(1, Number(item.quantity || 1));
+      const itemSubtotal = unitPrice * qty;
+      trustedSubtotal += itemSubtotal;
+
+      validatedItems.push({
+        _id: dbItem._id,
+        foodId: dbItem._id,
+        name: dbItem.name,
+        category: dbItem.category || item.category || '',
+        subcategory: dbItem.subcategory || item.subcategory || '',
+        foodType: dbItem.foodType || item.foodType || 'Veg',
+        image: dbItem.image || item.image || '',
+        unitPrice,
+        price: unitPrice,
+        quantity: qty,
+        selectedOptionLabel: item.selectedOptionLabel || null,
+        subtotal: itemSubtotal
+      });
+    }
+
+    const totalItemCount = validatedItems.reduce((sum, item) => sum + item.quantity, 0);
 
     const exemptCategories = ['shakes', 'mocktails', 'juices'];
-    const parcelCharge = type === 'Parcel' 
-      ? items.reduce((sum, item) => {
-          let category = item.category || '';
-          if (!category && (item.foodId || item._id)) {
-            const dbItem = db.findById('foodItems', item.foodId || item._id);
-            if (dbItem && dbItem.category) category = dbItem.category;
-          }
-          const catLower = (category || '').toLowerCase().trim();
+    const parcelCharge = (type === 'Parcel' || type === 'Pickup')
+      ? validatedItems.reduce((sum, item) => {
+          const catLower = (item.category || '').toLowerCase().trim();
           if (exemptCategories.includes(catLower)) return sum;
-          return sum + (Number(item.quantity || 1) * 10);
+          return sum + (item.quantity * 10);
         }, 0)
       : 0;
-    const total = subtotal + parcelCharge;
+    const total = trustedSubtotal + parcelCharge;
 
     const orderNumber = `MHP-${Date.now().toString().slice(-6)}`;
-    const transactionId = `TXN-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const initialTxnId = `TXN-${(process.env.PAYMENT_MODE || 'TEST').toUpperCase()}-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    const newOrder = db.insert('orders', {
+    const draftOrder = {
       orderId: orderNumber,
       orderNumber,
       customerName: customerName || 'Campus Student',
       customerPhone: customerPhone || studentPhone || '',
       studentPhone: studentPhone || customerPhone || '',
       studentId: studentId || '',
-      pickupLocation: type === 'Parcel' ? 'MHP Parcel Counter, Near N Block' : 'MHP Main Counter, Near N Block',
-      items,
+      pickupPoint: finalPickupLocation,
+      pickupLocation: finalPickupLocation,
+      items: validatedItems,
       totalItemCount,
-      subtotal,
+      subtotal: trustedSubtotal,
       orderType: type,
+      orderMode: type,
       parcelCharge,
       total,
       totalAmount: total,
       paymentMethod: method,
       paymentMode: method,
       paymentStatus: 'PENDING',
-      paymentReference: transactionId,
-      transactionId,
+      paymentReference: initialTxnId,
+      transactionId: initialTxnId,
       orderStatus: 'PENDING_PAYMENT',
       status: 'PENDING_PAYMENT',
       notes: notes || '',
       createdAt: new Date().toISOString()
+    };
+
+    const paymentSession = await paymentService.createPaymentSession(draftOrder);
+
+    const newOrder = db.insert('orders', {
+      ...draftOrder,
+      razorpayOrderId: paymentSession.razorpayOrderId,
+      transactionId: paymentSession.transactionId,
+      paymentReference: paymentSession.transactionId,
+      paymentSignature: paymentSession.signature
     });
 
-    // Automatically create internal billing record
-    billingService.createBillingRecord(newOrder);
-    const updatedOrder = db.findById('orders', newOrder._id) || newOrder;
-
     res.status(201).json({
-      message: 'Payment session initiated',
-      order: updatedOrder,
-      billingNumber: updatedOrder.billingNumber,
-      transactionId,
-      paymentReference: transactionId,
-      amountToPay: total,
-      paymentMethod: method
+      message: 'Payment session initiated successfully',
+      order: newOrder,
+      paymentSession
     });
   } catch (err) {
     console.error('Error initiating payment:', err);
-    res.status(500).json({ message: 'Failed to initiate payment session' });
+    res.status(500).json({ error: 'Failed to initiate payment session', message: 'Failed to initiate payment session' });
   }
 });
 
 // @route   POST /api/future-menu/orders/confirm-payment
-// @desc    Confirm successful prepaid payment from payment gateway
+// @desc    Confirm prepaid payment with cryptographic signature verification
 router.post('/orders/confirm-payment', (req, res) => {
   try {
-    const { orderId, transactionId, paymentReference } = req.body;
+    const { 
+      orderId, 
+      transactionId, 
+      signature, 
+      paymentReference, 
+      razorpayOrderId, 
+      razorpayPaymentId, 
+      razorpaySignature 
+    } = req.body;
 
     const order = db.findOne('orders', { _id: orderId }) || 
                   db.findOne('orders', { orderId }) || 
@@ -180,22 +326,62 @@ router.post('/orders/confirm-payment', (req, res) => {
                   db.findOne('orders', { transactionId });
 
     if (!order) {
-      return res.status(404).json({ message: 'Order session not found' });
+      return res.status(404).json({ error: 'Order session not found', message: 'Order session not found' });
+    }
+
+    // Idempotency check: if order is already PAID / CONFIRMED, return existing order
+    if (order.paymentStatus === 'PAID' && (order.orderStatus === 'CONFIRMED' || order.orderStatus === 'PLACED')) {
+      const existingBill = db.findOne('bills', { orderId: order._id });
+      return res.json({ 
+        message: 'Payment already confirmed', 
+        order, 
+        billingNumber: existingBill?.billingNumber || order.billingNumber 
+      });
+    }
+
+    const txId = transactionId || paymentReference || order.transactionId;
+    const sig = razorpaySignature || signature || order.paymentSignature;
+    const rzpOrdId = razorpayOrderId || order.razorpayOrderId;
+    const rzpPayId = razorpayPaymentId || null;
+
+    const isValidSignature = paymentService.verifyPaymentSignature(
+      order.orderNumber,
+      order.totalAmount || order.total,
+      txId,
+      sig,
+      rzpOrdId,
+      rzpPayId
+    );
+
+    if (!isValidSignature) {
+      return res.status(400).json({ 
+        error: 'Invalid payment verification signature. Payment verification failed.',
+        message: 'Invalid payment verification signature. Payment verification failed.' 
+      });
     }
 
     const updated = db.updateById('orders', order._id, {
       paymentStatus: 'PAID',
-      orderStatus: 'PLACED',
-      status: 'PLACED',
+      orderStatus: 'CONFIRMED',
+      status: 'CONFIRMED',
       paidAt: new Date().toISOString(),
       placedAt: new Date().toISOString(),
-      paymentReference: paymentReference || transactionId || order.transactionId || `TXN-CONFIRMED-${Date.now()}`
+      paymentReference: rzpPayId || txId,
+      transactionId: txId,
+      razorpayPaymentId: rzpPayId
     });
 
-    res.json({ message: 'Payment confirmed successfully', order: updated });
+    const bill = billingService.createBillingRecord(updated);
+    const finalOrder = db.findById('orders', order._id) || updated;
+
+    res.json({ 
+      message: 'Payment confirmed successfully', 
+      order: finalOrder,
+      billingNumber: bill.billingNumber
+    });
   } catch (err) {
     console.error('Error confirming payment:', err);
-    res.status(500).json({ message: 'Failed to confirm payment' });
+    res.status(500).json({ error: 'Failed to confirm payment', message: 'Failed to confirm payment' });
   }
 });
 
@@ -211,68 +397,176 @@ router.post('/orders/fail-payment', (req, res) => {
                   db.findOne('orders', { transactionId });
 
     if (!order) {
-      return res.status(404).json({ message: 'Order session not found' });
+      return res.status(404).json({ error: 'Order session not found', message: 'Order session not found' });
     }
 
     const failStatus = 'FAILED';
     const updated = db.updateById('orders', order._id, {
       paymentStatus: failStatus,
       orderStatus: failStatus,
-      status: failStatus
+      status: failStatus,
+      failureReason: reason || 'Payment cancelled or abandoned by user'
     });
 
-    res.json({ message: 'Payment failed', order: updated });
+    res.json({ message: 'Payment marked as failed', order: updated });
   } catch (err) {
     console.error('Error recording payment failure:', err);
-    res.status(500).json({ message: 'Failed to update payment status' });
+    res.status(500).json({ error: 'Failed to update payment status', message: 'Failed to update payment status' });
+  }
+});
+
+// @route   POST /api/future-menu/orders/webhook
+// @desc    Asynchronous payment gateway callback handler
+router.post('/orders/webhook', (req, res) => {
+  try {
+    const sigHeader = req.headers['x-payment-signature'] || req.headers['x-razorpay-signature'];
+    const { orderId, orderNumber, transactionId, status } = req.body;
+
+    const order = db.findOne('orders', { orderNumber }) || db.findOne('orders', { _id: orderId });
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (status === 'SUCCESS' || status === 'PAID') {
+      if (order.paymentStatus !== 'PAID') {
+        const updated = db.updateById('orders', order._id, {
+          paymentStatus: 'PAID',
+          orderStatus: 'CONFIRMED',
+          status: 'CONFIRMED',
+          paidAt: new Date().toISOString()
+        });
+        billingService.createBillingRecord(updated);
+      }
+      return res.json({ status: 'OK', message: 'Order confirmed via webhook' });
+    }
+
+    return res.json({ status: 'OK', message: 'Webhook event processed' });
+  } catch (err) {
+    console.error('Webhook processing error:', err);
+    res.status(500).json({ error: 'Webhook processing failed' });
   }
 });
 
 // @route   POST /api/future-menu/orders
 // @desc    Place a new student order (Direct / Pickup / Parcel)
-router.post('/orders', (req, res) => {
+router.post('/orders', async (req, res) => {
   try {
     const slotConfig = db.getOrderingSlot();
     const slotStatus = db.checkOrderingSlotStatus(slotConfig);
     if (!slotStatus.isOpen) {
       return res.status(400).json({ 
-        message: slotStatus.message,
-        orderingStatus: slotStatus
+        error: `Ordering is currently closed. Today's ordering window is ${slotStatus.orderingWindow}.`,
+        message: `Ordering is currently closed. Today's ordering window is ${slotStatus.orderingWindow}.`,
+        orderingStatus: slotStatus,
+        slotStatus
       });
     }
 
-    const { customerName, customerPhone, studentId, studentPhone, items, orderType, paymentMode, paymentMethod, paymentStatus, notes } = req.body;
+    const { customerName, customerPhone, studentId, studentPhone, items, orderType, paymentMode, paymentMethod, paymentStatus, notes, pickupLocation, pickupPoint } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ message: 'Cart cannot be empty' });
     }
 
     const method = paymentMethod || paymentMode || 'UPI';
-    const type = orderType === 'Parcel' ? 'Parcel' : 'Pickup';
+    const type = orderType === 'Dining' ? 'Dining' : (orderType === 'Parcel' ? 'Parcel' : 'Pickup');
 
-    // Reject Dining orders (Dining is View-Only)
-    if (type === 'Pickup' || orderType === 'Dining' || orderType === 'Pickup') {
-      return res.status(400).json({ 
-        message: 'Dining menu is view-only. Orders can only be placed from Delivery.' 
+    const VALID_PICKUP_LOCATIONS = ['A BLOCK', 'N BLOCK', 'P BLOCK', 'H BLOCK', 'U BLOCK'];
+    let finalPickupLocation = null;
+
+    if (type !== 'Dining') {
+      const rawLoc = (pickupLocation || pickupPoint || '').toString().trim().toUpperCase();
+      let matchedLoc = VALID_PICKUP_LOCATIONS.find(loc => rawLoc.includes(loc.split(' ')[0]));
+      if (!matchedLoc && VALID_PICKUP_LOCATIONS.includes(rawLoc)) {
+        matchedLoc = rawLoc;
+      }
+      if (!matchedLoc || !VALID_PICKUP_LOCATIONS.includes(matchedLoc)) {
+        return res.status(400).json({ 
+          error: 'Please select a valid pickup location (A BLOCK, N BLOCK, P BLOCK, H BLOCK, U BLOCK).',
+          message: 'Please select a valid pickup location (A BLOCK, N BLOCK, P BLOCK, H BLOCK, U BLOCK).' 
+        });
+      }
+      finalPickupLocation = matchedLoc;
+    } else {
+      finalPickupLocation = null;
+      const restrictedItems = items.filter(item => {
+        let category = item.category || '';
+        let subcategory = item.subcategory || '';
+        let name = item.name || '';
+        if (!category && (item.foodId || item._id)) {
+          const dbItem = db.findById('foodItems', item.foodId || item._id);
+          if (dbItem) {
+            category = dbItem.category || '';
+            subcategory = dbItem.subcategory || '';
+            name = dbItem.name || name;
+          }
+        }
+        return isRestrictedForDining(category, subcategory, name);
+      });
+
+      if (restrictedItems.length > 0) {
+        const itemNames = restrictedItems.map(i => i.name || 'Restricted Item').join(', ');
+        return res.status(400).json({
+          error: `The following items are not available for Dining orders: ${itemNames}. Please remove them or switch to Delivery mode.`,
+          message: `The following items are not available for Dining orders: ${itemNames}. Please remove them or switch to Delivery mode.`,
+          restrictedItems
+        });
+      }
+    }
+
+    // Authoritative Server-Side Price & Availability Calculation from DB / Atlas
+    let trustedSubtotal = 0;
+    const validatedItems = [];
+
+    for (const item of items) {
+      const dbItem = await findMenuItem(item);
+      
+      if (!dbItem || dbItem.isAvailable === false || dbItem.available === false) {
+        return res.status(400).json({ 
+          error: `Item "${item.name || 'Selected item'}" is currently unavailable. Please remove it from your cart.`,
+          message: `Item "${item.name || 'Selected item'}" is currently unavailable. Please remove it from your cart.`
+        });
+      }
+
+      let unitPrice = Number(dbItem.price || 0);
+      if (item.selectedOptionLabel && dbItem.priceOptions && dbItem.priceOptions.length > 0) {
+        const matchedOption = dbItem.priceOptions.find(opt => opt.label === item.selectedOptionLabel);
+        if (matchedOption) {
+          unitPrice = Number(matchedOption.price);
+        }
+      }
+
+      const qty = Math.max(1, Number(item.quantity || 1));
+      const itemSubtotal = unitPrice * qty;
+      trustedSubtotal += itemSubtotal;
+
+      validatedItems.push({
+        _id: dbItem._id,
+        foodId: dbItem._id,
+        name: dbItem.name,
+        category: dbItem.category || item.category || '',
+        subcategory: dbItem.subcategory || item.subcategory || '',
+        foodType: dbItem.foodType || item.foodType || 'Veg',
+        image: dbItem.image || item.image || '',
+        unitPrice,
+        price: unitPrice,
+        quantity: qty,
+        selectedOptionLabel: item.selectedOptionLabel || null,
+        subtotal: itemSubtotal
       });
     }
-    const totalItemCount = items.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
-    const subtotal = items.reduce((sum, item) => sum + (Number(item.unitPrice || item.price || 0) * Number(item.quantity || 1)), 0);
+
+    const totalItemCount = validatedItems.reduce((sum, item) => sum + item.quantity, 0);
 
     const exemptCategories = ['shakes', 'mocktails', 'juices'];
-    const parcelCharge = type === 'Parcel' 
-      ? items.reduce((sum, item) => {
-          let category = item.category || '';
-          if (!category && (item.foodId || item._id)) {
-            const dbItem = db.findById('foodItems', item.foodId || item._id);
-            if (dbItem && dbItem.category) category = dbItem.category;
-          }
-          const catLower = (category || '').toLowerCase().trim();
+    const parcelCharge = (type === 'Parcel' || type === 'Pickup')
+      ? validatedItems.reduce((sum, item) => {
+          const catLower = (item.category || '').toLowerCase().trim();
           if (exemptCategories.includes(catLower)) return sum;
-          return sum + (Number(item.quantity || 1) * 10);
+          return sum + (item.quantity * 10);
         }, 0)
       : 0;
-    const total = subtotal + parcelCharge;
+    const total = trustedSubtotal + parcelCharge;
 
     const orderNumber = `MHP-${Date.now().toString().slice(-6)}`;
     const transactionId = `TXN-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -284,12 +578,13 @@ router.post('/orders', (req, res) => {
       customerPhone: customerPhone || studentPhone || '',
       studentPhone: studentPhone || customerPhone || '',
       studentId: studentId || '',
-      pickupPoint: req.body.pickupPoint || 'N Block',
-      pickupLocation: `${req.body.pickupPoint || 'N Block'} (MHP ${type === 'Parcel' ? 'Parcel' : 'Main'} Counter)`,
-      items,
+      pickupPoint: finalPickupLocation,
+      pickupLocation: finalPickupLocation,
+      items: validatedItems,
       totalItemCount,
-      subtotal,
+      subtotal: trustedSubtotal,
       orderType: type,
+      orderMode: type,
       parcelCharge,
       total,
       totalAmount: total,
@@ -303,7 +598,7 @@ router.post('/orders', (req, res) => {
       notes: notes || '',
       createdAt: new Date().toISOString(),
       placedAt: new Date().toISOString(),
-      paidAt: paymentStatus === 'PAID' ? new Date().toISOString() : null
+      paidAt: (paymentStatus || 'PAID') === 'PAID' ? new Date().toISOString() : null
     });
 
     // Automatically create internal billing record immediately upon order confirmation

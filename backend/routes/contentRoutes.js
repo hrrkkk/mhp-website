@@ -312,8 +312,18 @@ router.get('/ordering-slot', (req, res) => {
 });
 
 // Admin: Update Ordering Slot config (Default vs Today's Active Slot)
-router.put('/ordering-slot', requireAdmin, (req, res) => {
-  const { target, orderingStartTime, orderingEndTime, pickupStartTime, pickupEndTime } = req.body;
+router.put('/ordering-slot', requireAdmin, async (req, res) => {
+  const { target, action, orderingStartTime, orderingEndTime, pickupStartTime, pickupEndTime } = req.body;
+
+  if (action === 'reset') {
+    const updatedSlot = db.resetOrderingSlot();
+    try {
+      const { syncDailySlotsToMongoDB } = require('../config/mongodb');
+      await syncDailySlotsToMongoDB();
+    } catch (e) {}
+    const slotStatus = db.checkOrderingSlotStatus(updatedSlot);
+    return res.json(slotStatus);
+  }
 
   const validateTimeRange = (start, end, label) => {
     if (start && end) {
@@ -336,6 +346,31 @@ router.put('/ordering-slot', requireAdmin, (req, res) => {
   if (picErr) return res.status(400).json({ error: picErr, message: picErr });
 
   const updatedSlot = db.updateOrderingSlot(req.body);
+  try {
+    const { syncDailySlotsToMongoDB } = require('../config/mongodb');
+    await syncDailySlotsToMongoDB();
+  } catch (e) {}
+  const slotStatus = db.checkOrderingSlotStatus(updatedSlot);
+  res.json(slotStatus);
+});
+
+// Admin: Reset today's ordering slot to default
+router.post('/ordering-slot/reset', requireAdmin, async (req, res) => {
+  const updatedSlot = db.resetOrderingSlot();
+  try {
+    const { syncDailySlotsToMongoDB } = require('../config/mongodb');
+    await syncDailySlotsToMongoDB();
+  } catch (e) {}
+  const slotStatus = db.checkOrderingSlotStatus(updatedSlot);
+  res.json(slotStatus);
+});
+
+router.delete('/ordering-slot', requireAdmin, async (req, res) => {
+  const updatedSlot = db.resetOrderingSlot();
+  try {
+    const { syncDailySlotsToMongoDB } = require('../config/mongodb');
+    await syncDailySlotsToMongoDB();
+  } catch (e) {}
   const slotStatus = db.checkOrderingSlotStatus(updatedSlot);
   res.json(slotStatus);
 });
@@ -496,6 +531,42 @@ router.get('/admin/daily-sales', requireAdmin, (req, res) => {
     console.error('Error fetching daily sales metrics:', err);
     res.status(500).json({ message: 'Failed to fetch daily sales metrics' });
   }
+});
+
+// ==========================================
+// 8. NAVBAR MANAGEMENT
+// ==========================================
+router.get('/navbar', (req, res) => {
+  res.json(db.getNavbar());
+});
+
+router.put('/navbar', requireAdmin, (req, res) => {
+  const updated = db.updateNavbar(req.body);
+  res.json(updated);
+});
+
+// ==========================================
+// 9. ABOUT PAGE CONTENT MANAGEMENT
+// ==========================================
+router.get(['/about-content', '/about-settings', '/about'], (req, res) => {
+  res.json(db.getAboutContent());
+});
+
+router.put(['/about-content', '/about-settings', '/about'], requireAdmin, (req, res) => {
+  const updated = db.updateAboutContent(req.body);
+  res.json(updated);
+});
+
+// ==========================================
+// 10. EXPLORE PAGE CONTENT MANAGEMENT
+// ==========================================
+router.get(['/explore-content', '/explore-settings', '/explore'], (req, res) => {
+  res.json(db.getExploreContent());
+});
+
+router.put(['/explore-content', '/explore-settings', '/explore'], requireAdmin, (req, res) => {
+  const updated = db.updateExploreContent(req.body);
+  res.json(updated);
 });
 
 module.exports = router;

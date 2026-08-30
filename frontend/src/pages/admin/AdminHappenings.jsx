@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import LoadingSkeleton from '../../components/common/LoadingSkeleton';
-import { Sparkles, Plus, Edit2, Trash2, Check, X, Image as ImageIcon, Eye } from 'lucide-react';
+import { Sparkles, Plus, Edit2, Trash2, Check, X, Image as ImageIcon } from 'lucide-react';
+import { MHPCard, MHPButton, MHPBadge, MHPInput, MHPTextarea } from '../../components/admin/MHPAdminComponents';
 
 const AdminHappenings = () => {
   const { showToast } = useToast();
@@ -98,203 +99,124 @@ const AdminHappenings = () => {
   };
 
   return (
-    <div className="space-y-6 pb-16">
-      
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-[#FFFDF8] flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-[#F4A62A]" />
-            What's Happening Posts Manager
-          </h1>
-          <p className="text-xs text-[#BDB7AD] mt-1">
-            Publish dynamic updates, fest stalls, specials, and announcements to the customer feed
-          </p>
+    <div className="space-y-6 pb-16 text-[#202522]">
+      <MHPCard className="!p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-black text-[#F47B20] uppercase tracking-widest mb-1">
+              <Sparkles className="w-4 h-4 text-[#F47B20]" />
+              CAMPUS UPDATES & ANNOUNCEMENTS
+            </div>
+            <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-[#183A2A]">
+              What's Happening Manager
+            </h1>
+            <p className="text-xs text-[#7D967E] font-medium mt-0.5">
+              Post real-time news, specials, and campus updates to the website ticker
+            </p>
+          </div>
+
+          <MHPButton onClick={() => handleOpenModal(null)} variant="primary" size="sm">
+            <Plus className="w-4 h-4" />
+            <span>Add Campus Update</span>
+          </MHPButton>
         </div>
+      </MHPCard>
 
-        <button
-          onClick={() => handleOpenModal()}
-          className="btn-mhp-primary px-4 py-2.5 text-xs flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Update Post</span>
-        </button>
-      </div>
-
-      {/* List */}
       {loading ? (
-        <LoadingSkeleton count={3} />
+        <LoadingSkeleton count={3} height="h-32" />
       ) : happenings.length === 0 ? (
-        <div className="mhp-card-dark p-12 text-center rounded-3xl border border-[#2E2A27] text-[#BDB7AD] text-sm">
-          No updates published yet. Click "New Update Post" to publish the first one!
-        </div>
+        <MHPCard className="!p-12 text-center text-[#7D967E]">
+          <Sparkles className="w-12 h-12 text-[#F47B20]/50 mx-auto mb-2" />
+          <h3 className="text-base font-extrabold text-[#183A2A]">No campus updates posted</h3>
+          <p className="text-xs text-[#7D967E] font-medium">Add updates to broadcast news on the site.</p>
+        </MHPCard>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {happenings.map((item) => (
-            <div
-              key={item._id}
-              className="mhp-card-dark rounded-2xl overflow-hidden border border-[#2E2A27] hover:border-[#F4A62A]/40 flex flex-col justify-between shadow-lg"
-            >
-              {item.image && (
-                <div className="h-44 overflow-hidden relative">
-                  <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                  <span className={`absolute top-3 left-3 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase ${
-                    item.status === 'published' ? 'bg-emerald-600 text-white' : 'bg-[#171717] text-[#BDB7AD]'
-                  }`}>
-                    {item.status}
-                  </span>
-                  {item.featured && (
-                    <span className="absolute top-3 right-3 bg-[#F4A62A] text-[#25221E] text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase">
-                      Featured
-                    </span>
-                  )}
-                </div>
-              )}
-              <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between text-xs text-[#BDB7AD] mb-1">
-                    <span className="text-[#F4A62A] font-bold">{item.category}</span>
-                    <span>{item.date}</span>
+            <MHPCard key={item._id} className="!p-5 space-y-4 hover:border-[#F47B20] transition-all flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-2 border-b border-[#7D967E]/20 pb-3">
+                  <div>
+                    <span className="text-[10px] font-extrabold text-[#F47B20] uppercase tracking-widest block">{item.category}</span>
+                    <h3 className="font-display font-extrabold text-lg text-[#183A2A]">{item.title}</h3>
                   </div>
-                  <h3 className="text-base font-bold text-[#FFFDF8] line-clamp-2">{item.title}</h3>
-                  <p className="text-xs text-[#BDB7AD] mt-2 line-clamp-3 leading-relaxed">
-                    {item.description}
-                  </p>
+                  <MHPBadge variant="success">Published</MHPBadge>
                 </div>
 
-                <div className="flex items-center justify-between pt-3 border-t border-[#2E2A27]">
+                <p className="text-xs text-[#202522]/80 font-medium leading-relaxed">
+                  {item.description}
+                </p>
+              </div>
+
+              <div className="pt-3 border-t border-[#7D967E]/20 flex items-center justify-between">
+                <span className="text-[11px] text-[#7D967E] font-medium">{item.date}</span>
+                <div className="flex items-center gap-3">
                   <button
                     onClick={() => handleOpenModal(item)}
-                    className="px-3 py-1.5 rounded-lg bg-[#171717] text-[#F4A62A] border border-[#2E2A27] text-xs font-bold flex items-center gap-1.5 hover:bg-[#22201D]"
+                    className="text-[#F47B20] font-extrabold text-xs flex items-center gap-1 hover:underline cursor-pointer"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
-                    Edit
+                    <span>Edit</span>
                   </button>
                   <button
                     onClick={() => handleDelete(item._id)}
-                    className="px-3 py-1.5 rounded-lg bg-rose-950/40 text-rose-300 border border-rose-900/50 text-xs font-bold flex items-center gap-1.5 hover:bg-rose-900/50"
+                    className="text-rose-600 font-extrabold text-xs flex items-center gap-1 hover:underline cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    Delete
+                    <span>Delete</span>
                   </button>
                 </div>
               </div>
-            </div>
+            </MHPCard>
           ))}
         </div>
       )}
 
       {/* Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#131211]/80 backdrop-blur-md">
-          <div className="max-w-xl w-full bg-[#1D1B19] border border-[#2E2A27] rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative">
-            <div className="flex items-center justify-between border-b border-[#2E2A27] pb-4">
-              <h2 className="text-xl font-bold text-[#FFFDF8]">
-                {editingId ? 'Edit Update Post' : 'Create New Update Post'}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="max-w-lg w-full bg-[#FFFFFF] border-2 border-[#7D967E]/40 rounded-3xl p-6 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#7D967E]/20 pb-3">
+              <h2 className="font-display font-extrabold text-lg text-[#183A2A]">
+                {editingId ? 'Edit Update' : 'Add Campus Update'}
               </h2>
-              <button onClick={() => setModalOpen(false)} className="text-[#BDB7AD] hover:text-[#FFFDF8]">
+              <button onClick={() => setModalOpen(false)} className="text-[#7D967E] hover:text-[#183A2A]">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#BDB7AD]">Title *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs focus:outline-none focus:border-[#F4A62A]"
-                />
-              </div>
+            <form onSubmit={handleSave} className="space-y-3.5 text-xs">
+              <MHPInput
+                label="Update Title *"
+                type="text"
+                required
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              />
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-[#BDB7AD]">Category</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs focus:outline-none focus:border-[#F4A62A]"
-                  >
-                    <option value="MHP Update">MHP Update</option>
-                    <option value="Fest Activity">Fest Activity</option>
-                    <option value="Food Launch">Food Launch</option>
-                    <option value="Special Stall">Special Stall</option>
-                    <option value="Notice">Notice</option>
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-[#BDB7AD]">Date</label>
-                  <input
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs focus:outline-none focus:border-[#F4A62A]"
-                  />
-                </div>
-              </div>
+              <MHPTextarea
+                label="Description *"
+                required
+                rows={3}
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              />
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#BDB7AD]">Image URL</label>
-                <input
-                  type="text"
-                  placeholder="https://images.unsplash.com/..."
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs focus:outline-none focus:border-[#F4A62A]"
-                />
-              </div>
+              <MHPInput
+                label="Image URL"
+                type="text"
+                placeholder="https://..."
+                value={formData.image}
+                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+              />
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#BDB7AD]">Description *</label>
-                <textarea
-                  rows={4}
-                  required
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs focus:outline-none focus:border-[#F4A62A]"
-                ></textarea>
-              </div>
-
-              <div className="flex items-center gap-6 pt-2">
-                <label className="flex items-center gap-2 text-xs text-[#BDB7AD] font-semibold cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.featured}
-                    onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                    className="rounded text-[#F4A62A] focus:ring-0"
-                  />
-                  <span>Mark as Featured</span>
-                </label>
-
-                <div className="flex items-center gap-2">
-                  <label className="text-xs text-[#BDB7AD] font-semibold">Publication Status:</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="px-3 py-1.5 rounded-lg bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs"
-                  >
-                    <option value="published">Published</option>
-                    <option value="draft">Draft</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-[#2E2A27] flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-[#22201D] text-[#BDB7AD] text-xs font-bold"
-                >
+              <div className="pt-3 border-t border-[#7D967E]/20 flex justify-end gap-3">
+                <MHPButton type="button" variant="outline" onClick={() => setModalOpen(false)}>
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn-mhp-primary px-6 py-2 text-xs"
-                >
-                  Save Post
-                </button>
+                </MHPButton>
+                <MHPButton type="submit" variant="primary">
+                  Save Update
+                </MHPButton>
               </div>
             </form>
           </div>

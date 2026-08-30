@@ -3,6 +3,7 @@ import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import LoadingSkeleton from '../../components/common/LoadingSkeleton';
 import { MessageSquare, Star, CheckCircle, Archive, Filter } from 'lucide-react';
+import { MHPCard, MHPButton, MHPBadge } from '../../components/admin/MHPAdminComponents';
 
 const AdminFeedback = () => {
   const { showToast } = useToast();
@@ -42,102 +43,101 @@ const AdminFeedback = () => {
     : feedbackList.filter(f => f.status === statusFilter);
 
   return (
-    <div className="space-y-6 pb-16">
-      
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-[#FFFDF8] flex items-center gap-2">
-            <MessageSquare className="w-6 h-6 text-[#F4A62A]" />
-            Customer Feedback Submissions
-          </h1>
-          <p className="text-xs text-[#BDB7AD] mt-1">Review ratings, categories, and student suggestions</p>
-        </div>
+    <div className="space-y-6 pb-16 text-[#202522]">
+      <MHPCard className="!p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-black text-[#F47B20] uppercase tracking-widest mb-1">
+              <MessageSquare className="w-4 h-4 text-[#F47B20]" />
+              FEEDBACK & REVIEWS
+            </div>
+            <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-[#183A2A]">
+              Customer Feedback Submissions
+            </h1>
+            <p className="text-xs text-[#7D967E] font-medium mt-0.5">
+              Review ratings, category feedback, and student suggestions
+            </p>
+          </div>
 
-        <div className="flex items-center gap-2">
-          {['All', 'new', 'reviewed', 'archived'].map((st) => (
-            <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition-all ${
-                statusFilter === st ? 'bg-[#F4A62A] text-[#25221E] shadow-sm' : 'bg-[#171717] text-[#BDB7AD] border border-[#2E2A27] hover:text-[#FFFDF8]'
-              }`}
-            >
-              {st}
-            </button>
-          ))}
+          <div className="flex items-center gap-1.5 bg-[#FFF7E8] p-1 rounded-xl border border-[#7D967E]/30">
+            {['All', 'new', 'reviewed', 'archived'].map((st) => (
+              <button
+                key={st}
+                onClick={() => setStatusFilter(st)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold capitalize transition-all cursor-pointer ${
+                  statusFilter === st ? 'bg-[#F47B20] text-white shadow-xs' : 'text-[#7D967E] hover:text-[#183A2A]'
+                }`}
+              >
+                {st}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      </MHPCard>
 
       {loading ? (
         <LoadingSkeleton count={3} height="h-32" />
       ) : filtered.length === 0 ? (
-        <div className="mhp-card-dark p-12 text-center rounded-3xl border border-[#2E2A27] text-[#BDB7AD] text-sm">
-          No feedback submissions found.
-        </div>
+        <MHPCard className="!p-12 text-center text-[#7D967E]">
+          <MessageSquare className="w-12 h-12 text-[#F47B20]/50 mx-auto mb-2" />
+          <h3 className="text-base font-extrabold text-[#183A2A]">No feedback submissions found</h3>
+          <p className="text-xs text-[#7D967E] font-medium">Customer reviews submitted on the site will appear here.</p>
+        </MHPCard>
       ) : (
         <div className="space-y-4">
           {filtered.map((item) => (
-            <div key={item._id} className="mhp-card-dark p-6 rounded-2xl border border-[#2E2A27] hover:border-[#F4A62A]/40 space-y-3 shadow-lg">
-              <div className="flex items-center justify-between">
+            <MHPCard key={item._id} className="!p-6 space-y-3 hover:border-[#F47B20] transition-all">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#7D967E]/20 pb-3">
                 <div className="flex items-center gap-3">
-                  <span className="px-2.5 py-0.5 rounded-md bg-[#F4A62A]/20 text-[#F4A62A] font-bold text-[10px] uppercase border border-[#F4A62A]/30">
-                    {item.category}
-                  </span>
-                  <div className="flex items-center gap-1 text-[#F4A62A] text-xs">
-                    <Star className="w-3.5 h-3.5 fill-[#F4A62A]" />
-                    <span className="font-bold">{item.rating} / 5</span>
+                  <MHPBadge variant="orange">{item.category}</MHPBadge>
+                  <div className="flex items-center gap-1 text-[#F47B20] text-xs font-black">
+                    <Star className="w-3.5 h-3.5 fill-[#F47B20]" />
+                    <span>{item.rating} / 5</span>
                   </div>
-                  <span className="text-xs text-[#BDB7AD]">By: {item.name || 'Anonymous Student'}</span>
+                  <span className="text-xs text-[#7D967E] font-semibold">By: {item.name || 'Anonymous Student'}</span>
                 </div>
                 
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase ${
-                  item.status === 'new'
-                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                    : item.status === 'reviewed'
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'bg-[#171717] text-[#BDB7AD] border border-[#2E2A27]'
-                }`}>
+                <MHPBadge variant={item.status === 'new' ? 'danger' : item.status === 'reviewed' ? 'success' : 'default'}>
                   {item.status}
-                </span>
+                </MHPBadge>
               </div>
 
-              <p className="text-xs text-[#FFFDF8] leading-relaxed font-medium">"{item.comment}"</p>
+              <p className="text-xs sm:text-sm text-[#202522] font-medium leading-relaxed">
+                "{item.message}"
+              </p>
 
-              {(item.email || item.phone) && (
-                <div className="text-[11px] text-[#BDB7AD]">
-                  Contact Info (Internal): {item.email} {item.phone && `• ${item.phone}`}
-                </div>
-              )}
+              <div className="flex items-center justify-between pt-2 border-t border-[#7D967E]/20">
+                <span className="text-[11px] text-[#7D967E] font-medium">
+                  Submitted: {new Date(item.createdAt).toLocaleString()}
+                </span>
 
-              <div className="pt-3 border-t border-[#2E2A27] flex items-center justify-between">
-                <span className="text-[10px] text-[#6B645B]">Submitted: {item.createdAt?.split('T')[0]}</span>
-                
                 <div className="flex items-center gap-2">
                   {item.status !== 'reviewed' && (
-                    <button
+                    <MHPButton
                       onClick={() => handleUpdateStatus(item._id, 'reviewed')}
-                      className="px-3 py-1 rounded-lg bg-emerald-950/40 text-emerald-300 border border-emerald-900/50 text-xs font-bold flex items-center gap-1 hover:bg-emerald-900/60"
+                      variant="primary"
+                      size="sm"
                     >
                       <CheckCircle className="w-3.5 h-3.5" />
-                      Mark Reviewed
-                    </button>
+                      <span>Mark Reviewed</span>
+                    </MHPButton>
                   )}
                   {item.status !== 'archived' && (
-                    <button
+                    <MHPButton
                       onClick={() => handleUpdateStatus(item._id, 'archived')}
-                      className="px-3 py-1 rounded-lg bg-[#171717] text-[#BDB7AD] border border-[#2E2A27] text-xs font-bold flex items-center gap-1 hover:bg-[#22201D]"
+                      variant="ghost"
+                      size="sm"
                     >
-                      <Archive className="w-3.5 h-3.5" />
-                      Archive
-                    </button>
+                      <Archive className="w-3.5 h-3.5 text-[#7D967E]" />
+                      <span>Archive</span>
+                    </MHPButton>
                   )}
                 </div>
               </div>
-            </div>
+            </MHPCard>
           ))}
         </div>
       )}
-
     </div>
   );
 };

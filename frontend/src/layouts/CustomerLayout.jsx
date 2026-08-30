@@ -6,11 +6,11 @@ import LiveThreeDBackground from '../components/common/LiveThreeDBackground';
 
 const CustomerLayout = () => {
   return (
-    <div className="min-h-screen bg-[#0B0909] text-[#F4E5D5] flex flex-col selection:bg-[#D77A4D] selection:text-[#F4E5D5] relative overflow-x-hidden preserve-3d">
+    <div className="min-h-screen bg-[#FFF7E8] text-[#202522] flex flex-col selection:bg-[#F47B20] selection:text-white relative overflow-x-hidden preserve-3d">
       {/* Live Animated 3D Environmental Background System */}
       <LiveThreeDBackground />
 
-      {/* Floating 3D Navigation Header */}
+      {/* Floating Navigation Header */}
       <Navbar />
 
       {/* Main Customer Page Content */}
@@ -25,3 +25,6 @@ const CustomerLayout = () => {
 };
 
 export default CustomerLayout;
+
+
+

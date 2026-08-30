@@ -8,10 +8,15 @@ dotenv.config();
 const authRoutes = require('./routes/authRoutes');
 const contentRoutes = require('./routes/contentRoutes');
 const futureMenuRoutes = require('./routes/futureMenuRoutes');
+const menuRoutes = require('./routes/menuRoutes');
 const billingWebhookRoutes = require('./routes/billingWebhookRoutes');
+const { connectMongoDB } = require('./config/mongodb');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Connect MongoDB asynchronously
+connectMongoDB();
 
 // CORS setup
 app.use(cors());
@@ -27,6 +32,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api', contentRoutes);
 app.use('/api/future-menu', futureMenuRoutes);
+app.use('/api/menu', menuRoutes);
 app.use('/api/webhooks', billingWebhookRoutes);
 
 // Root route
@@ -60,9 +66,13 @@ app.use((err, req, res, next) => {
   });
 });
 
+const { getPaymentConfig } = require('./services/paymentService');
+
 app.listen(PORT, () => {
+  const pConfig = getPaymentConfig();
   console.log(`==================================================`);
   console.log(`🚀 MHP REST API Server running on port ${PORT}`);
+  console.log(`💳 Payment Gateway Mode: ${pConfig.paymentMode.toUpperCase()} | Key ID: ${pConfig.keyId}`);
   console.log(`📍 VFSTR Campus, Vadlamudi, Guntur, AP`);
   console.log(`==================================================`);
 });

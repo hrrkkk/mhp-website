@@ -12,6 +12,7 @@ import AdminLayout from './layouts/AdminLayout';
 import Home from './pages/Home';
 import About from './pages/About';
 import Facilities from './pages/Facilities';
+import Explore from './pages/Explore';
 import LocationContact from './pages/LocationContact';
 import Feedback from './pages/Feedback';
 import CustomerProfile from './pages/CustomerProfile';
@@ -23,7 +24,10 @@ import CartPage from './pages/CartPage';
 // Admin Pages
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminNavbarManager from './pages/admin/AdminNavbarManager';
 import AdminHomeSettings from './pages/admin/AdminHomeSettings';
+import AdminAboutSettings from './pages/admin/AdminAboutSettings';
+import AdminExploreSettings from './pages/admin/AdminExploreSettings';
 import AdminHappenings from './pages/admin/AdminHappenings';
 import AdminEvents from './pages/admin/AdminEvents';
 import AdminSynergy from './pages/admin/AdminSynergy';
@@ -47,7 +51,8 @@ function App() {
         <Route path="/" element={<CustomerLayout />}>
           <Route index element={<Home />} />
           <Route path="about" element={<About />} />
-          <Route path="facilities" element={<Facilities />} />
+          <Route path="explore" element={<Explore />} />
+          <Route path="facilities" element={<Explore />} />
           <Route path="location" element={<LocationContact />} />
           <Route path="feedback" element={<Feedback />} />
           <Route path="menu" element={<MenuPage />} />
@@ -80,7 +85,10 @@ function App() {
         >
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="navbar" element={<AdminNavbarManager />} />
           <Route path="home-settings" element={<AdminHomeSettings />} />
+          <Route path="about-settings" element={<AdminAboutSettings />} />
+          <Route path="explore-settings" element={<AdminExploreSettings />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="billing-counter" element={<AdminBillingCounter />} />
           <Route path="future-menu" element={<AdminFutureMenu />} />

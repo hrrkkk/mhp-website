@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import ThreeDLogoEmblem from './ThreeDLogoEmblem';
+import api from '../../services/api';
 import { 
   User, 
   LogOut, 
@@ -19,6 +20,15 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const [dynamicNavItems, setDynamicNavItems] = useState([
+    { id: 'home', name: 'Home', path: '/', visible: true, order: 1 },
+    { id: 'about', name: 'About', path: '/about', visible: true, order: 2 },
+    { id: 'menu', name: 'Menu', path: '/menu', visible: true, order: 3 },
+    { id: 'explore', name: 'Explore', path: '/explore', visible: true, order: 4 },
+    { id: 'feedback', name: 'Feedback', path: '/feedback', visible: true, order: 5 },
+    { id: 'profile', name: 'Profile', path: '/profile', visible: true, order: 6 },
+  ]);
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 20) {
@@ -31,16 +41,20 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'About', path: '/about' },
-    { name: 'Menu', path: '/menu' },
-    { name: 'Facilities', path: '/facilities' },
-    { name: 'Location', path: '/location' },
-    { name: 'Feedback', path: '/feedback' },
-    ...(isAuthenticated ? [{ name: 'Profile', path: '/profile' }] : []),
-    { name: 'View Cart', path: '/cart', isCart: true }
-  ];
+  useEffect(() => {
+    api.get('/navbar')
+      .then(res => {
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          setDynamicNavItems(res.data.filter(item => item.visible !== false).sort((a, b) => (a.order || 0) - (b.order || 0)));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const navLinks = dynamicNavItems.map(item => ({
+    name: item.name,
+    path: item.id === 'profile' ? (isAuthenticated ? '/profile' : '/login') : item.path
+  }));
 
   const isActive = (path) => {
     if (path.includes('?')) {
@@ -52,72 +66,70 @@ const Navbar = () => {
   return (
     <header className={`sticky top-0 z-50 transition-all duration-300 ${
       scrolled 
-        ? 'py-2 bg-[#111113]/95 backdrop-blur-xl border-b border-[#351923] shadow-2xl' 
-        : 'py-3.5 bg-[#111113]/85 backdrop-blur-md border-b border-[#191417]'
+        ? 'py-2 bg-[#183A2A]/98 backdrop-blur-xl border-b border-[#7D967E]/30 shadow-xl' 
+        : 'py-3.5 bg-[#183A2A]/90 backdrop-blur-md border-b border-[#7D967E]/20'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
           
-          {/* Left: Official MHP Brand Emblem & Subtitle */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <ThreeDLogoEmblem size="medium" />
-            <div>
-              <span className="font-display font-bold text-[#F5EEE7] text-lg sm:text-xl tracking-tight block leading-none group-hover:text-[#C96F4F] transition-colors">
+          {/* LEFT SIDE: Compact MHP Logo + "THE MOST HAPPENING PLACE" */}
+          <Link to="/" className="flex items-center gap-2.5 group shrink-0">
+            <ThreeDLogoEmblem size="small" className="w-9 h-9 sm:w-10 sm:h-10" />
+            <div className="flex flex-col justify-center">
+              <span className="font-display font-extrabold text-[#FFF7E8] text-base sm:text-lg tracking-tight leading-none group-hover:text-[#F47B20] transition-colors">
                 MHP
               </span>
-              <span className="text-[9px] text-[#C96F4F] font-sans font-extrabold tracking-widest uppercase block mt-0.5">
+              <span className="text-[8px] sm:text-[9px] text-[#7D967E] font-sans font-extrabold tracking-widest uppercase block mt-0.5 group-hover:text-[#FFF7E8] transition-colors">
                 THE MOST HAPPENING PLACE
               </span>
             </div>
           </Link>
 
-          {/* Center: Clean Floating Navigation Links */}
-          <div className="hidden lg:flex items-center gap-1">
+          {/* CENTER: Navigation Links */}
+          <div className="hidden lg:flex items-center gap-1.5">
             {navLinks.map((link) => {
               const active = isActive(link.path);
-
-              if (link.isCart) {
-                return (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    className={`ml-2 px-4 py-2 rounded-xl text-xs font-extrabold font-sans transition-all duration-300 flex items-center gap-2 border shadow-lg cursor-pointer transform hover:-translate-y-0.5 ${
-                      totalCartCount > 0
-                        ? 'bg-gradient-to-r from-[#D77A4D] to-[#D8A04D] text-white border-[#D77A4D] shadow-[#D77A4D]/25'
-                        : 'bg-[#191417] text-[#F5EEE7] border-[#C96F4F]/60 hover:bg-[#351923]'
-                    }`}
-                  >
-                    <ShoppingBag className="w-3.5 h-3.5 text-white" />
-                    <span>View Cart {totalCartCount > 0 ? `(${totalCartCount})` : ''}</span>
-                  </Link>
-                );
-              }
-
               return (
                 <Link
-                  key={link.path}
+                  key={link.name}
                   to={link.path}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold font-sans transition-all duration-200 flex items-center gap-1.5 ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold font-sans transition-all duration-200 ${
                     active
-                      ? 'text-[#F5EEE7] bg-[#191417] border border-[#C96F4F]/60 shadow-sm'
-                      : 'text-[#B9A9A2] hover:text-[#F5EEE7] hover:bg-[#191417]/60'
+                      ? 'text-[#FFF7E8] bg-[#204935] border border-[#7D967E]/40 shadow-sm'
+                      : 'text-[#FFF7E8]/80 hover:text-[#FFF7E8] hover:bg-[#204935]/50'
                   }`}
                 >
-                  <span>{link.name}</span>
+                  {link.name}
                 </Link>
               );
             })}
           </div>
 
-          {/* Right: Student Profile & Sign Out / Login CTA */}
+          {/* RIGHT SIDE: VIEW CART (Distinct Special Button) + Auth Status */}
           <div className="hidden md:flex items-center gap-3">
+            
+            {/* VIEW CART BUTTON (Distinct Border, Food Orange Glow & Separation) */}
+            <Link
+              to="/cart"
+              className="btn-mhp-cart px-4 py-2 rounded-full text-xs font-extrabold flex items-center gap-2 border-2 border-[#F47B20] shadow-md transition-all hover:scale-105"
+            >
+              <ShoppingBag className="w-3.5 h-3.5 text-[#F47B20] group-hover:text-white" />
+              <span>VIEW CART</span>
+              {totalCartCount > 0 && (
+                <span className="ml-0.5 px-2 py-0.5 rounded-full bg-[#F47B20] text-white text-[10px] font-black">
+                  {totalCartCount}
+                </span>
+              )}
+            </Link>
+
+            {/* Profile / Sign In */}
             {isAuthenticated ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 border-l border-[#7D967E]/30 pl-3">
                 <Link
                   to="/profile"
-                  className="px-4 py-2 rounded-xl bg-[#191417] hover:bg-[#351923] text-[#F5EEE7] border border-[#351923] text-xs font-bold transition-all duration-200 flex items-center gap-2 shadow-sm"
+                  className="px-3.5 py-1.5 rounded-full bg-[#204935] hover:bg-[#285740] text-[#FFF7E8] border border-[#7D967E]/30 text-xs font-bold transition-all flex items-center gap-1.5"
                 >
-                  <User className="w-3.5 h-3.5 text-[#C96F4F]" />
+                  <User className="w-3.5 h-3.5 text-[#F47B20]" />
                   <span>{user?.name?.split(' ')[0]}</span>
                 </Link>
                 <button
@@ -126,41 +138,42 @@ const Navbar = () => {
                     navigate('/');
                   }}
                   title="Sign Out"
-                  className="p-2 rounded-xl bg-[#191417] hover:bg-rose-950/60 text-[#B9A9A2] hover:text-rose-300 border border-[#351923] transition-all cursor-pointer"
+                  className="p-1.5 rounded-full bg-[#204935] hover:bg-rose-900/60 text-[#FFF7E8]/70 hover:text-rose-200 border border-[#7D967E]/30 transition-all cursor-pointer"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-3.5 h-3.5" />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 border-l border-[#7D967E]/30 pl-3">
                 <Link
                   to="/login"
-                  className="px-3.5 py-1.5 text-[#B9A9A2] hover:text-[#F5EEE7] text-xs font-bold transition-all"
+                  className="px-3 py-1.5 text-[#FFF7E8]/80 hover:text-[#FFF7E8] text-xs font-bold transition-all"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/signup"
-                  className="btn-mhp-primary text-xs py-2 px-4 min-h-0"
+                  className="px-3.5 py-1.5 rounded-full bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs font-extrabold shadow-sm transition-all"
                 >
-                  Student Login
+                  Join MHP
                 </Link>
               </div>
             )}
+
           </div>
 
           {/* Mobile Menu Toggle */}
           <div className="flex items-center gap-2 lg:hidden">
             <Link
               to="/cart"
-              className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#C96F4F] to-[#D79A45] text-[#F5EEE7] font-extrabold text-xs flex items-center gap-1.5 shadow-md"
+              className="px-3 py-1.5 rounded-full bg-[#F47B20] text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md"
             >
-              <ShoppingBag className="w-4 h-4" />
+              <ShoppingBag className="w-3.5 h-3.5" />
               <span>Cart {totalCartCount > 0 ? `(${totalCartCount})` : ''}</span>
             </Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg bg-[#191417] border border-[#351923] text-[#B9A9A2] hover:text-[#F5EEE7]"
+              className="p-2 rounded-xl bg-[#204935] border border-[#7D967E]/30 text-[#FFF7E8] hover:text-[#F47B20]"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
             </button>
@@ -171,41 +184,46 @@ const Navbar = () => {
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-[#111113]/98 backdrop-blur-2xl border-b border-[#191417] px-4 pt-3 pb-6 space-y-3">
+        <div className="lg:hidden bg-[#183A2A]/98 backdrop-blur-2xl border-b border-[#7D967E]/30 px-4 pt-3 pb-6 space-y-3">
           <div className="space-y-1">
             {navLinks.map((link) => (
               <Link
-                key={link.path}
+                key={link.name}
                 to={link.path}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                  link.isCart
-                    ? 'bg-gradient-to-r from-[#D77A4D] to-[#D8A04D] text-white font-extrabold shadow-sm'
-                    : isActive(link.path)
-                      ? 'bg-[#191417] text-[#F5EEE7] border-l-4 border-[#C96F4F]'
-                      : 'text-[#B9A9A2] hover:bg-[#191417] hover:text-[#F5EEE7]'
+                  isActive(link.path)
+                    ? 'bg-[#204935] text-[#FFF7E8] border-l-4 border-[#F47B20]'
+                    : 'text-[#FFF7E8]/80 hover:bg-[#204935]/60 hover:text-[#FFF7E8]'
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  {link.isCart && <ShoppingBag className="w-4 h-4" />}
-                  <span>{link.name}</span>
-                </div>
-                {link.isCart && (
-                  <span className="px-2 py-0.5 rounded-full bg-[#140D0D]/80 text-[#F5EEE7] text-[10px] font-black">
-                    {totalCartCount} {totalCartCount === 1 ? 'Item' : 'Items'}
-                  </span>
-                )}
+                <span>{link.name}</span>
               </Link>
             ))}
+
+            {/* Mobile VIEW CART Link */}
+            <Link
+              to="/cart"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-extrabold bg-[#204935] text-[#FFF7E8] border-2 border-[#F47B20] shadow-sm mt-2"
+            >
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="w-4 h-4 text-[#F47B20]" />
+                <span>VIEW CART</span>
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full bg-[#F47B20] text-white text-[10px] font-black">
+                {totalCartCount} {totalCartCount === 1 ? 'Item' : 'Items'}
+              </span>
+            </Link>
           </div>
 
-          <div className="pt-3 border-t border-[#191417] space-y-2">
+          <div className="pt-3 border-t border-[#7D967E]/30 space-y-2">
             {isAuthenticated ? (
               <div className="flex gap-2">
                 <Link
                   to="/profile"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-[#191417] text-[#F5EEE7] text-xs font-bold text-center border border-[#351923]"
+                  className="flex-1 py-2.5 rounded-xl bg-[#204935] text-[#FFF7E8] text-xs font-bold text-center border border-[#7D967E]/30"
                 >
                   My Profile
                 </Link>
@@ -215,7 +233,7 @@ const Navbar = () => {
                     setMobileMenuOpen(false);
                     navigate('/');
                   }}
-                  className="px-4 py-2.5 rounded-xl bg-[#191417] text-rose-300 text-xs font-bold border border-[#351923]"
+                  className="px-4 py-2.5 rounded-xl bg-rose-900/40 text-rose-200 text-xs font-bold border border-rose-800/40"
                 >
                   Sign Out
                 </button>
@@ -225,16 +243,16 @@ const Navbar = () => {
                 <Link
                   to="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="py-2.5 rounded-xl bg-[#191417] text-[#F5EEE7] text-xs font-bold text-center border border-[#351923]"
+                  className="py-2.5 rounded-xl bg-[#204935] text-[#FFF7E8] text-xs font-bold text-center border border-[#7D967E]/30"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/signup"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="btn-mhp-primary text-xs"
+                  className="btn-mhp-primary text-xs text-center"
                 >
-                  Student Login
+                  Join MHP
                 </Link>
               </div>
             )}
@@ -246,3 +264,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

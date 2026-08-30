@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { MapPin, Settings, Save, Building } from 'lucide-react';
+import { MHPCard, MHPButton, MHPInput, MHPTextarea } from '../../components/admin/MHPAdminComponents';
 
 const AdminLocationSettings = () => {
   const { showToast } = useToast();
@@ -53,116 +54,114 @@ const AdminLocationSettings = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-4xl pb-16">
+    <div className="space-y-8 max-w-4xl pb-16 text-[#202522]">
       
-      <div>
-        <h1 className="text-2xl font-extrabold text-[#FFFDF8] flex items-center gap-2">
-          <Settings className="w-6 h-6 text-[#F4A62A]" />
-          Website Settings & Location Info Editor
-        </h1>
-        <p className="text-xs text-[#BDB7AD] mt-1">Update hero titles, location descriptions, and campus landmark text without editing code</p>
-      </div>
+      <MHPCard className="!p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-black text-[#F47B20] uppercase tracking-widest mb-1">
+              <Settings className="w-4 h-4 text-[#F47B20]" />
+              GLOBAL PLATFORM SETTINGS
+            </div>
+            <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-[#183A2A]">
+              Location & Campus Settings
+            </h1>
+            <p className="text-xs text-[#7D967E] font-medium mt-0.5">
+              Update hero titles, location descriptions, and campus landmark text
+            </p>
+          </div>
+        </div>
+      </MHPCard>
 
       <form onSubmit={handleSaveSettings} className="space-y-8">
         
         {/* Site Content Settings */}
-        <div className="mhp-card-dark p-8 rounded-3xl border border-[#2E2A27] space-y-6 shadow-lg">
-          <h2 className="text-lg font-bold text-[#FFFDF8] border-b border-[#2E2A27] pb-3 flex items-center gap-2">
-            <Settings className="w-5 h-5 text-[#F4A62A]" />
+        <MHPCard className="!p-8 space-y-6">
+          <h2 className="text-lg font-display font-extrabold text-[#183A2A] border-b border-[#7D967E]/20 pb-3 flex items-center gap-2">
+            <Settings className="w-5 h-5 text-[#F47B20]" />
             Homepage & Brand Content
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-[#BDB7AD]">Hero Main Title</label>
-              <input
-                type="text"
-                value={settings.heroTitle}
-                onChange={(e) => setSettings({ ...settings, heroTitle: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs focus:outline-none focus:border-[#F4A62A]"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-[#BDB7AD]">Hero Subtitle</label>
-              <input
-                type="text"
-                value={settings.heroSubtitle}
-                onChange={(e) => setSettings({ ...settings, heroSubtitle: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs focus:outline-none focus:border-[#F4A62A]"
-              />
-            </div>
+            <MHPInput
+              label="Hero Main Title"
+              type="text"
+              value={settings.heroTitle}
+              onChange={(e) => setSettings({ ...settings, heroTitle: e.target.value })}
+            />
+            <MHPInput
+              label="Hero Subtitle"
+              type="text"
+              value={settings.heroSubtitle}
+              onChange={(e) => setSettings({ ...settings, heroSubtitle: e.target.value })}
+            />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[#BDB7AD]">Hero Description Paragraph</label>
-            <textarea
-              rows={3}
-              value={settings.heroDescription}
-              onChange={(e) => setSettings({ ...settings, heroDescription: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs focus:outline-none focus:border-[#F4A62A]"
-            ></textarea>
-          </div>
+          <MHPTextarea
+            label="Hero Description Paragraph"
+            rows={3}
+            value={settings.heroDescription}
+            onChange={(e) => setSettings({ ...settings, heroDescription: e.target.value })}
+          />
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[#BDB7AD]">About MHP Main Text</label>
-            <textarea
-              rows={4}
-              value={settings.aboutText}
-              onChange={(e) => setSettings({ ...settings, aboutText: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs focus:outline-none focus:border-[#F4A62A]"
-            ></textarea>
-          </div>
-        </div>
+          <MHPTextarea
+            label="About Us Page Intro Text"
+            rows={3}
+            value={settings.aboutText}
+            onChange={(e) => setSettings({ ...settings, aboutText: e.target.value })}
+          />
+        </MHPCard>
 
-        {/* Location Info */}
-        <div className="mhp-card-dark p-8 rounded-3xl border border-[#2E2A27] space-y-6 shadow-lg">
-          <h2 className="text-lg font-bold text-[#FFFDF8] border-b border-[#2E2A27] pb-3 flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-[#F4A62A]" />
-            VFSTR Campus Location & Landmarks
+        {/* Location Info Settings */}
+        <MHPCard className="!p-8 space-y-6">
+          <h2 className="text-lg font-display font-extrabold text-[#183A2A] border-b border-[#7D967E]/20 pb-3 flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-[#F47B20]" />
+            Campus Location & Landmark Details
           </h2>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[#BDB7AD]">Institution Name</label>
-            <input
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <MHPInput
+              label="Institution Name"
               type="text"
               value={location.institution}
               onChange={(e) => setLocation({ ...location, institution: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs focus:outline-none focus:border-[#F4A62A]"
             />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[#BDB7AD]">Address</label>
-            <input
+            <MHPInput
+              label="Landmark Description"
               type="text"
-              value={location.address}
-              onChange={(e) => setLocation({ ...location, address: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs focus:outline-none focus:border-[#F4A62A]"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[#BDB7AD]">Primary Landmark Description *</label>
-            <textarea
-              rows={3}
               value={location.landmark}
               onChange={(e) => setLocation({ ...location, landmark: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl bg-[#171717] border border-[#2E2A27] text-[#FFFDF8] text-xs font-medium focus:outline-none focus:border-[#F4A62A]"
-            ></textarea>
+            />
           </div>
+
+          <MHPInput
+            label="Full Address"
+            type="text"
+            value={location.address}
+            onChange={(e) => setLocation({ ...location, address: e.target.value })}
+          />
+
+          <MHPInput
+            label="Operating Hours / Status Text"
+            type="text"
+            value={location.operatingStatus}
+            onChange={(e) => setLocation({ ...location, operatingStatus: e.target.value })}
+          />
+        </MHPCard>
+
+        <div className="flex justify-end pt-2">
+          <MHPButton
+            type="submit"
+            loading={saving}
+            variant="primary"
+            size="lg"
+          >
+            <Save className="w-4 h-4" />
+            <span>Save All Site Settings</span>
+          </MHPButton>
         </div>
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="btn-mhp-primary px-8 py-3.5 text-xs flex items-center gap-2"
-        >
-          <Save className="w-4 h-4" />
-          <span>{saving ? 'Updating Settings...' : 'Save Website Settings'}</span>
-        </button>
       </form>
-
     </div>
   );
 };

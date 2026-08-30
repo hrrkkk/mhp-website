@@ -4,29 +4,27 @@
 
 @layer base {
   :root {
-    --mhp-black: #0B0909;
-    --mhp-charcoal: #140D0D;
-    --mhp-espresso: #241313;
-    --mhp-burgundy: #3A191A;
-    --mhp-accent-dark: #6F3027;
-    --mhp-accent-mid: #B95738;
-    --mhp-copper: #D77A4D;
-    --mhp-gold: #D8A04D;
-    --mhp-cream: #F4E5D5;
+    --mhp-primary: #183A2A;   /* Deep Forest Green */
+    --mhp-bg: #FFF7E8;        /* Warm Cream */
+    --mhp-accent: #F47B20;    /* Food Orange */
+    --mhp-secondary: #7D967E; /* Sage Green */
+    --mhp-text: #202522;      /* Charcoal */
+    --mhp-card: #FFFFFF;      /* Soft White */
   }
 
   body {
-    background-color: #0B0909;
-    color: #F4E5D5;
+    background-color: var(--mhp-bg);
+    color: var(--mhp-text);
     overflow-x: hidden;
     font-family: 'Plus Jakarta Sans', sans-serif;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, .font-display {
     font-family: 'DM Serif Display', serif;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
   }
 }
 
@@ -43,85 +41,155 @@
   perspective: 1000px;
 }
 
-/* High-Conversion Extruded Physical 3D Buttons */
+/* Stadium & Arch Cutout Frames */
+.stadium-frame {
+  border-radius: 9999px;
+}
+
+.arch-frame {
+  border-top-left-radius: 200px;
+  border-top-right-radius: 200px;
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+}
+
+.arch-pill {
+  border-radius: 120px;
+}
+
+/* MHP Reusable Card System */
+.card-mhp-white {
+  background-color: #FFFFFF;
+  border: 1px solid rgba(125, 150, 126, 0.3);
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 30px -8px rgba(24, 58, 42, 0.08);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-mhp-white:hover {
+  border-color: rgba(244, 123, 32, 0.4);
+  box-shadow: 0 20px 40px -10px rgba(24, 58, 42, 0.14);
+}
+
+.card-mhp-forest {
+  background-color: #183A2A;
+  color: #FFF7E8;
+  border: 1px solid rgba(125, 150, 126, 0.4);
+  border-radius: 1.5rem;
+  box-shadow: 0 14px 35px -10px rgba(0, 0, 0, 0.2);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-mhp-forest:hover {
+  border-color: #F47B20;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.3);
+}
+
+/* MHP Reusable Button System */
 .btn-mhp-primary {
-  background: linear-gradient(135deg, #E2895A 0%, #D77A4D 100%);
-  color: #F4E5D5;
+  background: #F47B20;
+  color: #FFFFFF;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
-  border-radius: 14px;
-  min-height: 50px;
-  padding: 0.8rem 2rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 20px -4px rgba(244, 123, 32, 0.4);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
-  border-bottom: 4px solid #A65530;
-  box-shadow: 0 12px 32px rgba(215, 122, 77, 0.45);
   cursor: pointer;
-  transform: translateZ(15px);
 }
 
 .btn-mhp-primary:hover {
-  transform: translateY(-4px) scale(1.02) translateZ(20px);
-  background: linear-gradient(135deg, #EE9567 0%, #E2895A 100%);
-  box-shadow: 0 18px 40px rgba(215, 122, 77, 0.6);
-  border-bottom-width: 5px;
+  background: #FF882E;
+  transform: translateY(-1.5px);
+  box-shadow: 0 12px 25px -4px rgba(244, 123, 32, 0.55);
 }
 
 .btn-mhp-primary:active {
-  transform: translateY(2px) scale(0.99) translateZ(5px);
-  border-bottom-width: 2px;
-  box-shadow: 0 4px 12px rgba(215, 122, 77, 0.3);
+  transform: translateY(0);
 }
 
 .btn-mhp-secondary {
-  background: #140D0D;
-  color: #F4E5D5;
+  background: #183A2A;
+  color: #FFF7E8;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700;
-  border-radius: 14px;
-  min-height: 50px;
-  padding: 0.8rem 2rem;
+  font-weight: 800;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(125, 150, 126, 0.4);
+  box-shadow: 0 6px 18px -4px rgba(24, 58, 42, 0.25);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
-  border: 1.5px solid #3A191A;
-  border-bottom: 4px solid #241313;
-  box-shadow: 0 8px 24px rgba(11, 9, 9, 0.85);
   cursor: pointer;
-  transform: translateZ(10px);
 }
 
 .btn-mhp-secondary:hover {
-  transform: translateY(-4px) scale(1.02) translateZ(15px);
-  border-color: #D77A4D;
-  color: #F4E5D5;
-  box-shadow: 0 14px 32px rgba(58, 25, 26, 0.7);
+  background: #204935;
+  color: #FFFFFF;
+  border-color: #F47B20;
+  transform: translateY(-1.5px);
+  box-shadow: 0 10px 22px -4px rgba(24, 58, 42, 0.35);
 }
 
-.btn-mhp-secondary:active {
-  transform: translateY(2px) scale(0.99) translateZ(5px);
-  border-bottom-width: 2px;
+.btn-mhp-outline {
+  background: transparent;
+  color: #183A2A;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  border: 1.5px solid #183A2A;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
 }
 
-/* 2D Clean Food Cards (Preserved 2D as requested for fast usability) */
-.mhp-food-card {
-  background-color: #140D0D;
-  border: 1.5px solid #3A191A;
-  border-radius: 20px;
-  color: #F4E5D5;
-  box-shadow: 0 10px 30px rgba(11, 9, 9, 0.85);
-  transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1), border-color 250ms ease, box-shadow 250ms ease;
+.btn-mhp-outline:hover {
+  background: #183A2A;
+  color: #FFF7E8;
+  transform: translateY(-1px);
 }
 
-.mhp-food-card:hover {
-  transform: scale(1.03) translateY(-4px);
-  border-color: #D77A4D;
-  box-shadow: 0 20px 40px rgba(58, 25, 26, 0.75);
+.btn-mhp-cart {
+  background: #183A2A;
+  color: #FFF7E8;
+  border: 1.5px solid #F47B20;
+  box-shadow: 0 4px 14px rgba(244, 123, 32, 0.25);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.btn-mhp-cart:hover {
+  background: #F47B20;
+  color: #FFFFFF;
+  box-shadow: 0 8px 22px rgba(244, 123, 32, 0.45);
+  transform: translateY(-1px);
+}
+
+/* Input & Form Control Utility */
+.input-mhp {
+  background-color: rgba(255, 247, 232, 0.5);
+  border: 1px solid rgba(125, 150, 126, 0.4);
+  color: #202522;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.input-mhp:focus {
+  outline: none;
+  background-color: #FFFFFF;
+  border-color: #F47B20;
+  box-shadow: 0 0 0 3px rgba(244, 123, 32, 0.15);
 }
 
 /* Custom Scrollbars */
@@ -129,13 +197,12 @@
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B0909;
+  background: #FFF7E8;
 }
 ::-webkit-scrollbar-thumb {
-  background: #3A191A;
-  border-radius: 6px;
+  background: #7D967E;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #D77A4D;
+  background: #183A2A;
 }
-

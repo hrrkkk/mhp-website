@@ -67,6 +67,59 @@ const initialDbState = {
       image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80"
     }
   },
+  navbar: [
+    { id: 'home', name: 'Home', path: '/', visible: true, order: 1 },
+    { id: 'about', name: 'About', path: '/about', visible: true, order: 2 },
+    { id: 'menu', name: 'Menu', path: '/menu', visible: true, order: 3 },
+    { id: 'explore', name: 'Explore', path: '/explore', visible: true, order: 4 },
+    { id: 'feedback', name: 'Feedback', path: '/feedback', visible: true, order: 5 },
+    { id: 'profile', name: 'Profile', path: '/profile', visible: true, order: 6 },
+  ],
+  aboutContent: {
+    heading: "MORE THAN JUST FOOD.",
+    subheading: "THE HEARTBEAT OF VFSTR CAMPUS.",
+    description: "MHP is an on-campus space where VFSTR students eat, meet, relax, connect, participate, perform, create, and enjoy campus life. Positioned conveniently near N Block, MHP provides quick culinary convenience and active student culture during academic breaks.",
+    seatingCount: "500+",
+    categoriesCount: "14",
+    image: "/assets/mhp_hero_atmosphere.jpg",
+    sectionVisibility: {
+      story: true,
+      purpose: true,
+      stats: true,
+      synergy: true
+    }
+  },
+  exploreContent: {
+    gallery: {
+      eyebrow: "INSIDE MHP",
+      heading: "GALLERY",
+      subtitle: "A glimpse into the food, people and moments that make MHP special.",
+      instagramHandle: "@mhp_vfstr",
+      instagramSub: "Official Campus Handle",
+      items: [
+        { id: 1, title: "MHP Central Plaza", category: "Quadrangle Dining & Atmosphere", sub: "The Heartbeat Near N Block", image: "" },
+        { id: 2, title: "Chef's Special Counters", category: "Signature Prep", sub: "", image: "" },
+        { id: 3, title: "Student Gatherings", category: "Campus Break", sub: "", image: "" },
+        { id: 4, title: "Authentic Campus Moments", category: "Editorial Portrait", sub: "", image: "" },
+        { id: 5, title: "Flavors & Good Vibes", category: "Refreshed Daily", sub: "", image: "" }
+      ]
+    },
+    reels: {
+      eyebrow: "THE MOMENTS WE KEEP",
+      heading: "Events & Memories",
+      subtitle: "From celebrations and campus events to everyday moments, these are the memories that make MHP more than a place to eat.",
+      videos: [
+        { id: 1, title: "Campus Evening Vibes", tag: "DAILY MOMENTS", src: "/videos/mhp_hero_video.mp4", thumbnail: "", visible: true, order: 1 },
+        { id: 2, title: "Biryani & Conversations", tag: "SIGNATURE DISHES", src: "/videos/WhatsApp%20Video%202026-08-27%20at%209.02.26%20PM.mp4", thumbnail: "", visible: true, order: 2 },
+        { id: 3, title: "Synergy Open Mic Night", tag: "STUDENT STAGE", src: "/videos/mhp_hero_video.mp4", thumbnail: "", visible: true, order: 3 },
+        { id: 4, title: "Mahotsav Prep & Fest Stalls", tag: "CAMPUS FESTIVAL", src: "/videos/WhatsApp%20Video%202026-08-27%20at%209.02.26%20PM.mp4", thumbnail: "", visible: true, order: 4 }
+      ]
+    },
+    brandStatement: {
+      heading: "EAT. MEET. REMEMBER. THAT'S MHP.",
+      tagline: "More than a place to eat. A part of campus life."
+    }
+  },
   categories: [],
   foodItems: [],
   orders: []
@@ -86,7 +139,13 @@ class JSONDatabase {
       }
       const fileData = fs.readFileSync(this.filePath, 'utf8');
       const parsed = JSON.parse(fileData);
-      return { ...initialDbState, ...parsed };
+      return { 
+        ...initialDbState, 
+        ...parsed,
+        navbar: parsed.navbar || initialDbState.navbar,
+        aboutContent: parsed.aboutContent || initialDbState.aboutContent,
+        exploreContent: parsed.exploreContent || initialDbState.exploreContent
+      };
     } catch (err) {
       console.error('Error reading JSON database, resetting:', err);
       return JSON.parse(JSON.stringify(initialDbState));
@@ -102,81 +161,87 @@ class JSONDatabase {
   }
 
   getCollection(name) {
-    if (!this.data[name]) {
-      this.data[name] = [];
-      this.save();
-    }
-    return this.data[name];
+    return this.data[name] || [];
   }
 
-  find(collectionName, query = {}) {
+  find(collectionName, filter) {
     const list = this.getCollection(collectionName);
-    return list.filter(item => {
-      for (const key in query) {
-        if (item[key] !== query[key]) return false;
-      }
-      return true;
-    });
+    if (!filter) return list;
+    if (typeof filter === 'function') {
+      return list.filter(filter);
+    }
+    if (typeof filter === 'object' && Object.keys(filter).length > 0) {
+      return list.filter(item =>
+        Object.entries(filter).every(([key, value]) => item[key] === value)
+      );
+    }
+    return list;
   }
 
-  findOne(collectionName, query = {}) {
-    const results = this.find(collectionName, query);
-    return results.length > 0 ? results[0] : null;
+  findOne(collectionName, filter) {
+    const list = this.getCollection(collectionName);
+    if (!filter) return list[0] || null;
+    if (typeof filter === 'function') {
+      return list.find(filter);
+    }
+    if (typeof filter === 'object' && Object.keys(filter).length > 0) {
+      return list.find(item =>
+        Object.entries(filter).every(([key, value]) => item[key] === value)
+      );
+    }
+    return list[0] || null;
   }
 
   findById(collectionName, id) {
-    return this.findOne(collectionName, { _id: id });
-  }
-
-  insert(collectionName, item) {
     const list = this.getCollection(collectionName);
-    const newItem = {
-      _id: item._id || crypto.randomBytes(8).toString('hex'),
-      ...item,
-      createdAt: item.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    list.push(newItem);
-    this.save();
-    return newItem;
-  }
-
-  updateById(collectionName, id, updateData) {
-    const list = this.getCollection(collectionName);
-    const index = list.findIndex(item => item._id === id);
-    if (index === -1) return null;
-    
-    const updatedItem = {
-      ...list[index],
-      ...updateData,
-      updatedAt: new Date().toISOString()
-    };
-    list[index] = updatedItem;
-    this.save();
-    return updatedItem;
+    return list.find(item => item._id === id || item.id === id);
   }
 
   update(collectionName, id, updateData) {
     return this.updateById(collectionName, id, updateData);
   }
 
-  deleteById(collectionName, id) {
-    const list = this.getCollection(collectionName);
-    const index = list.findIndex(item => item._id === id);
-    if (index === -1) return false;
-    list.splice(index, 1);
+  insert(collectionName, item) {
+    if (!this.data[collectionName]) {
+      this.data[collectionName] = [];
+    }
+    const newItem = {
+      _id: crypto.randomBytes(8).toString('hex'),
+      createdAt: new Date().toISOString(),
+      ...item
+    };
+    this.data[collectionName].push(newItem);
     this.save();
-    return true;
+    return newItem;
   }
 
-  remove(collectionName, id) {
-    return this.deleteById(collectionName, id);
+  updateById(collectionName, id, updateData) {
+    const list = this.getCollection(collectionName);
+    const index = list.findIndex(item => item._id === id || item.id === id);
+    if (index === -1) return null;
+
+    this.data[collectionName][index] = {
+      ...list[index],
+      ...updateData,
+      updatedAt: new Date().toISOString()
+    };
+    this.save();
+    return this.data[collectionName][index];
+  }
+
+  deleteById(collectionName, id) {
+    const list = this.getCollection(collectionName);
+    const index = list.findIndex(item => item._id === id || item.id === id);
+    if (index === -1) return false;
+
+    this.data[collectionName].splice(index, 1);
+    this.save();
+    return true;
   }
 
   getOrderingSlot(targetDateStr) {
     const todayStr = targetDateStr || getISTDateString();
     
-    // Default slot config
     const defaults = {
       orderingStartTime: "09:30",
       orderingEndTime: "10:30",
@@ -185,11 +250,9 @@ class JSONDatabase {
       ...(this.data.settings?.orderingSlot?.defaults || {})
     };
 
-    // Daily overrides object (keyed by IST YYYY-MM-DD date)
     const dailyOverrides = this.data.settings?.orderingSlot?.dailyOverrides || {};
     const todayOverride = dailyOverrides[todayStr] || null;
 
-    // Active timing for target date
     const activeSlot = {
       orderingStartTime: todayOverride?.orderingStartTime || defaults.orderingStartTime,
       orderingEndTime: todayOverride?.orderingEndTime || defaults.orderingEndTime,
@@ -204,7 +267,6 @@ class JSONDatabase {
       activeSlot,
       todayDate: todayStr,
 
-      // Root level properties for backward compatibility
       orderingStartTime: activeSlot.orderingStartTime,
       orderingEndTime: activeSlot.orderingEndTime,
       pickupStartTime: activeSlot.pickupStartTime,
@@ -238,7 +300,6 @@ class JSONDatabase {
       if (pickupStartTime) this.data.settings.orderingSlot.defaults.pickupStartTime = pickupStartTime;
       if (pickupEndTime) this.data.settings.orderingSlot.defaults.pickupEndTime = pickupEndTime;
     } else {
-      // Default target is 'today' / 'active'
       if (!this.data.settings.orderingSlot.dailyOverrides) {
         this.data.settings.orderingSlot.dailyOverrides = {};
       }
@@ -255,6 +316,15 @@ class JSONDatabase {
     }
 
     this.save();
+    return this.getOrderingSlot(todayStr);
+  }
+
+  resetOrderingSlot(targetDateStr) {
+    const todayStr = targetDateStr || getISTDateString();
+    if (this.data.settings?.orderingSlot?.dailyOverrides) {
+      delete this.data.settings.orderingSlot.dailyOverrides[todayStr];
+      this.save();
+    }
     return this.getOrderingSlot(todayStr);
   }
 
@@ -287,21 +357,124 @@ class JSONDatabase {
 
   getHomeContent() {
     return {
+      ...initialDbState.homeContent,
+      ...(this.data.homeContent || {}),
       hero: { ...initialDbState.homeContent.hero, ...(this.data.homeContent?.hero || {}) },
       campusExperience: { ...initialDbState.homeContent.campusExperience, ...(this.data.homeContent?.campusExperience || {}) },
-      synergy: { ...initialDbState.homeContent.synergy, ...(this.data.homeContent?.synergy || {}) }
+      synergy: { ...initialDbState.homeContent.synergy, ...(this.data.homeContent?.synergy || {}) },
+      sectionVisibility: {
+        hero: true,
+        diningDelivery: true,
+        signatureDishes: true,
+        campusExperience: true,
+        synergy: true,
+        ...(this.data.homeContent?.sectionVisibility || {})
+      }
     };
   }
 
   updateHomeContent(newContent = {}) {
     const current = this.getHomeContent();
     this.data.homeContent = {
+      ...current,
+      ...newContent,
       hero: { ...current.hero, ...(newContent.hero || {}) },
       campusExperience: { ...current.campusExperience, ...(newContent.campusExperience || {}) },
-      synergy: { ...current.synergy, ...(newContent.synergy || {}) }
+      synergy: { ...current.synergy, ...(newContent.synergy || {}) },
+      sectionVisibility: { ...current.sectionVisibility, ...(newContent.sectionVisibility || {}) }
     };
     this.save();
-    return this.data.homeContent;
+    return this.getHomeContent();
+  }
+
+  getNavbar() {
+    return this.data.navbar || initialDbState.navbar;
+  }
+
+  updateNavbar(navItems) {
+    this.data.navbar = navItems;
+    this.save();
+    return this.data.navbar;
+  }
+
+  getAboutContent() {
+    return {
+      ...initialDbState.aboutContent,
+      ...(this.data.aboutContent || {})
+    };
+  }
+
+  updateAboutContent(newContent) {
+    this.data.aboutContent = { ...this.getAboutContent(), ...newContent };
+    this.save();
+    return this.getAboutContent();
+  }
+
+  getExploreContent() {
+    const current = this.data.exploreContent || {};
+    const init = initialDbState.exploreContent;
+    return {
+      gallery: {
+        ...init.gallery,
+        ...(current.gallery || {}),
+        items: (current.gallery && Array.isArray(current.gallery.items) && current.gallery.items.length > 0)
+          ? current.gallery.items
+          : init.gallery.items
+      },
+      reels: {
+        ...init.reels,
+        ...(current.reels || {}),
+        videos: (current.reels && Array.isArray(current.reels.videos) && current.reels.videos.length > 0)
+          ? current.reels.videos
+          : init.reels.videos
+      },
+      brandStatement: {
+        ...init.brandStatement,
+        ...(current.brandStatement || {})
+      }
+    };
+  }
+
+  updateExploreContent(newContent) {
+    if (!newContent) return this.getExploreContent();
+    const prev = this.getExploreContent();
+    
+    const updated = {
+      gallery: {
+        ...prev.gallery,
+        ...(newContent.gallery || {}),
+        items: Array.isArray(newContent.gallery?.items) ? newContent.gallery.items : prev.gallery.items
+      },
+      reels: {
+        ...prev.reels,
+        ...(newContent.reels || {}),
+        videos: Array.isArray(newContent.reels?.videos) ? newContent.reels.videos : prev.reels.videos
+      },
+      brandStatement: {
+        ...prev.brandStatement,
+        ...(newContent.brandStatement || {})
+      }
+    };
+
+    this.data.exploreContent = updated;
+    this.save();
+
+    // Async sync to MongoDB if connected
+    try {
+      const mongoose = require('mongoose');
+      if (mongoose.connection && mongoose.connection.readyState === 1) {
+        const ExploreContent = require('../models/ExploreContent');
+        ExploreContent.updateOne(
+          { key: 'explore_main' },
+          { $set: { ...updated, key: 'explore_main' } },
+          { upsert: true }
+        ).catch(err => console.error('MongoDB async updateExploreContent error:', err));
+      }
+    } catch (e) {
+      // Mongoose warning fallback
+    }
+
+    return this.getExploreContent();
   }
 }
 
@@ -352,11 +525,13 @@ function checkOrderingSlotStatus(slotConfig) {
   const [endH, endM] = (active.orderingEndTime || "10:30").split(':').map(Number);
   const endMinutes = endH * 60 + endM;
 
-  let status = 'CLOSED_BEFORE';
-  if (currentMinutes >= startMinutes && currentMinutes <= endMinutes) {
+  let status = 'BEFORE';
+  if (currentMinutes >= startMinutes && currentMinutes < endMinutes) {
     status = 'OPEN';
-  } else if (currentMinutes > endMinutes) {
-    status = 'CLOSED_AFTER';
+  } else if (currentMinutes >= endMinutes) {
+    status = 'CLOSED';
+  } else {
+    status = 'BEFORE';
   }
 
   const orderingStartFormatted = format12h(active.orderingStartTime || "09:30");
@@ -372,10 +547,10 @@ function checkOrderingSlotStatus(slotConfig) {
   let message = '';
   if (status === 'OPEN') {
     message = `ORDERING OPEN (Accepting orders until ${orderingEndFormatted})`;
-  } else if (status === 'CLOSED_BEFORE') {
+  } else if (status === 'BEFORE') {
     message = `Ordering opens today at ${orderingStartFormatted}.`;
   } else {
-    message = `Today's ordering window is closed. Next ordering slot: Tomorrow, ${defaultOrderingStartFormatted} – ${defaultOrderingEndFormatted}`;
+    message = `Today's ordering window is closed. Today's window was ${orderingStartFormatted} – ${orderingEndFormatted}.`;
   }
 
   return {
@@ -407,7 +582,9 @@ function checkOrderingSlotStatus(slotConfig) {
       pickupEndFormatted: defaultPickupEndFormatted
     },
     todayDate: todayStr,
-    hasTodayOverride: Boolean(fullConfig?.hasTodayOverride)
+    hasTodayOverride: Boolean(fullConfig?.hasTodayOverride),
+    isCustom: Boolean(fullConfig?.hasTodayOverride),
+    slotType: Boolean(fullConfig?.hasTodayOverride) ? 'CUSTOM' : 'DEFAULT'
   };
 }
 

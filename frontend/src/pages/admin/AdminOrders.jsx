@@ -16,6 +16,8 @@ import {
   CreditCard
 } from 'lucide-react';
 
+import { MHPCard, MHPButton, MHPBadge } from '../../components/admin/MHPAdminComponents';
+
 const AdminOrders = () => {
   const { showToast } = useToast();
   const [orders, setOrders] = useState([]);
@@ -55,25 +57,25 @@ const AdminOrders = () => {
 
   const statuses = ['All', 'CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'COMPLETED'];
 
-  const getStatusBadgeStyle = (st) => {
+  const getStatusBadgeVariant = (st) => {
     switch (st) {
       case 'PLACED':
       case 'Pending':
-        return 'bg-[#B9684D]/10 text-[#B9684D] border-[#B9684D]/30';
+        return 'warning';
       case 'CONFIRMED':
       case 'Accepted':
-        return 'bg-[#D79A82]/20 text-[#202020] border-[#D79A82]/40';
+        return 'orange';
       case 'PREPARING':
       case 'Preparing':
-        return 'bg-amber-50 text-amber-900 border-amber-200';
+        return 'warning';
       case 'READY_FOR_PICKUP':
       case 'Ready':
-        return 'bg-[#5E8068]/15 text-[#5E8068] border-[#5E8068]/30';
+        return 'success';
       case 'COMPLETED':
       case 'Completed':
-        return 'bg-[#77736D]/15 text-[#77736D] border-[#77736D]/30';
+        return 'green';
       default:
-        return 'bg-[#F5F1E8] text-[#202020] border-[#DDD7CD]';
+        return 'default';
     }
   };
 
@@ -105,57 +107,62 @@ const AdminOrders = () => {
   const completedTodayCount = validTodayOrders.filter(o => o.status === 'COMPLETED' || o.status === 'DELIVERED').length;
 
   return (
-    <div className="space-y-6 pb-16">
+    <div className="space-y-6 pb-16 text-[#202522]">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#FFFFFF] p-6 rounded-xl border border-[#DDD7CD] shadow-xs">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-[#B9684D] uppercase tracking-wider mb-1">
-            <ShoppingBag className="w-4 h-4" />
-            Live Orders Operations
+      <MHPCard className="!p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-black text-[#F47B20] uppercase tracking-widest mb-1">
+              <ShoppingBag className="w-4 h-4 text-[#F47B20]" />
+              LIVE ORDER OPERATIONS
+            </div>
+            <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-[#183A2A]">
+              Student Orders Manager
+            </h1>
+            <p className="text-xs text-[#7D967E] font-medium mt-0.5">
+              Track student counter pickup orders, parcel requests, and live kitchen statuses
+            </p>
           </div>
-          <h1 className="font-bold text-2xl text-[#202020]">Student Orders Manager</h1>
-          <p className="text-xs text-[#77736D] mt-0.5">
-            Track student counter pickup orders, parcel requests, and live kitchen statuses
-          </p>
-        </div>
 
-        <button
-          onClick={fetchOrders}
-          className="btn-mhp-outline text-xs flex items-center gap-2"
-        >
-          <RotateCw className="w-4 h-4 text-[#B9684D]" />
-          <span>Refresh Orders</span>
-        </button>
-      </div>
+          <MHPButton
+            onClick={fetchOrders}
+            variant="outline"
+            size="sm"
+          >
+            <RotateCw className="w-4 h-4 text-[#F47B20]" />
+            <span>Refresh Orders</span>
+          </MHPButton>
+        </div>
+      </MHPCard>
 
       {/* TODAY'S REVENUE & SUMMARY BAR */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[#FFFFFF] p-4 rounded-xl border border-[#DDD7CD]">
-          <span className="text-[10px] font-bold text-[#77736D] uppercase block">Today's Orders</span>
-          <span className="text-2xl font-black text-[#202020]">{todayOrdersCount}</span>
+        <MHPCard className="!p-5">
+          <span className="text-[10px] font-black text-[#7D967E] uppercase tracking-widest block">Today's Orders</span>
+          <span className="text-3xl font-mono font-black text-[#183A2A]">{todayOrdersCount}</span>
+        </MHPCard>
+        <div className="bg-[#183A2A] p-5 rounded-2xl border border-[#183A2A] text-[#FFF7E8] shadow-md">
+          <span className="text-[10px] font-black text-[#F47B20] uppercase tracking-widest block">Today's Revenue</span>
+          <span className="text-3xl font-mono font-black text-[#FFF7E8]">₹ {todayRevenue.toLocaleString('en-IN')}</span>
         </div>
-        <div className="bg-[#18251F] p-4 rounded-xl border border-[#18251F] text-[#F8F5ED]">
-          <span className="text-[10px] font-bold text-[#C86B45] uppercase block">Today's Revenue</span>
-          <span className="text-2xl font-black text-[#FFFFFF]">₹ {todayRevenue.toLocaleString('en-IN')}</span>
-        </div>
-        <div className="bg-[#FFFFFF] p-4 rounded-xl border border-[#DDD7CD]">
-          <span className="text-[10px] font-bold text-[#5E8068] uppercase block">Completed Today</span>
-          <span className="text-2xl font-black text-[#5E8068]">{completedTodayCount}</span>
-        </div>
+        <MHPCard className="!p-5">
+          <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest block">Completed Today</span>
+          <span className="text-3xl font-mono font-black text-emerald-800">{completedTodayCount}</span>
+        </MHPCard>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-[#FFFFFF] p-3 rounded-xl border border-[#DDD7CD] flex items-center gap-2 overflow-x-auto scrollbar-none shadow-xs">
-        <Filter className="w-4 h-4 text-[#77736D] shrink-0 ml-1 hidden sm:block" />
+      <div className="bg-[#FFFFFF] p-3 rounded-2xl border-2 border-[#7D967E]/30 flex items-center gap-2 overflow-x-auto scrollbar-none shadow-xs">
+        <Filter className="w-4 h-4 text-[#7D967E] shrink-0 ml-1 hidden sm:block" />
         {statuses.map((st) => (
           <button
             key={st}
             onClick={() => setStatusFilter(st)}
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all ${
               statusFilter === st
-                ? 'bg-[#202020] text-white shadow-xs'
-                : 'bg-[#F5F1E8] text-[#77736D] hover:text-[#202020] border border-[#DDD7CD]'
+                ? 'bg-[#F47B20] text-white shadow-xs'
+                : 'bg-[#FFF7E8] text-[#7D967E] hover:text-[#183A2A] border border-[#7D967E]/30'
             }`}
           >
             {st === 'READY_FOR_PICKUP' ? 'Ready' : st}
@@ -167,44 +174,36 @@ const AdminOrders = () => {
       {loading ? (
         <LoadingSkeleton count={3} height="h-48" />
       ) : filteredOrders.length === 0 ? (
-        <div className="bg-[#FFFFFF] p-12 text-center rounded-xl border border-[#DDD7CD] space-y-2 text-[#77736D] text-sm shadow-xs">
-          <ChefHat className="w-10 h-10 text-[#B9684D]/50 mx-auto" />
-          <h3 className="text-base font-bold text-[#202020]">No orders in "{statusFilter}" status</h3>
-          <p className="text-xs text-[#77736D]">New student orders placed via the website will appear here in real time.</p>
-        </div>
+        <MHPCard className="!p-12 text-center text-[#7D967E]">
+          <ChefHat className="w-10 h-10 text-[#F47B20]/60 mx-auto mb-2" />
+          <h3 className="text-base font-extrabold text-[#183A2A]">No orders in "{statusFilter}" status</h3>
+          <p className="text-xs text-[#7D967E] font-medium">New student orders placed via the website will appear here in real time.</p>
+        </MHPCard>
       ) : (
         <div className="space-y-4">
           {filteredOrders.map((ord) => (
-            <div key={ord._id} className="bg-[#FFFFFF] p-5 sm:p-6 rounded-xl border border-[#DDD7CD] hover:border-[#B9684D]/30 space-y-4 shadow-xs transition-all">
+            <MHPCard key={ord._id} className="!p-5 sm:!p-6 hover:border-[#F47B20] transition-all">
               
               {/* Order Header Info */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#DDD7CD] pb-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#7D967E]/20 pb-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-lg font-bold text-[#202020]">Order {ord.orderNumber}</span>
-                    <span className="px-2.5 py-0.5 rounded-md text-xs font-mono font-bold bg-[#202020] text-[#F5F1E8] border border-[#383633]">
+                    <span className="text-lg font-extrabold text-[#183A2A]">Order {ord.orderNumber}</span>
+                    <span className="px-2.5 py-0.5 rounded-lg text-xs font-mono font-extrabold bg-[#183A2A] text-[#FFF7E8]">
                       Bill: {ord.billingNumber || `MHP-BILL-${ord.orderNumber}`}
                     </span>
-                    <span className={`px-2.5 py-0.5 rounded-md text-xs font-bold uppercase border ${getStatusBadgeStyle(ord.status)}`}>
+                    <MHPBadge variant={getStatusBadgeVariant(ord.status)}>
                       {ord.status === 'READY_FOR_PICKUP' ? 'READY' : ord.status}
-                    </span>
-                    <span className={`px-2.5 py-0.5 rounded-md text-xs font-semibold uppercase border ${
-                      ord.orderType === 'Parcel' 
-                        ? 'bg-amber-50 text-amber-900 border-amber-200' 
-                        : 'bg-[#F5F1E8] text-[#202020] border-[#DDD7CD]'
-                    }`}>
+                    </MHPBadge>
+                    <MHPBadge variant={ord.orderType === 'Parcel' ? 'warning' : 'default'}>
                       {ord.orderType || 'Pickup'}
-                    </span>
-                    <span className={`px-2.5 py-0.5 rounded-md text-xs font-bold uppercase border ${
-                      ord.orderReceived
-                        ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                        : 'bg-[#F5F1E8] text-[#77736D] border-[#DDD7CD]'
-                    }`}>
+                    </MHPBadge>
+                    <MHPBadge variant={ord.orderReceived ? 'success' : 'default'}>
                       {ord.orderReceived ? '✓ ORDER RECEIVED' : 'NOT CONFIRMED'}
-                    </span>
+                    </MHPBadge>
                   </div>
-                  <p className="text-xs text-[#77736D] mt-1 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-[#77736D]" />
+                  <p className="text-xs text-[#7D967E] font-medium mt-1 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-[#7D967E]" />
                     <span>Created: {new Date(ord.placedAt || ord.createdAt).toLocaleString()}</span>
                   </p>
                 </div>
@@ -216,10 +215,10 @@ const AdminOrders = () => {
                       key={st}
                       onClick={() => handleStatusChange(ord._id, st)}
                       disabled={ord.status === st}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all ${
                         ord.status === st
-                          ? 'bg-[#5E8068] text-white border-[#5E8068]'
-                          : 'bg-[#F5F1E8] text-[#77736D] border-[#DDD7CD] hover:text-[#202020] hover:bg-[#DDD7CD]'
+                          ? 'bg-[#183A2A] text-[#FFF7E8] border-[#183A2A]'
+                          : 'bg-[#FFF7E8] text-[#7D967E] border-[#7D967E]/30 hover:text-[#183A2A] hover:bg-[#FFF7E8]/80'
                       }`}
                     >
                       {st === 'READY_FOR_PICKUP' ? 'Ready' : st}
@@ -229,60 +228,66 @@ const AdminOrders = () => {
               </div>
 
               {/* Student & Delivery Customer Info */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-[#F5F1E8] p-3.5 rounded-lg border border-[#DDD7CD]">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-[#FFF7E8] p-3.5 rounded-xl border border-[#7D967E]/30">
                 <div className="flex items-center gap-2.5">
-                  <User className="w-4 h-4 text-[#B9684D] shrink-0" />
+                  <User className="w-4 h-4 text-[#F47B20] shrink-0" />
                   <div>
-                    <span className="text-[#77736D] block text-[10px] uppercase font-bold">Student</span>
-                    <strong className="text-[#202020]">{ord.customerName}</strong>
+                    <span className="text-[#7D967E] block text-[10px] uppercase font-extrabold">Student</span>
+                    <strong className="text-[#183A2A] font-extrabold">{ord.customerName}</strong>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2.5">
-                  <Phone className="w-4 h-4 text-[#B9684D] shrink-0" />
+                  <Phone className="w-4 h-4 text-[#F47B20] shrink-0" />
                   <div>
-                    <span className="text-[#77736D] block text-[10px] uppercase font-bold">Contact / Phone</span>
-                    <strong className="text-[#202020]">{ord.customerPhone} ({ord.studentId || 'N/A'})</strong>
+                    <span className="text-[#7D967E] block text-[10px] uppercase font-extrabold">Contact / Phone</span>
+                    <strong className="text-[#183A2A] font-extrabold">{ord.customerPhone} ({ord.studentId || 'N/A'})</strong>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2.5">
-                  <MapPin className="w-4 h-4 text-[#B9684D] shrink-0" />
+                  <MapPin className="w-4 h-4 text-[#F47B20] shrink-0" />
                   <div>
-                    <span className="text-[#77736D] block text-[10px] uppercase font-bold">Pickup Point</span>
-                    <strong className="text-[#202020]">{ord.pickupLocation}</strong>
+                    <span className="text-[#7D967E] block text-[10px] uppercase font-extrabold">Pickup Location</span>
+                    <strong className="text-[#183A2A] font-extrabold">
+                      {ord.orderMode === 'DINING' || ord.orderType === 'Dining'
+                        ? 'Not applicable'
+                        : (ord.pickupLocation || ord.pickupPoint || 'N BLOCK')}
+                    </strong>
                   </div>
                 </div>
               </div>
 
               {/* Ordered Food Items */}
               <div className="space-y-2">
-                <h4 className="text-[11px] font-bold text-[#77736D] uppercase tracking-wider">Ordered Items ({ord.items ? ord.items.reduce((a, b) => a + (b.quantity || 1), 0) : 0}):</h4>
+                <h4 className="text-[11px] font-extrabold text-[#7D967E] uppercase tracking-wider">
+                  Ordered Items ({ord.items ? ord.items.reduce((a, b) => a + (b.quantity || 1), 0) : 0}):
+                </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   {ord.items.map((item, idx) => (
-                    <div key={idx} className="bg-[#F5F1E8] p-2.5 rounded-lg border border-[#DDD7CD] flex items-center justify-between">
-                      <span className="text-[#202020] font-medium">
-                        <strong className="text-[#B9684D] font-bold">{item.quantity}x</strong> {item.name} {item.selectedOptionLabel ? `(${item.selectedOptionLabel})` : ''}
+                    <div key={idx} className="bg-[#FFF7E8] p-2.5 rounded-xl border border-[#7D967E]/30 flex items-center justify-between">
+                      <span className="text-[#202522] font-semibold">
+                        <strong className="text-[#F47B20] font-black">{item.quantity}x</strong> {item.name} {item.selectedOptionLabel ? `(${item.selectedOptionLabel})` : ''}
                       </span>
-                      <span className="text-[#202020] font-bold">₹{item.unitPrice * item.quantity}</span>
+                      <span className="text-[#183A2A] font-extrabold">₹{item.unitPrice * item.quantity}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Order Footer Totals & Charges */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-3 border-t border-[#DDD7CD] text-xs gap-2">
-                <div className="flex flex-wrap items-center gap-3 text-[#77736D]">
-                  <span>Payment: <strong className="text-[#202020] font-semibold">{ord.paymentMethod || ord.paymentMode || 'UPI'}</strong></span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-3 border-t border-[#7D967E]/20 text-xs gap-2">
+                <div className="flex flex-wrap items-center gap-3 text-[#7D967E] font-medium">
+                  <span>Payment: <strong className="text-[#183A2A] font-extrabold">{ord.paymentMethod || ord.paymentMode || 'UPI'}</strong></span>
                   <span>•</span>
-                  <span>Payment Status: <strong className={ord.paymentStatus === 'PAID' ? 'text-[#5E8068] font-bold' : 'text-[#B9684D] font-bold'}>{ord.paymentStatus || 'PAID'}</strong></span>
+                  <span>Payment Status: <strong className={ord.paymentStatus === 'PAID' ? 'text-emerald-700 font-extrabold' : 'text-[#F47B20] font-extrabold'}>{ord.paymentStatus || 'PAID'}</strong></span>
                   <span>•</span>
-                  <span>Parcel Charge: <strong className="text-[#B9684D]">₹{ord.parcelCharge || 0}</strong></span>
+                  <span>Parcel Charge: <strong className="text-[#F47B20] font-extrabold">₹{ord.parcelCharge || 0}</strong></span>
                 </div>
-                <span className="text-base font-bold text-[#B9684D]">Total: ₹ {ord.total || ord.totalAmount}</span>
+                <span className="text-base font-black text-[#F47B20]">Total: ₹ {ord.total || ord.totalAmount}</span>
               </div>
 
-            </div>
+            </MHPCard>
           ))}
         </div>
       )}
