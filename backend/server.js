@@ -36,7 +36,6 @@ if (clientUrl) {
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl) or if origin is allowed
     if (!origin || defaultAllowedOrigins.includes(origin) || defaultAllowedOrigins.includes('*')) {
       return callback(null, true);
     }
@@ -52,12 +51,31 @@ app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 // Static uploads folder
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api', contentRoutes);
-app.use('/api/future-menu', futureMenuRoutes);
+// Direct Health Check routes (accessible both as /health and /api/health)
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    service: 'MHP Backend REST API',
+    institution: 'VFSTR, Vadlamudi, Guntur, AP',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    service: 'MHP Backend REST API',
+    institution: 'VFSTR, Vadlamudi, Guntur, AP',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Primary API Routes
 app.use('/api/menu', menuRoutes);
+app.use('/api/future-menu', futureMenuRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/webhooks', billingWebhookRoutes);
+app.use('/api', contentRoutes);
 
 // Root route
 app.get('/', (req, res) => {
@@ -70,16 +88,6 @@ app.get('/', (req, res) => {
       </a>
     </div>
   `);
-});
-
-// Health Check
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    service: 'MHP Backend REST API',
-    institution: 'VFSTR, Vadlamudi, Guntur, AP',
-    timestamp: new Date().toISOString()
-  });
 });
 
 // Error handling middleware
