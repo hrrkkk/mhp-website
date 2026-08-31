@@ -172,7 +172,18 @@ function mapDailySlotToRow(slot) {
 async function seedAllTablesToSupabase() {
   if (!isSupabaseConfigured() || !supabase) return;
   try {
-    console.log('⚡ Supabase is configured. Checking connection...');
+    console.log('⚡ Supabase is configured. Checking menu_items table...');
+    const { data, error } = await supabase.from('menu_items').select('id').limit(1);
+    if (!error && (!data || data.length === 0)) {
+      console.log('🌱 Supabase menu_items is empty. Seeding menu items from local database...');
+      const db = require('./db');
+      const items = db.find('foodItems', {}) || [];
+      if (items.length > 0) {
+        const rows = items.map(mapMenuItemToRow).filter(Boolean);
+        await supabase.from('menu_items').upsert(rows);
+        console.log(`✅ Seeded ${rows.length} menu items into Supabase!`);
+      }
+    }
   } catch (err) {
     console.error('Supabase seed error:', err.message);
   }

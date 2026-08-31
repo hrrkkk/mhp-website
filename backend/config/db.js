@@ -168,19 +168,30 @@ class SupabaseDatabase {
     try {
       // Load Menu Items
       const { data: menuData } = await supabase.from('menu_items').select('*');
-      if (menuData) {
+      if (menuData && menuData.length > 0) {
         this.cache.foodItems = menuData.map(mapRowToMenuItem);
+      } else if (menuData && menuData.length === 0 && this.cache.foodItems && this.cache.foodItems.length > 0) {
+        console.log('🌱 Supabase menu_items table is empty. Auto-seeding 206 local food items to Supabase...');
+        try {
+          const rows = this.cache.foodItems.map(mapMenuItemToRow).filter(Boolean);
+          if (rows.length > 0) {
+            await supabase.from('menu_items').upsert(rows);
+            console.log(`✅ Successfully seeded ${rows.length} menu items to Supabase!`);
+          }
+        } catch (seedErr) {
+          console.error('Error auto-seeding menu items to Supabase:', seedErr.message);
+        }
       }
 
       // Load Users
       const { data: userData } = await supabase.from('users').select('*');
-      if (userData) {
+      if (userData && userData.length > 0) {
         this.cache.users = userData.map(mapRowToUser);
       }
 
       // Load Orders
       const { data: orderData } = await supabase.from('orders').select('*');
-      if (orderData) {
+      if (orderData && orderData.length > 0) {
         this.cache.orders = orderData.map(mapRowToOrder);
       }
 
