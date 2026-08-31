@@ -16,8 +16,5 @@ export default defineConfig({
         changeOrigin: true
       }
     }
-  },
-  preview: {
-    allowedHosts: ['mhp-website.onrender.com']
   }
 });

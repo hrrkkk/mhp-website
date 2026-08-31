@@ -1,16 +1,16 @@
-const fs = require('fs');
-const path = require('path');
 const crypto = require('crypto');
+const { 
+  supabase, 
+  mapRowToMenuItem, 
+  mapMenuItemToRow, 
+  mapRowToUser, 
+  mapUserToRow, 
+  mapRowToOrder, 
+  mapOrderToRow,
+  mapRowToDailySlot,
+  mapDailySlotToRow
+} = require('./supabase');
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
-const DB_FILE = path.join(DATA_DIR, 'mhp_db.json');
-
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-
-// Initial empty DB template with new MHP structure
 const initialDbState = {
   users: [],
   happenings: [],
@@ -120,48 +120,104 @@ const initialDbState = {
       tagline: "More than a place to eat. A part of campus life."
     }
   },
-  categories: [],
   foodItems: [],
   orders: []
 };
 
-class JSONDatabase {
+class SupabaseDatabase {
   constructor() {
-    this.filePath = DB_FILE;
-    this.data = this.load();
+    this.cache = JSON.parse(JSON.stringify(initialDbState));
+    this.loadFromLocalJson();
+    this.initFromSupabase();
   }
 
-  load() {
+  loadFromLocalJson() {
     try {
-      if (!fs.existsSync(this.filePath)) {
-        fs.writeFileSync(this.filePath, JSON.stringify(initialDbState, null, 2));
-        return JSON.parse(JSON.stringify(initialDbState));
+      const fs = require('fs');
+      const path = require('path');
+      const DB_FILE = path.join(__dirname, '..', 'data', 'mhp_db.json');
+      if (fs.existsSync(DB_FILE)) {
+        const fileContent = fs.readFileSync(DB_FILE, 'utf8');
+        if (fileContent) {
+          const parsed = JSON.parse(fileContent);
+          this.cache = { ...this.cache, ...parsed };
+        }
       }
-      const fileData = fs.readFileSync(this.filePath, 'utf8');
-      const parsed = JSON.parse(fileData);
-      return { 
-        ...initialDbState, 
-        ...parsed,
-        navbar: parsed.navbar || initialDbState.navbar,
-        aboutContent: parsed.aboutContent || initialDbState.aboutContent,
-        exploreContent: parsed.exploreContent || initialDbState.exploreContent
-      };
-    } catch (err) {
-      console.error('Error reading JSON database, resetting:', err);
-      return JSON.parse(JSON.stringify(initialDbState));
+    } catch (e) {
+      console.error('Error loading local mhp_db.json fallback:', e.message);
     }
   }
 
-  save() {
+  saveToLocalJson() {
     try {
-      fs.writeFileSync(this.filePath, JSON.stringify(this.data, null, 2), 'utf8');
+      const fs = require('fs');
+      const path = require('path');
+      const DATA_DIR = path.join(__dirname, '..', 'data');
+      const DB_FILE = path.join(DATA_DIR, 'mhp_db.json');
+      if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+      }
+      fs.writeFileSync(DB_FILE, JSON.stringify(this.cache, null, 2), 'utf8');
+    } catch (e) {
+      console.error('Error saving local mhp_db.json fallback:', e.message);
+    }
+  }
+
+  async initFromSupabase() {
+    if (!supabase) return;
+    try {
+      // Load Menu Items
+      const { data: menuData } = await supabase.from('menu_items').select('*');
+      if (menuData) {
+        this.cache.foodItems = menuData.map(mapRowToMenuItem);
+      }
+
+      // Load Users
+      const { data: userData } = await supabase.from('users').select('*');
+      if (userData) {
+        this.cache.users = userData.map(mapRowToUser);
+      }
+
+      // Load Orders
+      const { data: orderData } = await supabase.from('orders').select('*');
+      if (orderData) {
+        this.cache.orders = orderData.map(mapRowToOrder);
+      }
+
+      // Load Explore Content
+      const { data: exploreData } = await supabase.from('explore_content').select('*').eq('key', 'explore_main').maybeSingle();
+      if (exploreData) {
+        this.cache.exploreContent = {
+          gallery: exploreData.gallery || initialDbState.exploreContent.gallery,
+          reels: exploreData.reels || initialDbState.exploreContent.reels,
+          brandStatement: exploreData.brand_statement || initialDbState.exploreContent.brandStatement
+        };
+      }
+
+      // Load App Settings
+      const { data: settingsRows } = await supabase.from('app_settings').select('*');
+      if (settingsRows && settingsRows.length > 0) {
+        for (const row of settingsRows) {
+          if (row.key === 'settings') this.cache.settings = { ...this.cache.settings, ...(row.data || {}) };
+          else if (row.key === 'homeContent') this.cache.homeContent = { ...this.cache.homeContent, ...(row.data || {}) };
+          else if (row.key === 'aboutContent') this.cache.aboutContent = { ...this.cache.aboutContent, ...(row.data || {}) };
+          else if (row.key === 'location') this.cache.location = { ...this.cache.location, ...(row.data || {}) };
+          else if (row.key === 'navbar') this.cache.navbar = row.data || this.cache.navbar;
+          else if (row.key === 'happenings') this.cache.happenings = row.data || [];
+          else if (row.key === 'events') this.cache.events = row.data || [];
+          else if (row.key === 'synergy') this.cache.synergy = row.data || [];
+          else if (row.key === 'facilities') this.cache.facilities = row.data || [];
+          else if (row.key === 'feedback') this.cache.feedback = row.data || [];
+          else if (row.key === 'bills') this.cache.bills = row.data || [];
+        }
+      }
     } catch (err) {
-      console.error('Error saving database:', err);
+      console.error('SupabaseDatabase init error:', err.message);
     }
   }
 
   getCollection(name) {
-    return this.data[name] || [];
+    return this.cache[name] || [];
   }
 
   find(collectionName, filter) {
@@ -197,22 +253,25 @@ class JSONDatabase {
     return list.find(item => item._id === id || item.id === id);
   }
 
-  update(collectionName, id, updateData) {
-    return this.updateById(collectionName, id, updateData);
-  }
-
   insert(collectionName, item) {
-    if (!this.data[collectionName]) {
-      this.data[collectionName] = [];
+    if (!this.cache[collectionName]) {
+      this.cache[collectionName] = [];
     }
     const newItem = {
-      _id: crypto.randomBytes(8).toString('hex'),
+      _id: item._id || item.id || crypto.randomBytes(8).toString('hex'),
+      id: item.id || item._id || crypto.randomBytes(8).toString('hex'),
       createdAt: new Date().toISOString(),
       ...item
     };
-    this.data[collectionName].push(newItem);
-    this.save();
+    this.cache[collectionName].push(newItem);
+
+    // Sync to Supabase in background
+    this.syncCollectionToSupabase(collectionName, newItem, 'insert');
     return newItem;
+  }
+
+  update(collectionName, id, updateData) {
+    return this.updateById(collectionName, id, updateData);
   }
 
   updateById(collectionName, id, updateData) {
@@ -220,13 +279,16 @@ class JSONDatabase {
     const index = list.findIndex(item => item._id === id || item.id === id);
     if (index === -1) return null;
 
-    this.data[collectionName][index] = {
+    this.cache[collectionName][index] = {
       ...list[index],
       ...updateData,
       updatedAt: new Date().toISOString()
     };
-    this.save();
-    return this.data[collectionName][index];
+    const updated = this.cache[collectionName][index];
+
+    // Sync to Supabase in background
+    this.syncCollectionToSupabase(collectionName, updated, 'update');
+    return updated;
   }
 
   deleteById(collectionName, id) {
@@ -234,9 +296,52 @@ class JSONDatabase {
     const index = list.findIndex(item => item._id === id || item.id === id);
     if (index === -1) return false;
 
-    this.data[collectionName].splice(index, 1);
-    this.save();
+    const removed = list[index];
+    this.cache[collectionName].splice(index, 1);
+
+    // Sync deletion to Supabase in background
+    this.syncCollectionToSupabase(collectionName, removed, 'delete');
     return true;
+  }
+
+  async syncCollectionToSupabase(collectionName, item, action) {
+    if (!supabase) return;
+    try {
+      if (collectionName === 'menu_items' || collectionName === 'foodItems') {
+        const row = mapMenuItemToRow(item);
+        if (action === 'delete') {
+          await supabase.from('menu_items').delete().eq('id', item.id || item._id);
+        } else if (action === 'insert') {
+          await supabase.from('menu_items').upsert([row]);
+        } else {
+          await supabase.from('menu_items').update(row).eq('id', item.id || item._id);
+        }
+      } else if (collectionName === 'users') {
+        const row = mapUserToRow(item);
+        if (action === 'delete') {
+          await supabase.from('users').delete().eq('id', item.id || item._id);
+        } else if (action === 'insert') {
+          await supabase.from('users').upsert([row]);
+        } else {
+          await supabase.from('users').update(row).eq('id', item.id || item._id);
+        }
+      } else if (collectionName === 'orders') {
+        const row = mapOrderToRow(item);
+        if (action === 'delete') {
+          await supabase.from('orders').delete().eq('id', item.id || item._id);
+        } else if (action === 'insert') {
+          await supabase.from('orders').upsert([row]);
+        } else {
+          await supabase.from('orders').update(row).eq('id', item.id || item._id);
+        }
+      } else {
+        // App Settings JSON array sync for happenings, events, synergy, facilities, feedback, bills, etc.
+        const currentData = this.cache[collectionName] || [];
+        await supabase.from('app_settings').upsert([{ key: collectionName, data: currentData }]);
+      }
+    } catch (err) {
+      console.error(`Supabase sync error for ${collectionName}:`, err.message);
+    }
   }
 
   getOrderingSlot(targetDateStr) {
@@ -247,10 +352,10 @@ class JSONDatabase {
       orderingEndTime: "10:30",
       pickupStartTime: "12:00",
       pickupEndTime: "13:00",
-      ...(this.data.settings?.orderingSlot?.defaults || {})
+      ...(this.cache.settings?.orderingSlot?.defaults || {})
     };
 
-    const dailyOverrides = this.data.settings?.orderingSlot?.dailyOverrides || {};
+    const dailyOverrides = this.cache.settings?.orderingSlot?.dailyOverrides || {};
     const todayOverride = dailyOverrides[todayStr] || null;
 
     const activeSlot = {
@@ -275,9 +380,9 @@ class JSONDatabase {
   }
 
   updateOrderingSlot(payload = {}) {
-    if (!this.data.settings) this.data.settings = {};
-    if (!this.data.settings.orderingSlot) {
-      this.data.settings.orderingSlot = {
+    if (!this.cache.settings) this.cache.settings = {};
+    if (!this.cache.settings.orderingSlot) {
+      this.cache.settings.orderingSlot = {
         defaults: {
           orderingStartTime: "09:30",
           orderingEndTime: "10:30",
@@ -292,22 +397,22 @@ class JSONDatabase {
     const todayStr = getISTDateString();
 
     if (target === 'default') {
-      if (!this.data.settings.orderingSlot.defaults) {
-        this.data.settings.orderingSlot.defaults = {};
+      if (!this.cache.settings.orderingSlot.defaults) {
+        this.cache.settings.orderingSlot.defaults = {};
       }
-      if (orderingStartTime) this.data.settings.orderingSlot.defaults.orderingStartTime = orderingStartTime;
-      if (orderingEndTime) this.data.settings.orderingSlot.defaults.orderingEndTime = orderingEndTime;
-      if (pickupStartTime) this.data.settings.orderingSlot.defaults.pickupStartTime = pickupStartTime;
-      if (pickupEndTime) this.data.settings.orderingSlot.defaults.pickupEndTime = pickupEndTime;
+      if (orderingStartTime) this.cache.settings.orderingSlot.defaults.orderingStartTime = orderingStartTime;
+      if (orderingEndTime) this.cache.settings.orderingSlot.defaults.orderingEndTime = orderingEndTime;
+      if (pickupStartTime) this.cache.settings.orderingSlot.defaults.pickupStartTime = pickupStartTime;
+      if (pickupEndTime) this.cache.settings.orderingSlot.defaults.pickupEndTime = pickupEndTime;
     } else {
-      if (!this.data.settings.orderingSlot.dailyOverrides) {
-        this.data.settings.orderingSlot.dailyOverrides = {};
+      if (!this.cache.settings.orderingSlot.dailyOverrides) {
+        this.cache.settings.orderingSlot.dailyOverrides = {};
       }
-      const existingToday = this.data.settings.orderingSlot.dailyOverrides[todayStr] || {};
+      const existingToday = this.cache.settings.orderingSlot.dailyOverrides[todayStr] || {};
       const currentFull = this.getOrderingSlot(todayStr);
       const currentActive = currentFull.activeSlot;
 
-      this.data.settings.orderingSlot.dailyOverrides[todayStr] = {
+      this.cache.settings.orderingSlot.dailyOverrides[todayStr] = {
         orderingStartTime: orderingStartTime || existingToday.orderingStartTime || currentActive.orderingStartTime,
         orderingEndTime: orderingEndTime || existingToday.orderingEndTime || currentActive.orderingEndTime,
         pickupStartTime: pickupStartTime || existingToday.pickupStartTime || currentActive.pickupStartTime,
@@ -315,15 +420,15 @@ class JSONDatabase {
       };
     }
 
-    this.save();
+    this.saveSettingsToSupabase();
     return this.getOrderingSlot(todayStr);
   }
 
   resetOrderingSlot(targetDateStr) {
     const todayStr = targetDateStr || getISTDateString();
-    if (this.data.settings?.orderingSlot?.dailyOverrides) {
-      delete this.data.settings.orderingSlot.dailyOverrides[todayStr];
-      this.save();
+    if (this.cache.settings?.orderingSlot?.dailyOverrides) {
+      delete this.cache.settings.orderingSlot.dailyOverrides[todayStr];
+      this.saveSettingsToSupabase();
     }
     return this.getOrderingSlot(todayStr);
   }
@@ -331,51 +436,62 @@ class JSONDatabase {
   getSettings() {
     return {
       ...initialDbState.settings,
-      ...(this.data.settings || {}),
+      ...(this.cache.settings || {}),
       orderingSlot: this.getOrderingSlot()
     };
   }
 
   updateSettings(newSettings) {
-    this.data.settings = { ...this.data.settings, ...newSettings };
+    this.cache.settings = { ...this.cache.settings, ...newSettings };
     if (newSettings.orderingSlot) {
-      this.data.settings.orderingSlot = { ...this.getOrderingSlot(), ...newSettings.orderingSlot };
+      this.cache.settings.orderingSlot = { ...this.getOrderingSlot(), ...newSettings.orderingSlot };
     }
-    this.save();
+    this.saveSettingsToSupabase();
     return this.getSettings();
   }
 
-  getLocation() {
-    return this.data.location || initialDbState.location;
+  async saveSettingsToSupabase() {
+    if (!supabase) return;
+    try {
+      await supabase.from('app_settings').upsert([{ key: 'settings', data: this.cache.settings }]);
+    } catch (e) {}
   }
 
-  updateLocation(newLocation) {
-    this.data.location = { ...this.data.location, ...newLocation };
-    this.save();
-    return this.data.location;
+  getLocation() {
+    return this.cache.location || initialDbState.location;
+  }
+
+  async updateLocation(newLocation) {
+    this.cache.location = { ...this.cache.location, ...newLocation };
+    if (supabase) {
+      try {
+        await supabase.from('app_settings').upsert([{ key: 'location', data: this.cache.location }]);
+      } catch (e) {}
+    }
+    return this.cache.location;
   }
 
   getHomeContent() {
     return {
       ...initialDbState.homeContent,
-      ...(this.data.homeContent || {}),
-      hero: { ...initialDbState.homeContent.hero, ...(this.data.homeContent?.hero || {}) },
-      campusExperience: { ...initialDbState.homeContent.campusExperience, ...(this.data.homeContent?.campusExperience || {}) },
-      synergy: { ...initialDbState.homeContent.synergy, ...(this.data.homeContent?.synergy || {}) },
+      ...(this.cache.homeContent || {}),
+      hero: { ...initialDbState.homeContent.hero, ...(this.cache.homeContent?.hero || {}) },
+      campusExperience: { ...initialDbState.homeContent.campusExperience, ...(this.cache.homeContent?.campusExperience || {}) },
+      synergy: { ...initialDbState.homeContent.synergy, ...(this.cache.homeContent?.synergy || {}) },
       sectionVisibility: {
         hero: true,
         diningDelivery: true,
         signatureDishes: true,
         campusExperience: true,
         synergy: true,
-        ...(this.data.homeContent?.sectionVisibility || {})
+        ...(this.cache.homeContent?.sectionVisibility || {})
       }
     };
   }
 
-  updateHomeContent(newContent = {}) {
+  async updateHomeContent(newContent = {}) {
     const current = this.getHomeContent();
-    this.data.homeContent = {
+    this.cache.homeContent = {
       ...current,
       ...newContent,
       hero: { ...current.hero, ...(newContent.hero || {}) },
@@ -383,35 +499,47 @@ class JSONDatabase {
       synergy: { ...current.synergy, ...(newContent.synergy || {}) },
       sectionVisibility: { ...current.sectionVisibility, ...(newContent.sectionVisibility || {}) }
     };
-    this.save();
+    if (supabase) {
+      try {
+        await supabase.from('app_settings').upsert([{ key: 'homeContent', data: this.cache.homeContent }]);
+      } catch (e) {}
+    }
     return this.getHomeContent();
   }
 
   getNavbar() {
-    return this.data.navbar || initialDbState.navbar;
+    return this.cache.navbar || initialDbState.navbar;
   }
 
-  updateNavbar(navItems) {
-    this.data.navbar = navItems;
-    this.save();
-    return this.data.navbar;
+  async updateNavbar(navItems) {
+    this.cache.navbar = navItems;
+    if (supabase) {
+      try {
+        await supabase.from('app_settings').upsert([{ key: 'navbar', data: this.cache.navbar }]);
+      } catch (e) {}
+    }
+    return this.cache.navbar;
   }
 
   getAboutContent() {
     return {
       ...initialDbState.aboutContent,
-      ...(this.data.aboutContent || {})
+      ...(this.cache.aboutContent || {})
     };
   }
 
-  updateAboutContent(newContent) {
-    this.data.aboutContent = { ...this.getAboutContent(), ...newContent };
-    this.save();
+  async updateAboutContent(newContent) {
+    this.cache.aboutContent = { ...this.getAboutContent(), ...newContent };
+    if (supabase) {
+      try {
+        await supabase.from('app_settings').upsert([{ key: 'aboutContent', data: this.cache.aboutContent }]);
+      } catch (e) {}
+    }
     return this.getAboutContent();
   }
 
   getExploreContent() {
-    const current = this.data.exploreContent || {};
+    const current = this.cache.exploreContent || {};
     const init = initialDbState.exploreContent;
     return {
       gallery: {
@@ -435,7 +563,7 @@ class JSONDatabase {
     };
   }
 
-  updateExploreContent(newContent) {
+  async updateExploreContent(newContent) {
     if (!newContent) return this.getExploreContent();
     const prev = this.getExploreContent();
     
@@ -456,22 +584,16 @@ class JSONDatabase {
       }
     };
 
-    this.data.exploreContent = updated;
-    this.save();
-
-    // Async sync to MongoDB if connected
-    try {
-      const mongoose = require('mongoose');
-      if (mongoose.connection && mongoose.connection.readyState === 1) {
-        const ExploreContent = require('../models/ExploreContent');
-        ExploreContent.updateOne(
-          { key: 'explore_main' },
-          { $set: { ...updated, key: 'explore_main' } },
-          { upsert: true }
-        ).catch(err => console.error('MongoDB async updateExploreContent error:', err));
-      }
-    } catch (e) {
-      // Mongoose warning fallback
+    this.cache.exploreContent = updated;
+    if (supabase) {
+      try {
+        await supabase.from('explore_content').upsert([{
+          key: 'explore_main',
+          gallery: updated.gallery,
+          reels: updated.reels,
+          brand_statement: updated.brandStatement
+        }]);
+      } catch (e) {}
     }
 
     return this.getExploreContent();
@@ -588,7 +710,7 @@ function checkOrderingSlotStatus(slotConfig) {
   };
 }
 
-const db = new JSONDatabase();
+const db = new SupabaseDatabase();
 db.checkOrderingSlotStatus = checkOrderingSlotStatus;
 db.getISTDate = getISTDate;
 db.getISTDateString = getISTDateString;

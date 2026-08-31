@@ -317,10 +317,6 @@ router.put('/ordering-slot', requireAdmin, async (req, res) => {
 
   if (action === 'reset') {
     const updatedSlot = db.resetOrderingSlot();
-    try {
-      const { syncDailySlotsToMongoDB } = require('../config/mongodb');
-      await syncDailySlotsToMongoDB();
-    } catch (e) {}
     const slotStatus = db.checkOrderingSlotStatus(updatedSlot);
     return res.json(slotStatus);
   }
@@ -346,10 +342,6 @@ router.put('/ordering-slot', requireAdmin, async (req, res) => {
   if (picErr) return res.status(400).json({ error: picErr, message: picErr });
 
   const updatedSlot = db.updateOrderingSlot(req.body);
-  try {
-    const { syncDailySlotsToMongoDB } = require('../config/mongodb');
-    await syncDailySlotsToMongoDB();
-  } catch (e) {}
   const slotStatus = db.checkOrderingSlotStatus(updatedSlot);
   res.json(slotStatus);
 });
@@ -357,20 +349,12 @@ router.put('/ordering-slot', requireAdmin, async (req, res) => {
 // Admin: Reset today's ordering slot to default
 router.post('/ordering-slot/reset', requireAdmin, async (req, res) => {
   const updatedSlot = db.resetOrderingSlot();
-  try {
-    const { syncDailySlotsToMongoDB } = require('../config/mongodb');
-    await syncDailySlotsToMongoDB();
-  } catch (e) {}
   const slotStatus = db.checkOrderingSlotStatus(updatedSlot);
   res.json(slotStatus);
 });
 
 router.delete('/ordering-slot', requireAdmin, async (req, res) => {
   const updatedSlot = db.resetOrderingSlot();
-  try {
-    const { syncDailySlotsToMongoDB } = require('../config/mongodb');
-    await syncDailySlotsToMongoDB();
-  } catch (e) {}
   const slotStatus = db.checkOrderingSlotStatus(updatedSlot);
   res.json(slotStatus);
 });

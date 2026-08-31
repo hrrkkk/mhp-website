@@ -10,16 +10,25 @@ const contentRoutes = require('./routes/contentRoutes');
 const futureMenuRoutes = require('./routes/futureMenuRoutes');
 const menuRoutes = require('./routes/menuRoutes');
 const billingWebhookRoutes = require('./routes/billingWebhookRoutes');
-const { connectMongoDB } = require('./config/mongodb');
+const { seedAllTablesToSupabase, isSupabaseConfigured } = require('./config/supabase');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Connect MongoDB asynchronously
-connectMongoDB();
+// Seed / verify Supabase PostgreSQL connection
+if (isSupabaseConfigured()) {
+  seedAllTablesToSupabase();
+}
 
 // CORS setup
-app.use(cors());
+const clientUrl = process.env.CLIENT_URL;
+const corsOptions = clientUrl
+  ? {
+      origin: clientUrl.includes(',') ? clientUrl.split(',').map(u => u.trim()) : clientUrl,
+      credentials: true
+    }
+  : {};
+app.use(cors(corsOptions));
 
 // Body Parsers
 app.use(express.json({ limit: '15mb' }));

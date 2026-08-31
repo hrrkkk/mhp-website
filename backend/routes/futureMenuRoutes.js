@@ -1,24 +1,36 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
 const db = require('../config/db');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const billingService = require('../services/billingService');
 const paymentService = require('../services/paymentService');
-const MenuItem = require('../models/MenuItem');
-const { getIsConnected } = require('../config/mongodb');
+const { supabase, isSupabaseConfigured, mapRowToMenuItem, mapMenuItemToRow } = require('../config/supabase');
 
 async function findMenuItem(item) {
   const targetId = item._id || item.foodId || item.id;
   let dbItem = null;
 
-  if (getIsConnected()) {
+  if (isSupabaseConfigured()) {
     try {
-      if (targetId && mongoose.Types.ObjectId.isValid(targetId)) {
-        dbItem = await MenuItem.findById(targetId).lean();
+      if (targetId) {
+        const { data, error } = await supabase
+          .from('menu_items')
+          .select('*')
+          .eq('id', targetId)
+          .maybeSingle();
+        if (data && !error) {
+          dbItem = mapRowToMenuItem(data);
+        }
       }
       if (!dbItem && item.name) {
-        dbItem = await MenuItem.findOne({ name: item.name }).lean();
+        const { data, error } = await supabase
+          .from('menu_items')
+          .select('*')
+          .ilike('name', item.name)
+          .maybeSingle();
+        if (data && !error) {
+          dbItem = mapRowToMenuItem(data);
+        }
       }
     } catch (e) {}
   }
