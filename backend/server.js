@@ -20,27 +20,9 @@ if (isSupabaseConfigured()) {
   seedAllTablesToSupabase();
 }
 
-// CORS setup
-const defaultAllowedOrigins = [
-  'https://mhp-website.onrender.com',
-  'http://localhost:3000',
-  'http://localhost:5173'
-];
-const clientUrl = process.env.CLIENT_URL;
-if (clientUrl) {
-  const envOrigins = clientUrl.includes(',') ? clientUrl.split(',').map(u => u.trim()) : [clientUrl.trim()];
-  envOrigins.forEach(o => {
-    if (o && !defaultAllowedOrigins.includes(o)) defaultAllowedOrigins.push(o);
-  });
-}
-
+// CORS setup - Allow all origins gracefully in production & local dev
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || defaultAllowedOrigins.includes(origin) || defaultAllowedOrigins.includes('*')) {
-      return callback(null, true);
-    }
-    return callback(null, true);
-  },
+  origin: true,
   credentials: true
 }));
 
@@ -51,7 +33,7 @@ app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 // Static uploads folder
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Direct Health Check routes (accessible both as /health and /api/health)
+// Direct Health Check endpoints (registered at top level before routers)
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'OK',
@@ -70,24 +52,37 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Primary API Routes
+// Primary API Routes (registered under /api)
 app.use('/api/menu', menuRoutes);
 app.use('/api/future-menu', futureMenuRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/webhooks', billingWebhookRoutes);
 app.use('/api', contentRoutes);
 
+// Direct alias routes (registered without /api prefix as safety fallback)
+app.use('/menu', menuRoutes);
+app.use('/future-menu', futureMenuRoutes);
+app.use('/auth', authRoutes);
+
 // Root route
 app.get('/', (req, res) => {
   res.send(`
     <div style="font-family: system-ui, sans-serif; text-align: center; padding: 50px; background: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
       <h1 style="color: #38bdf8; margin-bottom: 8px;">🚀 MHP REST API Server is Running</h1>
-      <p style="color: #94a3b8; font-size: 1.1rem; margin-bottom: 24px;">This is the backend API service (Port 5000).</p>
-      <a href="http://localhost:3000" style="background: #4f46e5; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);">
-        Open Web Application (http://localhost:3000) &rarr;
+      <p style="color: #94a3b8; font-size: 1.1rem; margin-bottom: 24px;">This is the backend API service (Port ${PORT}).</p>
+      <a href="https://mhp-website.onrender.com" style="background: #4f46e5; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);">
+        Open Web Application &rarr;
       </a>
     </div>
   `);
+});
+
+// API 404 handler (JSON response for unhandled API endpoints)
+app.use('/api/*', (req, res) => {
+  res.status(404).json({
+    error: 'API endpoint not found',
+    requestedPath: req.originalUrl
+  });
 });
 
 // Error handling middleware
@@ -100,10 +95,10 @@ app.use((err, req, res, next) => {
 
 const { getPaymentConfig } = require('./services/paymentService');
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   const pConfig = getPaymentConfig();
   console.log(`==================================================`);
-  console.log(`🚀 MHP REST API Server running on port ${PORT}`);
+  console.log(`🚀 MHP REST API Server running on port ${PORT} (0.0.0.0)`);
   console.log(`💳 Payment Gateway Mode: ${pConfig.paymentMode.toUpperCase()} | Key ID: ${pConfig.keyId}`);
   console.log(`📍 VFSTR Campus, Vadlamudi, Guntur, AP`);
   console.log(`==================================================`);
