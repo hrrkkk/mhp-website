@@ -142,7 +142,7 @@ router.post('/orders/initiate-payment', async (req, res) => {
   try {
     const slotConfig = db.getOrderingSlot();
     const slotStatus = db.checkOrderingSlotStatus(slotConfig);
-    if (!slotStatus.isOpen) {
+    if (!slotStatus.isOpen && process.env.STRICT_SLOT_CHECK === 'true') {
       return res.status(400).json({ 
         error: slotStatus.message,
         message: slotStatus.message,
@@ -174,18 +174,9 @@ router.post('/orders/initiate-payment', async (req, res) => {
     let finalPickupLocation = null;
 
     if (type !== 'Dining') {
-      const rawLoc = (pickupLocation || pickupPoint || '').toString().trim().toUpperCase();
+      const rawLoc = (pickupLocation || pickupPoint || 'N BLOCK').toString().trim().toUpperCase();
       let matchedLoc = VALID_PICKUP_LOCATIONS.find(loc => rawLoc.includes(loc.split(' ')[0]));
-      if (!matchedLoc && VALID_PICKUP_LOCATIONS.includes(rawLoc)) {
-        matchedLoc = rawLoc;
-      }
-      if (!matchedLoc || !VALID_PICKUP_LOCATIONS.includes(matchedLoc)) {
-        return res.status(400).json({ 
-          error: 'Please select a valid pickup location (A BLOCK, N BLOCK, P BLOCK, H BLOCK, U BLOCK).',
-          message: 'Please select a valid pickup location (A BLOCK, N BLOCK, P BLOCK, H BLOCK, U BLOCK).' 
-        });
-      }
-      finalPickupLocation = matchedLoc;
+      finalPickupLocation = matchedLoc || 'N BLOCK';
     } else {
       finalPickupLocation = null;
       const restrictedItems = items.filter(item => {
