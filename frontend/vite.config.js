@@ -4,7 +4,11 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  preview: {
+    allowedHosts: ['mhp-website.onrender.com', '.onrender.com', 'localhost']
+  },
   server: {
+    allowedHosts: ['mhp-website.onrender.com', '.onrender.com', 'localhost'],
     port: 3000,
     proxy: {
       '/api': {
