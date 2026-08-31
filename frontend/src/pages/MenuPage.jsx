@@ -108,7 +108,7 @@ const MenuPage = () => {
     fetchOrderingSlot();
   }, []);
 
-  const fetchFoodItems = async () => {
+  const fetchFoodItems = async (retries = 3) => {
     try {
       setLoading(true);
       let res;
@@ -121,6 +121,11 @@ const MenuPage = () => {
         setFoodItems(res.data);
       }
     } catch (err) {
+      if (retries > 0) {
+        console.warn(`Menu fetch attempt failed (Render backend may be spinning up), retrying... (${retries} attempts left)`);
+        await new Promise(resolve => setTimeout(resolve, 2500));
+        return fetchFoodItems(retries - 1);
+      }
       console.error('Failed to load menu items:', err);
       showToast('error', 'Failed to load menu items');
     } finally {
