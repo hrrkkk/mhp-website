@@ -21,14 +21,29 @@ if (isSupabaseConfigured()) {
 }
 
 // CORS setup
+const defaultAllowedOrigins = [
+  'https://mhp-website.onrender.com',
+  'http://localhost:3000',
+  'http://localhost:5173'
+];
 const clientUrl = process.env.CLIENT_URL;
-const corsOptions = clientUrl
-  ? {
-      origin: clientUrl.includes(',') ? clientUrl.split(',').map(u => u.trim()) : clientUrl,
-      credentials: true
+if (clientUrl) {
+  const envOrigins = clientUrl.includes(',') ? clientUrl.split(',').map(u => u.trim()) : [clientUrl.trim()];
+  envOrigins.forEach(o => {
+    if (o && !defaultAllowedOrigins.includes(o)) defaultAllowedOrigins.push(o);
+  });
+}
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl) or if origin is allowed
+    if (!origin || defaultAllowedOrigins.includes(origin) || defaultAllowedOrigins.includes('*')) {
+      return callback(null, true);
     }
-  : {};
-app.use(cors(corsOptions));
+    return callback(null, true);
+  },
+  credentials: true
+}));
 
 // Body Parsers
 app.use(express.json({ limit: '15mb' }));
