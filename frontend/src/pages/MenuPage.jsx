@@ -114,10 +114,13 @@ const MenuPage = () => {
       let res;
       try {
         res = await api.get('/menu');
+        if (!res || !res.data || !Array.isArray(res.data) || res.data.length === 0) {
+          res = await api.get('/future-menu/items');
+        }
       } catch (e) {
         res = await api.get('/future-menu/items');
       }
-      if (res && res.data) {
+      if (res && res.data && Array.isArray(res.data)) {
         setFoodItems(res.data);
       }
     } catch (err) {
@@ -175,10 +178,10 @@ const MenuPage = () => {
       const st = (item.serviceType || 'both').toLowerCase();
       const cat = (item.category || '').toLowerCase();
       if (selectedMode === 'delivery') {
-        if (st === 'dining') return false;
+        if (st === 'dining_only') return false;
         if (cat === 'breakfast') return false;
       } else if (selectedMode === 'dining') {
-        if (st === 'delivery') return false;
+        if (st === 'delivery_only') return false;
       }
 
       // 3. Category filter
