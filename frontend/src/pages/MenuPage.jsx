@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import api from '../services/api';
+import { FALLBACK_FOOD_ITEMS } from '../data/fallbackMenu';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
@@ -108,29 +109,42 @@ const MenuPage = () => {
     fetchOrderingSlot();
   }, []);
 
-  const fetchFoodItems = async (retries = 3) => {
+  const fetchFoodItems = async () => {
     try {
       setLoading(true);
-      let res;
+      let items = [];
       try {
-        res = await api.get('/menu');
-        if (!res || !res.data || !Array.isArray(res.data) || res.data.length === 0) {
-          res = await api.get('/future-menu/items');
+        const res = await api.get('/menu');
+        if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
+          items = res.data;
+        } else {
+          const futureRes = await api.get('/future-menu/items');
+          if (futureRes && futureRes.data && Array.isArray(futureRes.data) && futureRes.data.length > 0) {
+            items = futureRes.data;
+          }
         }
       } catch (e) {
-        res = await api.get('/future-menu/items');
+        console.warn('Primary menu endpoint failed, trying backup...', e.message);
+        try {
+          const futureRes = await api.get('/future-menu/items');
+          if (futureRes && futureRes.data && Array.isArray(futureRes.data) && futureRes.data.length > 0) {
+            items = futureRes.data;
+          }
+        } catch (err2) {
+          console.warn('Backup endpoint failed:', err2.message);
+        }
       }
-      if (res && res.data && Array.isArray(res.data)) {
-        setFoodItems(res.data);
+
+      // Guaranteed Fallback: If API returns 0 items or fails, load full local dataset (206 items)
+      if (!items || items.length === 0) {
+        console.log('API returned no items. Using guaranteed fallback menu dataset (206 items).');
+        items = FALLBACK_FOOD_ITEMS;
       }
+
+      setFoodItems(items);
     } catch (err) {
-      if (retries > 0) {
-        console.warn(`Menu fetch attempt failed (Render backend may be spinning up), retrying... (${retries} attempts left)`);
-        await new Promise(resolve => setTimeout(resolve, 2500));
-        return fetchFoodItems(retries - 1);
-      }
-      console.error('Failed to load menu items:', err);
-      showToast('error', 'Failed to load menu items');
+      console.error('Error in fetchFoodItems, using guaranteed fallback:', err);
+      setFoodItems(FALLBACK_FOOD_ITEMS);
     } finally {
       setLoading(false);
     }
