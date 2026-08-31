@@ -172,11 +172,13 @@ const MenuPage = () => {
       if (!isAvail) return false;
 
       // 2. Mode filtering (Dining vs Delivery)
+      const st = (item.serviceType || 'both').toLowerCase();
+      const cat = (item.category || '').toLowerCase();
       if (selectedMode === 'delivery') {
-        if (item.serviceType === 'dining') return false;
-        if (item.category === 'Breakfast') return false;
+        if (st === 'dining') return false;
+        if (cat === 'breakfast') return false;
       } else if (selectedMode === 'dining') {
-        if (item.serviceType === 'delivery') return false;
+        if (st === 'delivery') return false;
       }
 
       // 3. Category filter

@@ -53,7 +53,7 @@ router.get('/', async (req, res) => {
 
       const { data, error } = await query;
 
-      if (!error && data) {
+      if (!error && data && data.length > 0) {
         const mappedItems = data.map(mapRowToMenuItem);
         return res.json(mappedItems);
       }
