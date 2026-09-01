@@ -44,8 +44,8 @@ const AdminSlotTimingControl = () => {
     }
   };
 
-  const normalizeTimeTo24h = (timeStr, defaultHour = 12) => {
-    if (!timeStr) return `${defaultHour}:00`;
+  const normalizeTimeTo24h = (timeStr, defaultHour = 12, referenceStartMinutes = 0) => {
+    if (!timeStr) return `${String(defaultHour).padStart(2, '0')}:00`;
     let str = String(timeStr).trim().toUpperCase();
     const isPM = str.includes('PM');
     const isAM = str.includes('AM');
@@ -56,7 +56,13 @@ const AdminSlotTimingControl = () => {
 
     if (isPM && h < 12) h += 12;
     if (isAM && h === 12) h = 0;
-    if (!isPM && !isAM && h > 0 && h <= 6) h += 12; // e.g. 1:00 or 01:00 -> 13:00 (1 PM)
+
+    // Automatically infer PM if hours < 12 and reading as AM is earlier than start time
+    if (!isPM && !isAM) {
+      if (h < 12 && (h * 60 + m <= referenceStartMinutes)) {
+        h += 12;
+      }
+    }
 
     const hh = String(h).padStart(2, '0');
     const mm = String(m).padStart(2, '0');
@@ -66,23 +72,36 @@ const AdminSlotTimingControl = () => {
   const handleSaveTodaySlot = async (e) => {
     if (e) e.preventDefault();
 
-    const cleanOrdStart = normalizeTimeTo24h(todayForm.orderingStartTime, 9);
-    const cleanOrdEnd = normalizeTimeTo24h(todayForm.orderingEndTime, 10);
-    const cleanPicStart = normalizeTimeTo24h(todayForm.pickupStartTime, 12);
-    const cleanPicEnd = normalizeTimeTo24h(todayForm.pickupEndTime, 13);
+    let cleanOrdStart = normalizeTimeTo24h(todayForm.orderingStartTime, 9, 0);
+    let [ordStartH, ordStartM] = cleanOrdStart.split(':').map(Number);
+    let ordStartMins = ordStartH * 60 + ordStartM;
 
-    const [ordStartH, ordStartM] = cleanOrdStart.split(':').map(Number);
-    const [ordEndH, ordEndM] = cleanOrdEnd.split(':').map(Number);
-    if (ordStartH * 60 + ordStartM >= ordEndH * 60 + ordEndM) {
-      showToast('error', `Ordering Slot: End time (${cleanOrdEnd}) must be after Start time (${cleanOrdStart})`);
-      return;
+    let cleanOrdEnd = normalizeTimeTo24h(todayForm.orderingEndTime, 10, ordStartMins);
+    let [ordEndH, ordEndM] = cleanOrdEnd.split(':').map(Number);
+    let ordEndMins = ordEndH * 60 + ordEndM;
+
+    // Auto-correct if ordering end time is before or equal to start time
+    if (ordStartMins >= ordEndMins) {
+      ordEndMins = ordStartMins + 60;
+      const eh = String(Math.floor(ordEndMins / 60) % 24).padStart(2, '0');
+      const em = String(ordEndMins % 60).padStart(2, '0');
+      cleanOrdEnd = `${eh}:${em}`;
     }
 
-    const [picStartH, picStartM] = cleanPicStart.split(':').map(Number);
-    const [picEndH, picEndM] = cleanPicEnd.split(':').map(Number);
-    if (picStartH * 60 + picStartM >= picEndH * 60 + picEndM) {
-      showToast('error', `Pickup Slot: End time (${cleanPicEnd}) must be after Start time (${cleanPicStart})`);
-      return;
+    let cleanPicStart = normalizeTimeTo24h(todayForm.pickupStartTime, 12, 0);
+    let [picStartH, picStartM] = cleanPicStart.split(':').map(Number);
+    let picStartMins = picStartH * 60 + picStartM;
+
+    let cleanPicEnd = normalizeTimeTo24h(todayForm.pickupEndTime, 13, picStartMins);
+    let [picEndH, picEndM] = cleanPicEnd.split(':').map(Number);
+    let picEndMins = picEndH * 60 + picEndM;
+
+    // Auto-correct if pickup end time is before or equal to start time
+    if (picStartMins >= picEndMins) {
+      picEndMins = picStartMins + 60;
+      const eh = String(Math.floor(picEndMins / 60) % 24).padStart(2, '0');
+      const em = String(picEndMins % 60).padStart(2, '0');
+      cleanPicEnd = `${eh}:${em}`;
     }
 
     try {
