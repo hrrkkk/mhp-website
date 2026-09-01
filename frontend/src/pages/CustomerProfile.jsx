@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import LoadingSkeleton from '../components/common/LoadingSkeleton';
 import ThreeDSpatialCard from '../components/common/ThreeDSpatialCard';
+import OrderStatusTracker from '../components/orders/OrderStatusTracker';
 import {
   User,
   ShoppingBag,
@@ -411,6 +412,9 @@ const CustomerProfile = () => {
                             </div>
                           </div>
 
+                          {/* Live Order Status Tracker (Compact) */}
+                          <OrderStatusTracker order={order} compact={true} />
+
                           {/* Ordered Food Items */}
                           <div className="space-y-2">
                             <span className="text-[11px] font-bold text-[#7D967E] uppercase block">Ordered Items:</span>
@@ -628,6 +632,9 @@ const CustomerProfile = () => {
                 Pickup Point: <strong className="text-[#202522]">{selectedOrderModal.pickupPoint || 'N Block Counter'}</strong>
               </p>
             </div>
+
+            {/* LIVE ORDER STATUS PROGRESS TRACKER */}
+            <OrderStatusTracker order={selectedOrderModal} />
 
             {/* Items Summary */}
             <div className="space-y-2">

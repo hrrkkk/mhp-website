@@ -136,6 +136,69 @@ router.get('/categories', (req, res) => {
   }
 });
 
+// @route   GET /api/future-menu/favorites
+// @desc    Get Student Favorites (dynamic if order data exists) or MHP Picks (if no order data yet)
+router.get('/favorites', (req, res) => {
+  try {
+    const allOrders = db.find('orders', {}) || [];
+    const validOrders = allOrders.filter(ord => 
+      ord.paymentStatus === 'PAID' || 
+      ord.orderStatus === 'CONFIRMED' || 
+      ord.status === 'CONFIRMED' || 
+      ord.status === 'PLACED'
+    );
+
+    const itemCounts = {};
+    validOrders.forEach(ord => {
+      if (Array.isArray(ord.items)) {
+        ord.items.forEach(item => {
+          const key = item.foodId || item._id || item.name;
+          itemCounts[key] = (itemCounts[key] || 0) + (Number(item.quantity) || 1);
+        });
+      }
+    });
+
+    const hasOrderData = Object.keys(itemCounts).length > 0;
+    const allFoodItems = db.find('foodItems', {}) || [];
+
+    let resultItems = [];
+
+    if (hasOrderData) {
+      const itemsWithCounts = allFoodItems.map(item => {
+        const count = itemCounts[item._id] || itemCounts[item.id] || itemCounts[item.name] || 0;
+        return { ...item, orderCount: count };
+      }).filter(item => item.orderCount > 0);
+
+      itemsWithCounts.sort((a, b) => b.orderCount - a.orderCount);
+      resultItems = itemsWithCounts.slice(0, 6);
+    }
+
+    if (!resultItems || resultItems.length === 0) {
+      const picks = allFoodItems.filter(item => 
+        item.popular || 
+        ['Chicken 65', 'Veg Dum Biryani', 'Crispy Corn', 'Egg Dum Biryani', 'Paneer Butter Masala', 'Ghee Karam Dosa'].includes(item.name)
+      );
+
+      resultItems = picks.slice(0, 6);
+      if (resultItems.length === 0) {
+        resultItems = allFoodItems.slice(0, 6);
+      }
+    }
+
+    res.json({
+      hasOrderData,
+      title: hasOrderData ? '🔥 STUDENT FAVORITES' : '🔥 MHP PICKS',
+      subtitle: hasOrderData 
+        ? 'Most ordered dishes on campus based on actual student orders' 
+        : 'Handpicked signature recommendations by MHP staff',
+      items: resultItems
+    });
+  } catch (err) {
+    console.error('Error fetching favorites:', err);
+    res.status(500).json({ message: 'Failed to fetch favorites' });
+  }
+});
+
 // @route   POST /api/future-menu/orders/initiate-payment
 // @desc    Initiate a prepaid order payment session with paymentService signature
 router.post('/orders/initiate-payment', async (req, res) => {

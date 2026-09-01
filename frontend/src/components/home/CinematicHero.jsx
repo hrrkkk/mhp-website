@@ -103,22 +103,24 @@ const CinematicHero = ({ heroData, orderingSlot = null }) => {
             </p>
           </div>
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons - Strict Ordering Hierarchy */}
           <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2 preserve-3d">
+            {/* 1. ORDER NOW -> STRONGEST PRIMARY CTA */}
             <Link
               to="/menu?mode=delivery"
-              className="btn-mhp-primary text-xs sm:text-sm px-8 py-3.5 shadow-xl"
+              className="px-8 py-3.5 rounded-full bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs sm:text-sm font-black tracking-wider flex items-center gap-2.5 shadow-2xl shadow-[#F47B20]/40 transition-all hover:scale-105 border-2 border-[#F47B20]"
             >
               <ShoppingBag className="w-4 h-4" />
               <span>ORDER NOW</span>
             </Link>
 
+            {/* 2. VIEW MENU -> SECONDARY CTA */}
             <Link
               to="/menu"
-              className="btn-mhp-secondary text-xs sm:text-sm px-8 py-3.5 shadow-xl"
+              className="px-8 py-3.5 rounded-full bg-[#204935]/90 hover:bg-[#204935] text-[#FFF7E8] text-xs sm:text-sm font-bold tracking-wider flex items-center gap-2 border border-[#7D967E]/40 backdrop-blur-md transition-all hover:border-[#FFF7E8]/60"
             >
               <UtensilsCrossed className="w-4 h-4 text-[#F47B20]" />
-              <span>EXPLORE MENU</span>
+              <span>VIEW MENU</span>
             </Link>
           </div>
 

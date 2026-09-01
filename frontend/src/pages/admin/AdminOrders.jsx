@@ -210,18 +210,23 @@ const AdminOrders = () => {
 
                 {/* Status Update Action Buttons */}
                 <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
-                  {['CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'COMPLETED'].map((st) => (
+                  {[
+                    { key: 'CONFIRMED', label: '✓ Order Placed' },
+                    { key: 'PREPARING', label: '✓ Preparing' },
+                    { key: 'READY_FOR_PICKUP', label: '→ Ready for Pickup' },
+                    { key: 'COMPLETED', label: '○ Completed' }
+                  ].map((st) => (
                     <button
-                      key={st}
-                      onClick={() => handleStatusChange(ord._id, st)}
-                      disabled={ord.status === st}
+                      key={st.key}
+                      onClick={() => handleStatusChange(ord._id, st.key)}
+                      disabled={ord.status === st.key}
                       className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all ${
-                        ord.status === st
+                        ord.status === st.key
                           ? 'bg-[#183A2A] text-[#FFF7E8] border-[#183A2A]'
-                          : 'bg-[#FFF7E8] text-[#7D967E] border-[#7D967E]/30 hover:text-[#183A2A] hover:bg-[#FFF7E8]/80'
+                          : 'bg-[#FFF7E8] text-[#7D967E] border-[#7D967E]/30 hover:text-[#183A2A] hover:bg-[#FFF7E8]/80 cursor-pointer'
                       }`}
                     >
-                      {st === 'READY_FOR_PICKUP' ? 'Ready' : st}
+                      {st.label}
                     </button>
                   ))}
                 </div>

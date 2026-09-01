@@ -20,20 +20,21 @@ const ThreeDSpatialCard = ({
     const x = e.clientX - rect.left - rect.width / 2;
     const y = e.clientY - rect.top - rect.height / 2;
 
-    const rotX = (y / (rect.height / 2)) * -8;
-    const rotY = (x / (rect.width / 2)) * 8;
+    // Subdued, subtle tilt (2.5 deg max) to avoid jarring motion in content sections
+    const rotX = (y / (rect.height / 2)) * -2.5;
+    const rotY = (x / (rect.width / 2)) * 2.5;
 
     setStyle({
-      transform: `perspective(1000px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) translateZ(${depth}px)`,
-      boxShadow: `0 20px 45px rgba(24, 58, 42, 0.15), 0 0 25px ${glowColor}`,
-      borderColor: '#F47B20'
+      transform: `perspective(1000px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) translateY(-2px)`,
+      boxShadow: `0 14px 30px rgba(24, 58, 42, 0.12)`,
+      borderColor: 'rgba(244, 123, 32, 0.5)'
     });
   };
 
   const handleMouseLeave = () => {
     setStyle({
-      transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)',
-      boxShadow: '0 10px 30px rgba(24, 58, 42, 0.08)',
+      transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)',
+      boxShadow: '0 8px 24px rgba(24, 58, 42, 0.06)',
       borderColor: 'rgba(125, 150, 126, 0.3)'
     });
   };

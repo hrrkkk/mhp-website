@@ -47,18 +47,31 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Col 4: Campus Location */}
+          {/* Col 4: Real-World Campus Info & Order Contact */}
           <div className="space-y-3">
-            <h4 className="font-display font-bold text-sm text-[#F47B20] uppercase tracking-wider">Campus Location</h4>
-            <div className="space-y-2.5 text-xs text-[#FFF7E8]/80 leading-relaxed">
+            <h4 className="font-display font-bold text-sm text-[#F47B20] uppercase tracking-wider">Campus Info & Order Help</h4>
+            <div className="space-y-2.5 text-xs text-[#FFF7E8]/90 leading-relaxed font-sans">
               <p className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-[#F47B20] shrink-0 mt-0.5" />
-                <span>VFSTR Campus, Near N Block, Vadlamudi, Guntur, AP - 522213</span>
+                <span><strong>📍 MHP — VFSTR Campus</strong><br /><span className="text-xs text-[#7D967E]">Near N Block, Vadlamudi, Guntur AP</span></span>
               </p>
-              <p className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-[#F47B20] shrink-0" />
-                <span>+91 863 2344700</span>
-              </p>
+              
+              <div className="flex items-start gap-2 pt-1">
+                <span className="text-[#F47B20] font-bold">🕐</span>
+                <div>
+                  <span className="font-extrabold text-white">9:00 AM – 6:00 PM</span>
+                  <div className="text-[11px] text-[#7D967E]">Monday–Saturday</div>
+                  <div className="text-[11px] text-[#7D967E]">Sunday (when college is open)</div>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-[#7D967E]/30">
+                <span className="text-[10px] font-black text-[#F47B20] uppercase block">Order Problem? Contact Us:</span>
+                <a href="tel:+919123456789" className="text-xs font-extrabold text-white hover:text-[#F47B20] transition-colors block">
+                  📞 Helpdesk: +91 91234 56789
+                </a>
+                <span className="text-[10px] text-[#7D967E] block">In-Person: Parcel & Billing Counter</span>
+              </div>
             </div>
           </div>
 

@@ -21,6 +21,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import ThreeDLogoEmblem from '../components/common/ThreeDLogoEmblem';
+import OrderStatusTracker from '../components/orders/OrderStatusTracker';
 import { getImageUrl, handleImageError } from '../utils/imageUtils';
 
 const CartPage = () => {
@@ -35,6 +36,7 @@ const CartPage = () => {
   const [paymentMethod, setPaymentMethod] = useState('UPI');
   const [orderSubmitting, setOrderSubmitting] = useState(false);
   const [placedOrder, setPlacedOrder] = useState(null);
+  const [orderErrorNotice, setOrderErrorNotice] = useState(null);
   const [selectedPickupLocation, setSelectedPickupLocation] = useState('N BLOCK');
   const [checkoutForm, setCheckoutForm] = useState({
     customerName: user?.name || '',
@@ -130,8 +132,9 @@ const CartPage = () => {
       }
     } catch (err) {
       console.error('Place order error:', err);
-      const backendMsg = err.response?.data?.error || err.response?.data?.message;
-      showToast('error', backendMsg || 'Failed to initiate payment session. Please try again.');
+      const backendMsg = err.response?.data?.error || err.response?.data?.message || 'Failed to initiate payment session. Please try again.';
+      setOrderErrorNotice(backendMsg);
+      showToast('error', backendMsg);
     } finally {
       setOrderSubmitting(false);
     }
@@ -224,95 +227,129 @@ const CartPage = () => {
           )}
         </div>
 
+        {/* ORDER FAILURE / ERROR ALERT BANNER */}
+        {orderErrorNotice && (
+          <div className="bg-rose-50 border-2 border-rose-400 p-5 rounded-3xl text-rose-900 text-xs font-bold space-y-2 shadow-md max-w-2xl mx-auto flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="font-black text-[#183A2A] uppercase text-xs">ORDER PLACEMENT ISSUE</span>
+                <button 
+                  onClick={() => setOrderErrorNotice(null)}
+                  className="text-rose-700 hover:text-rose-950 text-xs font-extrabold"
+                >
+                  ✕ Dismiss
+                </button>
+              </div>
+              <p className="text-rose-800 leading-relaxed font-medium">{orderErrorNotice}</p>
+              <p className="text-[11px] text-[#7D967E] font-extrabold pt-1">
+                Your cart items are preserved so you can change options or try again.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* ORDER CONFIRMED VIEW */}
         {placedOrder ? (
-          <div className="max-w-xl mx-auto bg-white p-8 sm:p-10 rounded-3xl border border-[#7D967E]/30 text-center space-y-6 shadow-xl">
-            <div className="w-16 h-16 rounded-full bg-[#183A2A]/10 text-[#F47B20] border border-[#F47B20]/30 flex items-center justify-center mx-auto shadow-sm">
-              <CheckCircle2 className="w-8 h-8 text-[#F47B20]" />
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-xs font-black text-[#F47B20] uppercase tracking-widest block">
-                PAYMENT CONFIRMED
-              </span>
-              <h2 className="font-display font-extrabold text-3xl text-[#183A2A] tracking-tight">
-                ORDER CONFIRMED
-              </h2>
-            </div>
-
-            <div className="bg-[#FFF7E8] p-5 rounded-2xl border border-[#7D967E]/30 space-y-1.5 max-w-md mx-auto">
-              <span className="text-[10px] text-[#7D967E] font-black uppercase tracking-wider block">Official Billing Token</span>
-              <span className="text-3xl font-mono font-black text-[#F47B20] tracking-widest block">
-                {placedOrder.billingNumber || placedOrder._id?.slice(-6).toUpperCase()}
-              </span>
-              <span className="text-xs text-[#183A2A] font-extrabold block pt-1">
-                Status: 🟢 ORDER CONFIRMED
-              </span>
-            </div>
-
-            <div className="text-xs text-[#183A2A] space-y-1 bg-gray-50 p-4 rounded-xl text-left border border-gray-200">
-              <div className="flex justify-between border-b pb-1">
-                <span className="font-bold text-[#7D967E]">Order Number:</span>
-                <span className="font-mono font-bold">{placedOrder.orderNumber || placedOrder.orderId}</span>
+          <div className="max-w-2xl mx-auto space-y-6">
+            <div className="bg-white p-8 sm:p-10 rounded-3xl border border-[#7D967E]/30 text-center space-y-6 shadow-xl">
+              <div className="w-16 h-16 rounded-full bg-[#183A2A]/10 text-[#F47B20] border border-[#F47B20]/30 flex items-center justify-center mx-auto shadow-sm">
+                <CheckCircle2 className="w-8 h-8 text-[#F47B20]" />
               </div>
-              <div className="flex justify-between border-b py-1">
-                <span className="font-bold text-[#7D967E]">Order Mode:</span>
-                <span className="font-bold uppercase">{placedOrder.orderType || placedOrder.orderMode}</span>
+
+              <div className="space-y-2">
+                <span className="text-xs font-black text-[#F47B20] uppercase tracking-widest block">
+                  PAYMENT CONFIRMED
+                </span>
+                <h2 className="font-display font-extrabold text-3xl text-[#183A2A] tracking-tight">
+                  ORDER CONFIRMED
+                </h2>
               </div>
-              <div className="flex justify-between border-b py-1">
-                <span className="font-bold text-[#7D967E]">Pickup Location:</span>
-                <span className="font-bold text-[#F47B20]">{placedOrder.pickupLocation || placedOrder.pickupPoint || 'Not applicable'}</span>
-              </div>
-              <div className="flex justify-between pt-1">
-                <span className="font-bold text-[#7D967E]">Amount Paid:</span>
-                <span className="font-mono font-black text-[#183A2A]">₹ {placedOrder.totalAmount || placedOrder.total}</span>
+
+              <div className="bg-[#FFF7E8] p-5 rounded-2xl border border-[#7D967E]/30 space-y-1.5 max-w-md mx-auto">
+                <span className="text-[10px] text-[#7D967E] font-black uppercase tracking-wider block">Official Billing Token</span>
+                <span className="text-3xl font-mono font-black text-[#F47B20] tracking-widest block">
+                  {placedOrder.billingNumber || placedOrder._id?.slice(-6).toUpperCase()}
+                </span>
               </div>
             </div>
 
-            {placedOrder.orderType !== 'Dining' && placedOrder.pickupLocation && (
-              <p className="text-xs text-[#7D967E] max-w-md mx-auto leading-relaxed font-medium">
-                Please collect your order from <strong className="text-[#183A2A]">{placedOrder.pickupLocation || placedOrder.pickupPoint}</strong> counter during the pickup window.
-              </p>
-            )}
+            {/* LIVE ORDER STATUS TRACKER COMPONENT */}
+            <OrderStatusTracker order={placedOrder} />
 
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link 
-                to="/profile" 
-                className="w-full sm:w-auto py-3 px-8 rounded-xl bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs font-extrabold transition-all shadow-md text-center"
-              >
-                View My Orders
-              </Link>
-              <Link 
-                to="/menu" 
-                className="w-full sm:w-auto py-3 px-6 rounded-xl bg-gray-100 hover:bg-gray-200 text-[#183A2A] text-xs font-extrabold transition-all text-center"
-              >
-                Back to Menu
-              </Link>
+            <div className="bg-white p-6 rounded-3xl border border-[#7D967E]/30 space-y-4 shadow-md text-center">
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Link 
+                  to="/profile" 
+                  className="w-full sm:w-auto py-3 px-8 rounded-xl bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs font-extrabold transition-all shadow-md text-center"
+                >
+                  View My Orders
+                </Link>
+                <Link 
+                  to="/menu" 
+                  className="w-full sm:w-auto py-3 px-6 rounded-xl bg-gray-100 hover:bg-gray-200 text-[#183A2A] text-xs font-extrabold transition-all text-center"
+                >
+                  Back to Menu
+                </Link>
+              </div>
             </div>
           </div>
         ) : cartItems.length === 0 ? (
-          /* EMPTY CART VIEW */
-          <div className="max-w-md mx-auto bg-white p-10 sm:p-12 rounded-3xl border border-[#7D967E]/30 text-center space-y-6 shadow-xl">
-            <div className="w-20 h-20 rounded-full bg-[#FFF7E8] border border-[#7D967E]/30 flex items-center justify-center mx-auto text-[#7D967E]">
-              <ShoppingBag className="w-10 h-10 text-[#7D967E]" />
+          /* DELIGHTFUL HIGH-UX EMPTY CART VIEW */
+          <div className="max-w-lg mx-auto bg-white p-8 sm:p-12 rounded-3xl border-2 border-[#7D967E]/30 text-center space-y-7 shadow-xl relative overflow-hidden">
+            
+            {/* Background Ambient Glow */}
+            <div className="absolute -top-12 -right-12 w-36 h-36 bg-[#F47B20]/10 rounded-full blur-2xl pointer-events-none" />
+
+            {/* Playful Hungry Cart Graphic */}
+            <div className="relative">
+              <div className="w-24 h-24 rounded-3xl bg-[#FFF7E8] border-2 border-[#F47B20]/30 flex items-center justify-center mx-auto text-4xl shadow-md">
+                🛒 😭
+              </div>
+              <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#183A2A] text-[#FFF7E8] text-[10px] font-black uppercase tracking-widest border border-[#7D967E]/30">
+                0 ITEMS ADDED
+              </span>
             </div>
 
+            {/* Engaging Copy */}
             <div className="space-y-2">
-              <h3 className="font-display font-extrabold text-2xl text-[#183A2A]">
-                YOUR CART IS EMPTY
+              <h3 className="font-display font-extrabold text-2xl sm:text-3xl text-[#183A2A] tracking-tight">
+                Your cart is hungry 😭
               </h3>
-              <p className="text-xs text-[#7D967E] font-medium leading-relaxed">
-                Looks like you haven't added anything yet.
+              <p className="text-xs sm:text-sm text-[#7D967E] font-medium leading-relaxed max-w-sm mx-auto">
+                Add your favorite campus biryanis, starters, or milkshakes to start your order.
               </p>
             </div>
 
-            <Link 
-              to="/menu" 
-              className="w-full py-3.5 px-8 rounded-xl bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs font-extrabold uppercase tracking-wider transition-all shadow-md inline-flex items-center justify-center gap-2"
-            >
-              <UtensilsCrossed className="w-4 h-4" />
-              <span>EXPLORE MENU</span>
-            </Link>
+            {/* Primary Action Button */}
+            <div>
+              <Link 
+                to="/menu" 
+                className="w-full sm:w-auto py-4 px-8 rounded-2xl bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs sm:text-sm font-black tracking-wider transition-all shadow-xl shadow-[#F47B20]/30 inline-flex items-center justify-center gap-2.5 hover:scale-105"
+              >
+                <span>Explore today's menu</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            {/* Quick Suggestions Divider */}
+            <div className="pt-2 border-t border-[#7D967E]/20 text-xs text-[#7D967E] space-y-2">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest block text-[#183A2A]">
+                🔥 Popular Student Choices Today
+              </span>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <Link to="/menu?search=biryani" className="px-3 py-1 rounded-full bg-[#FFF7E8] text-[#183A2A] font-extrabold border border-[#7D967E]/30 hover:border-[#F47B20] transition-colors">
+                  🍗 Biryanis
+                </Link>
+                <Link to="/menu?search=dosa" className="px-3 py-1 rounded-full bg-[#FFF7E8] text-[#183A2A] font-extrabold border border-[#7D967E]/30 hover:border-[#F47B20] transition-colors">
+                  🥞 Ghee Dosa
+                </Link>
+                <Link to="/menu?search=shake" className="px-3 py-1 rounded-full bg-[#FFF7E8] text-[#183A2A] font-extrabold border border-[#7D967E]/30 hover:border-[#F47B20] transition-colors">
+                  🥤 Shakes
+                </Link>
+              </div>
+            </div>
+
           </div>
         ) : (
           /* 2-COLUMN CART VIEW (ITEMS + ORDER SUMMARY & PAYMENT) */
@@ -603,15 +640,45 @@ const CartPage = () => {
                     <button
                       type="submit"
                       disabled={orderSubmitting}
-                      className="w-full py-4 px-6 rounded-xl bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs font-extrabold uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                      className="w-full py-4 px-6 rounded-2xl bg-[#F47B20] hover:bg-[#FF882E] text-white text-sm sm:text-base font-black tracking-wider shadow-xl shadow-[#F47B20]/40 flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer disabled:opacity-50"
                     >
-                      <span>{orderSubmitting ? 'PROCESSING PAYMENT...' : 'PROCEED TO PAYMENT'}</span>
-                      <ArrowRight className="w-4 h-4" />
+                      <ShoppingBag className="w-5 h-5" />
+                      <span>{orderSubmitting ? 'PROCESSING ORDER...' : `PLACE ORDER • ₹${grandTotalAmount}`}</span>
+                      <ArrowRight className="w-5 h-5" />
                     </button>
                   </div>
 
                 </form>
 
+              </div>
+
+              {/* Real-World Info & Student Order Support Helpdesk Card */}
+              <div className="bg-[#183A2A] text-[#FFF7E8] rounded-3xl p-6 border-2 border-[#F47B20]/40 shadow-xl space-y-3">
+                <div className="flex items-center gap-2 text-xs font-black text-[#F47B20] uppercase tracking-wider">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>ORDER PROBLEM OR NEED HELP?</span>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  <p className="text-[#FFF7E8]/90 font-medium">
+                    If you face any issue with payment, order token, or takeaway parcel pickup:
+                  </p>
+                  
+                  <div className="bg-[#10271C] p-3 rounded-2xl border border-[#7D967E]/30 space-y-1.5 font-sans">
+                    <div className="flex items-center justify-between font-bold">
+                      <span className="text-[#7D967E]">📞 Student Hotline:</span>
+                      <a href="tel:+919123456789" className="text-[#F47B20] hover:underline font-extrabold">+91 91234 56789</a>
+                    </div>
+                    <div className="flex items-center justify-between font-bold">
+                      <span className="text-[#7D967E]">📍 In-Person Support:</span>
+                      <span className="text-white font-extrabold">MHP Counter Near N Block</span>
+                    </div>
+                    <div className="flex items-center justify-between font-bold">
+                      <span className="text-[#7D967E]">🕐 Cafeteria Hours:</span>
+                      <span className="text-white font-extrabold">9:00 AM – 6:00 PM (Mon–Sat)</span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
             </div>

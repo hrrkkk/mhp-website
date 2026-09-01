@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import ThreeDLogoEmblem from './ThreeDLogoEmblem';
+import TopInfoBanner from './TopInfoBanner';
 import api from '../../services/api';
 import { 
   User, 
@@ -64,11 +65,13 @@ const Navbar = () => {
   };
 
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-300 ${
-      scrolled 
-        ? 'py-2 bg-[#183A2A]/98 backdrop-blur-xl border-b border-[#7D967E]/30 shadow-xl' 
-        : 'py-3.5 bg-[#183A2A]/90 backdrop-blur-md border-b border-[#7D967E]/20'
-    }`}>
+    <>
+      <TopInfoBanner />
+      <header className={`sticky top-0 z-50 transition-all duration-300 ${
+        scrolled 
+          ? 'py-2 bg-[#183A2A]/98 backdrop-blur-xl border-b border-[#7D967E]/30 shadow-xl' 
+          : 'py-3.5 bg-[#183A2A]/90 backdrop-blur-md border-b border-[#7D967E]/20'
+      }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
           
@@ -105,19 +108,32 @@ const Navbar = () => {
             })}
           </div>
 
-          {/* RIGHT SIDE: VIEW CART (Distinct Special Button) + Auth Status */}
+          {/* RIGHT SIDE: PRIMARY CTA (ORDER NOW) + VIEW CART + Auth Status */}
           <div className="hidden md:flex items-center gap-3">
             
-            {/* VIEW CART BUTTON (Distinct Border, Food Orange Glow & Separation) */}
+            {/* 1. ORDER NOW — STRONGEST CTA */}
+            <Link
+              to="/menu?mode=delivery"
+              className="px-4 py-2 rounded-full bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs font-black tracking-wider flex items-center gap-2 shadow-lg shadow-[#F47B20]/30 transition-all hover:scale-105"
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span>ORDER NOW</span>
+            </Link>
+
+            {/* 2. HIGH CONTRAST CART BUTTON — IMPOSSIBLE TO MISS */}
             <Link
               to="/cart"
-              className="btn-mhp-cart px-4 py-2 rounded-full text-xs font-extrabold flex items-center gap-2 border-2 border-[#F47B20] shadow-md transition-all hover:scale-105"
+              className={`px-4 py-2 rounded-2xl text-xs font-black tracking-wider flex items-center gap-2 transition-all shadow-lg hover:scale-105 border ${
+                totalCartCount > 0
+                  ? 'bg-[#F47B20] hover:bg-[#FF882E] text-white border-[#F47B20] shadow-[#F47B20]/40 animate-pulse'
+                  : 'bg-[#204935] hover:bg-[#285740] text-[#FFF7E8] border-[#7D967E]/40'
+              }`}
             >
-              <ShoppingBag className="w-3.5 h-3.5 text-[#F47B20] group-hover:text-white" />
-              <span>VIEW CART</span>
+              <span className="text-sm">🛒</span>
+              <span>Cart ({totalCartCount})</span>
               {totalCartCount > 0 && (
-                <span className="ml-0.5 px-2 py-0.5 rounded-full bg-[#F47B20] text-white text-[10px] font-black">
-                  {totalCartCount}
+                <span className="font-mono text-[11px] bg-black/25 px-2 py-0.5 rounded-lg border border-white/20">
+                  ₹{useCart().totalCartAmount}
                 </span>
               )}
             </Link>
@@ -151,25 +167,19 @@ const Navbar = () => {
                 >
                   Sign In
                 </Link>
-                <Link
-                  to="/signup"
-                  className="px-3.5 py-1.5 rounded-full bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs font-extrabold shadow-sm transition-all"
-                >
-                  Join MHP
-                </Link>
               </div>
             )}
 
           </div>
 
-          {/* Mobile Menu Toggle */}
+          {/* Mobile Menu Toggle & Direct ORDER NOW button */}
           <div className="flex items-center gap-2 lg:hidden">
             <Link
-              to="/cart"
-              className="px-3 py-1.5 rounded-full bg-[#F47B20] text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md"
+              to="/menu?mode=delivery"
+              className="px-3 py-1.5 rounded-full bg-[#F47B20] text-white font-extrabold text-xs flex items-center gap-1 shadow-md"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
-              <span>Cart {totalCartCount > 0 ? `(${totalCartCount})` : ''}</span>
+              <span>ORDER NOW</span>
             </Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -260,6 +270,7 @@ const Navbar = () => {
         </div>
       )}
     </header>
+    </>
   );
 };
 
