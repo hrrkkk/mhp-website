@@ -251,6 +251,7 @@ class SupabaseDatabase {
           if (row.key === 'settings') this.cache.settings = { ...this.cache.settings, ...(row.data || {}) };
           else if (row.key === 'homeContent') this.cache.homeContent = { ...this.cache.homeContent, ...(row.data || {}) };
           else if (row.key === 'aboutContent') this.cache.aboutContent = { ...this.cache.aboutContent, ...(row.data || {}) };
+          else if (row.key === 'exploreContent') this.cache.exploreContent = { ...this.cache.exploreContent, ...(row.data || {}) };
           else if (row.key === 'location') this.cache.location = { ...this.cache.location, ...(row.data || {}) };
           else if (row.key === 'navbar') this.cache.navbar = row.data || this.cache.navbar;
           else if (row.key === 'happenings') this.cache.happenings = row.data || [];
@@ -317,6 +318,7 @@ class SupabaseDatabase {
 
     // Sync to Supabase in background
     this.syncCollectionToSupabase(collectionName, newItem, 'insert');
+    this.saveToLocalJson();
     return newItem;
   }
 
@@ -338,6 +340,7 @@ class SupabaseDatabase {
 
     // Sync to Supabase in background
     this.syncCollectionToSupabase(collectionName, updated, 'update');
+    this.saveToLocalJson();
     return updated;
   }
 
@@ -351,6 +354,7 @@ class SupabaseDatabase {
 
     // Sync deletion to Supabase in background
     this.syncCollectionToSupabase(collectionName, removed, 'delete');
+    this.saveToLocalJson();
     return true;
   }
 
