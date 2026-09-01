@@ -39,16 +39,23 @@ import {
  *    - Inline [- 1 +] / [ADD] controls
  * 4. Instant Floating Cart Bar for 1-click checkout
  */
-const PRESET_CATEGORIES = [
-  { id: 'All', label: 'All' },
-  { id: 'Rice', label: 'Rice' },
-  { id: 'Biryani', label: 'Biryani' },
+const DINING_CATEGORIES = [
+  { id: 'All', label: 'All Dishes' },
   { id: 'Starters', label: 'Starters' },
+  { id: 'Biryani', label: 'Biryani' },
+  { id: 'Rice', label: 'Rice Bowls' },
   { id: 'Noodles', label: 'Noodles' },
   { id: 'Beverages', label: 'Beverages' },
   { id: 'Burgers & Pizza', label: 'Burgers & Pizza' },
   { id: 'Curries & Breads', label: 'Curries & Breads' },
   { id: 'Breakfast', label: 'Breakfast' }
+];
+
+const DELIVERY_CATEGORIES = [
+  { id: 'All', label: 'All Delivery Items' },
+  { id: 'Starters', label: 'Starters (Veg & Non-Veg)' },
+  { id: 'Rice', label: 'Rice Bowls (Veg & Non-Veg)' },
+  { id: 'Biryani', label: 'Biryanis (Veg & Non-Veg)' }
 ];
 
 const MenuPage = () => {
@@ -185,7 +192,30 @@ const MenuPage = () => {
       const isAvail = item.isAvailable !== false && item.isAvailable !== 'false' && item.available !== false && item.available !== 'false';
       if (!isAvail) return false;
 
-      // 2. Veg / Non-Veg / Seafood filter
+      const cat = (item.category || '').toLowerCase();
+      const sub = (item.subcategory || '').toLowerCase();
+      const name = (item.name || '').toLowerCase();
+
+      // 2. DELIVERY SECTION STRICT FILTERING
+      if (selectedMode === 'delivery') {
+        // STRICTLY IGNORE / EXCLUDE: Breakfast, Beverages, Burgers, Pizzas, Sandwiches
+        const isExcluded = 
+          cat.includes('breakfast') || sub.includes('breakfast') || name.includes('dosa') || name.includes('idly') || name.includes('vada') || name.includes('puri') ||
+          cat.includes('beverage') || cat.includes('shake') || cat.includes('mocktail') || cat.includes('juice') || cat.includes('drink') || sub.includes('beverage') ||
+          cat.includes('burger') || cat.includes('pizza') || cat.includes('sandwich') || cat.includes('wrap') || sub.includes('burger') || sub.includes('pizza') || sub.includes('sandwich');
+
+        if (isExcluded) return false;
+
+        // STRICTLY INCLUDE ONLY: Starters, Rice Bowls (Rice / Pulao), Biryanis (Veg & Non-Veg)
+        const isAllowedDeliveryItem = 
+          cat.includes('starter') || sub.includes('starter') ||
+          cat.includes('biryani') || sub.includes('biryani') || name.includes('biryani') ||
+          cat.includes('rice') || sub.includes('rice') || cat.includes('pulao') || name.includes('pulao') || name.includes('rice bowl') || name.includes('fried rice');
+
+        if (!isAllowedDeliveryItem) return false;
+      }
+
+      // 3. Veg / Non-Veg / Seafood filter
       if (foodTypeFilter !== 'All') {
         const itemFt = (item.foodType || '').toLowerCase();
         const itemSub = (item.subcategory || '').toLowerCase();
@@ -194,11 +224,7 @@ const MenuPage = () => {
         if (foodTypeFilter === 'Seafood' && !(itemFt.includes('seafood') || itemFt.includes('sea food') || itemSub.includes('sea food'))) return false;
       }
 
-      // 3. Category Filter
-      const cat = (item.category || '').toLowerCase();
-      const sub = (item.subcategory || '').toLowerCase();
-      const name = (item.name || '').toLowerCase();
-
+      // 4. Category Filter
       if (selectedCategory === 'Biryani') {
         if (!cat.includes('biryani') && !cat.includes('pulao')) return false;
       } else if (selectedCategory === 'Rice') {
@@ -219,7 +245,7 @@ const MenuPage = () => {
         if (item.category !== selectedCategory) return false;
       }
 
-      // 4. Search query filter
+      // 5. Search query filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchName = name.includes(q);
@@ -231,7 +257,7 @@ const MenuPage = () => {
 
       return true;
     });
-  }, [foodItems, selectedCategory, foodTypeFilter, searchQuery]);
+  }, [foodItems, selectedMode, selectedCategory, foodTypeFilter, searchQuery]);
 
   const handleOptionChange = (itemId, option) => {
     setItemOptions(prev => ({
@@ -545,10 +571,55 @@ const MenuPage = () => {
             </div>
           </div>
 
-          {/* 🏷️ FAST CATEGORY PILLS BAR (All | Rice | Biryani | Starters | Noodles | Beverages...) */}
+          {/* 🍽️ SECTION SWITCHER BAR: 1. DINING vs 2. DELIVERY */}
+          <div className="bg-[#FFF7E8]/10 p-1.5 rounded-2xl border border-[#7D967E]/40 grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl mx-auto shadow-inner">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedMode('dining');
+                setSelectedCategory('All');
+              }}
+              className={`py-3 px-5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                selectedMode === 'dining'
+                  ? 'bg-[#FFF7E8] text-[#183A2A] shadow-md scale-[1.01]'
+                  : 'text-[#FFF7E8]/80 hover:text-white hover:bg-[#FFF7E8]/10'
+              }`}
+            >
+              <span className="text-base">🍽️</span>
+              <span>1. DINING MENU (ALL ITEMS)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedMode('delivery');
+                setSelectedCategory('All');
+              }}
+              className={`py-3 px-5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                selectedMode === 'delivery'
+                  ? 'bg-[#F47B20] text-white shadow-md scale-[1.01]'
+                  : 'text-[#FFF7E8]/80 hover:text-white hover:bg-[#FFF7E8]/10'
+              }`}
+            >
+              <span className="text-base">🛵</span>
+              <span>2. DELIVERY MENU (SPECIALS ONLY)</span>
+            </button>
+          </div>
+
+          {/* Delivery Strict Restrictions Notice Banner */}
+          {selectedMode === 'delivery' && (
+            <div className="bg-[#F47B20]/20 border border-[#F47B20]/50 p-3 rounded-2xl text-center text-xs font-bold text-[#FFF7E8] space-y-0.5">
+              <span>🛵 <strong>Delivery Section Active:</strong> Starters, Rice Bowls, and Biryanis (Veg & Non-Veg) only.</span>
+              <span className="block text-[11px] text-[#FFF7E8]/80 font-normal">
+                (Breakfast, Beverages, Burgers, Pizzas & Sandwiches are strictly available under 🍽️ <strong>Dining Menu</strong>).
+              </span>
+            </div>
+          )}
+
+          {/* 🏷️ FAST CATEGORY PILLS BAR */}
           <div className="space-y-2 pt-2">
             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-              {PRESET_CATEGORIES.map((cat) => (
+              {(selectedMode === 'delivery' ? DELIVERY_CATEGORIES : DINING_CATEGORIES).map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}

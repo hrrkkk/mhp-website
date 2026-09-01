@@ -47,15 +47,14 @@ const CartPage = () => {
 
   const [activePaymentSession, setActivePaymentSession] = useState(null);
 
-  const isRestrictedForDining = (categoryName, subcategoryName = '', itemTitle = '') => {
+  const isRestrictedForDelivery = (categoryName = '', subcategoryName = '', itemTitle = '') => {
     const cat = (categoryName || '').toLowerCase().trim();
     const sub = (subcategoryName || '').toLowerCase().trim();
     const title = (itemTitle || '').toLowerCase().trim();
 
-    if (cat.includes('breakfast') || sub.includes('breakfast') || title.includes('breakfast')) return true;
-    if (cat.includes('burger') || sub.includes('burger') || title.includes('burger')) return true;
-    if (cat.includes('pizza') || sub.includes('pizza') || title.includes('pizza')) return true;
-    if (cat.includes('sandwich') || sub.includes('sandwich') || title.includes('sandwich')) return true;
+    if (cat.includes('breakfast') || sub.includes('breakfast') || title.includes('dosa') || title.includes('idly') || title.includes('vada') || title.includes('puri')) return true;
+    if (cat.includes('beverage') || cat.includes('shake') || cat.includes('mocktail') || cat.includes('juice') || cat.includes('drink') || sub.includes('beverage')) return true;
+    if (cat.includes('burger') || cat.includes('pizza') || cat.includes('sandwich') || cat.includes('wrap') || sub.includes('burger') || sub.includes('pizza') || sub.includes('sandwich')) return true;
     return false;
   };
 
