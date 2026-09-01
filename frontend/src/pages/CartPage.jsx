@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import ThreeDLogoEmblem from '../components/common/ThreeDLogoEmblem';
 import OrderStatusTracker from '../components/orders/OrderStatusTracker';
+import MhpOfficialBill from '../components/orders/MhpOfficialBill';
 import { getImageUrl, handleImageError } from '../utils/imageUtils';
 
 const CartPage = () => {
@@ -264,33 +265,29 @@ const CartPage = () => {
           </div>
         )}
 
-        {/* ORDER CONFIRMED VIEW */}
+        {/* ORDER CONFIRMED VIEW WITH OFFICIAL BILL & RECEIVED BOX */}
         {placedOrder ? (
           <div className="max-w-2xl mx-auto space-y-6">
-            <div className="bg-white p-8 sm:p-10 rounded-3xl border border-[#7D967E]/30 text-center space-y-6 shadow-xl">
+            <div className="bg-white p-8 sm:p-10 rounded-3xl border border-[#7D967E]/30 text-center space-y-4 shadow-xl">
               <div className="w-16 h-16 rounded-full bg-[#183A2A]/10 text-[#F47B20] border border-[#F47B20]/30 flex items-center justify-center mx-auto shadow-sm">
                 <CheckCircle2 className="w-8 h-8 text-[#F47B20]" />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <span className="text-xs font-black text-[#F47B20] uppercase tracking-widest block">
-                  PAYMENT CONFIRMED
+                  PAYMENT & ORDER CONFIRMED
                 </span>
                 <h2 className="font-display font-extrabold text-3xl text-[#183A2A] tracking-tight">
-                  ORDER CONFIRMED
+                  ORDER PLACED SUCCESSFULLY
                 </h2>
-              </div>
-
-              <div className="bg-[#FFF7E8] p-5 rounded-2xl border border-[#7D967E]/30 space-y-1.5 max-w-md mx-auto">
-                <span className="text-[10px] text-[#7D967E] font-black uppercase tracking-wider block">Official Billing Token</span>
-                <span className="text-3xl font-mono font-black text-[#F47B20] tracking-widest block">
-                  {placedOrder.billingNumber || placedOrder._id?.slice(-6).toUpperCase()}
-                </span>
               </div>
             </div>
 
             {/* LIVE ORDER STATUS TRACKER COMPONENT */}
             <OrderStatusTracker order={placedOrder} />
+
+            {/* OFFICIAL MHP BILL COMPONENT WITH ITEMIZATION, RECEIVED BOX (YES/NO), & FEEDBACK */}
+            <MhpOfficialBill order={placedOrder} />
 
             <div className="bg-white p-6 rounded-3xl border border-[#7D967E]/30 space-y-4 shadow-md text-center">
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">

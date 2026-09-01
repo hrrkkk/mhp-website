@@ -47,20 +47,18 @@ function formatBillingDate() {
 }
 
 function generateBillingNumber() {
-  const dateStr = formatBillingDate();
-  const prefix = `MHP-${dateStr}-`;
-
   const allBills = db.find('bills', {}) || [];
-  const todayBills = allBills.filter(b => b.billingNumber && b.billingNumber.startsWith(prefix));
+  const allOrders = db.find('orders', {}) || [];
 
-  let seq = todayBills.length + 1;
-  let seqStr = String(seq).padStart(4, '0');
-  let candidate = `${prefix}${seqStr}`;
+  const maxCount = Math.max(allBills.length, allOrders.length);
+  let seq = maxCount + 1;
+  let seqStr = String(seq).padStart(3, '0');
+  let candidate = `mhp${seqStr}`;
 
   let attempt = 1;
-  while (allBills.some(b => b.billingNumber === candidate)) {
-    seqStr = String(todayBills.length + 1 + attempt).padStart(4, '0');
-    candidate = `${prefix}${seqStr}`;
+  while (allBills.some(b => b.billingNumber === candidate) || allOrders.some(o => o.billingNumber === candidate || o.orderNumber === candidate)) {
+    seqStr = String(maxCount + 1 + attempt).padStart(3, '0');
+    candidate = `mhp${seqStr}`;
     attempt++;
   }
 

@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext';
 import LoadingSkeleton from '../components/common/LoadingSkeleton';
 import ThreeDSpatialCard from '../components/common/ThreeDSpatialCard';
 import OrderStatusTracker from '../components/orders/OrderStatusTracker';
+import MhpOfficialBill from '../components/orders/MhpOfficialBill';
 import {
   User,
   ShoppingBag,
@@ -610,70 +611,28 @@ const CustomerProfile = () => {
 
       </div>
 
-      {/* Order Details Modal for Real Orders */}
+      {/* Order Details Modal with Official MHP Bill & Received Box */}
       {selectedOrderModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white border border-[#7D967E]/30 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white border border-[#7D967E]/30 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative my-8 max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setSelectedOrderModal(null)}
-              className="absolute top-5 right-5 p-2 rounded-xl bg-[#FFF7E8] text-[#183A2A] hover:bg-[#183A2A] hover:text-white transition-all"
+              className="absolute top-5 right-5 p-2 rounded-xl bg-[#FFF7E8] text-[#183A2A] hover:bg-[#183A2A] hover:text-white transition-all cursor-pointer z-10"
+              title="Close"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="text-center space-y-1 pt-2">
-              <span className="px-3 py-1 rounded-full bg-[#183A2A]/10 text-[#183A2A] text-[11px] font-extrabold uppercase border border-[#7D967E]/30">
-                Official Order Receipt
-              </span>
-              <h3 className="font-display font-bold text-2xl text-[#183A2A]">
-                Order #{selectedOrderModal.billingNumber || selectedOrderModal._id?.slice(-6).toUpperCase()}
-              </h3>
-              <p className="text-xs text-[#7D967E]">
-                Pickup Point: <strong className="text-[#202522]">{selectedOrderModal.pickupPoint || 'N Block Counter'}</strong>
-              </p>
-            </div>
-
             {/* LIVE ORDER STATUS PROGRESS TRACKER */}
             <OrderStatusTracker order={selectedOrderModal} />
 
-            {/* Items Summary */}
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-[#7D967E] uppercase block">Item Details</span>
-              <div className="bg-[#FFF7E8] rounded-xl p-4 border border-[#7D967E]/20 space-y-2 text-xs">
-                {(selectedOrderModal.items || []).map((it, idx) => (
-                  <div key={idx} className="flex justify-between items-center">
-                    <span className="text-[#202522]">
-                      {it.quantity}x {it.name}
-                    </span>
-                    <span className="font-mono text-[#F47B20] font-bold">₹{it.price * it.quantity}</span>
-                  </div>
-                ))}
-                <div className="border-t border-[#7D967E]/30 pt-2 flex justify-between items-center text-sm font-bold">
-                  <span className="text-[#183A2A]">Total Amount Paid</span>
-                  <span className="text-[#F47B20] font-mono">
-                    ₹{selectedOrderModal.totalAmount || selectedOrderModal.items?.reduce((a, b) => a + b.price * b.quantity, 0)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Actions */}
-            <div className="flex items-center gap-3 pt-2">
-              {selectedOrderModal.status !== 'ORDER RECEIVED' && selectedOrderModal.status !== 'COMPLETED' && (
-                <button
-                  onClick={(e) => handleMarkReceived(selectedOrderModal._id, e)}
-                  className="btn-mhp-primary text-xs py-3 flex-1"
-                >
-                  Confirm Pickup & Received
-                </button>
-              )}
-              <button
-                onClick={() => setSelectedOrderModal(null)}
-                className="btn-mhp-secondary text-xs py-3 flex-1"
-              >
-                Close Receipt
-              </button>
-            </div>
+            {/* OFFICIAL MHP BILL COMPONENT WITH ITEMIZATION, RECEIVED BOX (YES/NO), & FEEDBACK */}
+            <MhpOfficialBill 
+              order={selectedOrderModal} 
+              onStatusUpdate={(newStatus) => {
+                setOrders(prev => prev.map(o => (o._id === selectedOrderModal._id || o.id === selectedOrderModal.id) ? { ...o, status: newStatus } : o));
+              }}
+            />
           </div>
         </div>
       )}

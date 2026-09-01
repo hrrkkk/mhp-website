@@ -2110,10 +2110,16 @@
       "dailyOverrides": {
         "2026-09-01": {
           "orderingStartTime": "09:30",
-          "orderingEndTime": "10:30",
+          "orderingEndTime": "23:59",
           "pickupStartTime": "12:00",
-          "pickupEndTime": "13:00"
+          "pickupEndTime": "23:59"
         }
+      },
+      "latestCustomSlot": {
+        "orderingStartTime": "09:30",
+        "orderingEndTime": "23:59",
+        "pickupStartTime": "12:00",
+        "pickupEndTime": "23:59"
       }
     },
     "adminPhoneNumbers": [

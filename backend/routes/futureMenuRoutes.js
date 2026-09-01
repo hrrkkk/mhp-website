@@ -637,10 +637,12 @@ router.post('/orders', async (req, res) => {
       : 0;
     const total = trustedSubtotal + parcelCharge;
 
-    const orderNumber = `MHP-${Date.now().toString().slice(-6)}`;
+    const billingNumber = billingService.generateBillingNumber();
+    const orderNumber = billingNumber;
     const transactionId = `TXN-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     const newOrder = db.insert('orders', {
+      billingNumber,
       orderId: orderNumber,
       orderNumber,
       customerName: customerName || 'Campus Student',
