@@ -2070,6 +2070,43 @@
       "billingStatus": "BILLED",
       "externalSyncStatus": "LOCAL_ONLY",
       "orderCreatedAt": "2026-08-30T05:37:30.435Z"
+    },
+    {
+      "_id": "2da6a192af3c97d1",
+      "id": "e2e5db23862c8b92",
+      "createdAt": "2026-09-01T16:54:57.986Z",
+      "billingNumber": "mhp073",
+      "orderId": "145b76371c82e24f",
+      "orderNumber": "mhp072",
+      "studentId": "",
+      "customerName": "Test Student",
+      "customerPhone": "9876543210",
+      "orderType": "Pickup",
+      "items": [
+        {
+          "_id": "Special Chicken Biryani",
+          "foodId": "Special Chicken Biryani",
+          "name": "Special Chicken Biryani",
+          "category": "Biryanis",
+          "subcategory": "",
+          "foodType": "Veg",
+          "image": "",
+          "unitPrice": 180,
+          "price": 180,
+          "quantity": 2,
+          "selectedOptionLabel": null,
+          "subtotal": 360
+        }
+      ],
+      "itemQuantities": 2,
+      "subtotal": 360,
+      "parcelCharge": 20,
+      "total": 380,
+      "paymentMethod": "UPI",
+      "paymentStatus": "PAID",
+      "billingStatus": "BILLED",
+      "externalSyncStatus": "LOCAL_ONLY",
+      "orderCreatedAt": "2026-09-01T16:54:57.980Z"
     }
   ],
   "settings": {
@@ -2106,21 +2143,7 @@
       "orderingEndTime": "10:30",
       "pickupStartTime": "12:00",
       "hasTodayOverride": false,
-      "orderingStartTime": "09:30",
-      "dailyOverrides": {
-        "2026-09-01": {
-          "orderingStartTime": "09:30",
-          "orderingEndTime": "23:59",
-          "pickupStartTime": "12:00",
-          "pickupEndTime": "23:59"
-        }
-      },
-      "latestCustomSlot": {
-        "orderingStartTime": "09:30",
-        "orderingEndTime": "23:59",
-        "pickupStartTime": "12:00",
-        "pickupEndTime": "23:59"
-      }
+      "orderingStartTime": "09:30"
     },
     "adminPhoneNumbers": [
       "7672022351"
@@ -10020,6 +10043,59 @@
       "externalSyncStatus": "LOCAL_ONLY",
       "orderReceived": false,
       "orderReceivedStatus": "NOT CONFIRMED"
+    },
+    {
+      "_id": "145b76371c82e24f",
+      "id": "eada529c73aa88d6",
+      "createdAt": "2026-09-01T16:54:57.980Z",
+      "billingNumber": "mhp073",
+      "orderId": "mhp072",
+      "orderNumber": "mhp072",
+      "customerName": "Test Student",
+      "customerPhone": "9876543210",
+      "studentPhone": "9876543210",
+      "studentId": "",
+      "pickupPoint": "N BLOCK",
+      "pickupLocation": "N BLOCK",
+      "items": [
+        {
+          "_id": "Special Chicken Biryani",
+          "foodId": "Special Chicken Biryani",
+          "name": "Special Chicken Biryani",
+          "category": "Biryanis",
+          "subcategory": "",
+          "foodType": "Veg",
+          "image": "",
+          "unitPrice": 180,
+          "price": 180,
+          "quantity": 2,
+          "selectedOptionLabel": null,
+          "subtotal": 360
+        }
+      ],
+      "totalItemCount": 2,
+      "subtotal": 360,
+      "orderType": "Pickup",
+      "orderMode": "Pickup",
+      "parcelCharge": 20,
+      "total": 380,
+      "totalAmount": 380,
+      "paymentMethod": "UPI",
+      "paymentMode": "UPI",
+      "paymentStatus": "PAID",
+      "paymentReference": "TXN-1788281697980-8280",
+      "transactionId": "TXN-1788281697980-8280",
+      "orderStatus": "CONFIRMED",
+      "status": "CONFIRMED",
+      "notes": "",
+      "placedAt": "2026-09-01T16:54:57.980Z",
+      "paidAt": "2026-09-01T16:54:57.980Z",
+      "billingId": "2da6a192af3c97d1",
+      "billingStatus": "BILLED",
+      "externalSyncStatus": "LOCAL_ONLY",
+      "orderReceived": false,
+      "orderReceivedStatus": "NOT CONFIRMED",
+      "updatedAt": "2026-09-01T16:54:57.990Z"
     }
   ]
 }

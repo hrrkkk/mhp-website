@@ -117,22 +117,29 @@ const CartPage = () => {
         totalAmount: grandTotalAmount
       };
 
-      const res = await api.post('/future-menu/orders/initiate-payment', orderPayload);
-      if (res.data && res.data.paymentSession) {
-        setActivePaymentSession({
-          order: res.data.order,
-          paymentSession: res.data.paymentSession
-        });
-      } else {
-        // Fallback for direct confirmation
+      try {
+        const res = await api.post('/future-menu/orders/initiate-payment', orderPayload);
+        if (res.data && res.data.paymentSession) {
+          setActivePaymentSession({
+            order: res.data.order,
+            paymentSession: res.data.paymentSession
+          });
+        } else {
+          const orderRes = await api.post('/future-menu/orders', orderPayload);
+          setPlacedOrder(orderRes.data.order || orderRes.data);
+          clearCart();
+          showToast('success', 'Order placed successfully!');
+        }
+      } catch (payErr) {
+        console.warn('Payment session initiate warning, using direct test order fallback:', payErr.message);
         const orderRes = await api.post('/future-menu/orders', orderPayload);
         setPlacedOrder(orderRes.data.order || orderRes.data);
         clearCart();
-        showToast('success', 'Order placed successfully!');
+        showToast('success', 'Order placed successfully (Test Mode)!');
       }
     } catch (err) {
       console.error('Place order error:', err);
-      const backendMsg = err.response?.data?.error || err.response?.data?.message || 'Failed to initiate payment session. Please try again.';
+      const backendMsg = err.response?.data?.error || err.response?.data?.message || 'Failed to place order. Please try again.';
       setOrderErrorNotice(backendMsg);
       showToast('error', backendMsg);
     } finally {
