@@ -475,6 +475,7 @@ class SupabaseDatabase {
     }
 
     this.saveSettingsToSupabase();
+    this.saveToLocalJson();
     return this.getOrderingSlot(todayStr);
   }
 
@@ -483,6 +484,7 @@ class SupabaseDatabase {
     if (this.cache.settings?.orderingSlot?.dailyOverrides) {
       delete this.cache.settings.orderingSlot.dailyOverrides[todayStr];
       this.saveSettingsToSupabase();
+      this.saveToLocalJson();
     }
     return this.getOrderingSlot(todayStr);
   }
