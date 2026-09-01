@@ -78,7 +78,7 @@ const AdminLogin = () => {
               <input
                 type="text"
                 required
-                placeholder="7672022351 or admin@mhp.vfstr.ac.in"
+                placeholder="Enter registered mobile number or email"
                 value={phoneOrEmail}
                 onChange={(e) => setPhoneOrEmail(e.target.value)}
                 className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-[#10271C] border border-[#7D967E]/40 text-[#FFF7E8] text-xs font-bold placeholder-[#7D967E]/60 focus:outline-none focus:border-[#F47B20]"

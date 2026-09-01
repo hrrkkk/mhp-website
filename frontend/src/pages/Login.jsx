@@ -122,7 +122,7 @@ const Login = () => {
                 <input
                   type="text"
                   required
-                  placeholder="student@vignan.ac.in or 9123456789"
+                  placeholder="Enter your phone or email"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#FFF7E8]/50 border border-[#7D967E]/30 text-[#183A2A] font-bold placeholder-[#7D967E]/60 focus:outline-none focus:border-[#F47B20] focus:ring-1 focus:ring-[#F47B20]"

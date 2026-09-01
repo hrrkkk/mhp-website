@@ -1,17 +1,31 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
+function cleanSupabaseUrl(rawUrl) {
+  if (!rawUrl) return '';
+  return rawUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+}
+
 function isSupabaseConfigured() {
-  const url = process.env.SUPABASE_URL;
+  const url = cleanSupabaseUrl(process.env.SUPABASE_URL);
   const key = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   return Boolean(url && key);
+}
+
+function toUUID(str) {
+  if (!str) return '00000000-0000-4000-a000-000000000001';
+  if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(str)) {
+    return str;
+  }
+  const clean = String(str).replace(/[^a-fA-F0-9]/g, '').padEnd(32, '0').slice(0, 32);
+  return `${clean.slice(0,8)}-${clean.slice(8,12)}-4${clean.slice(13,16)}-a${clean.slice(17,20)}-${clean.slice(20,32)}`;
 }
 
 let supabase = null;
 if (isSupabaseConfigured()) {
   try {
     const { createClient } = require('@supabase/supabase-js');
-    const url = process.env.SUPABASE_URL;
+    const url = cleanSupabaseUrl(process.env.SUPABASE_URL);
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
     supabase = createClient(url, key);
   } catch (err) {
@@ -93,15 +107,15 @@ function mapRowToUser(row) {
 function mapUserToRow(user) {
   if (!user) return null;
   return {
-    id: user.id || user._id,
+    id: toUUID(user.id || user._id),
     name: user.name,
-    email: user.email,
+    email: (user.email && user.email.trim()) ? user.email.trim() : null,
     password: user.password,
-    phone: user.phone,
+    phone: user.phone || null,
     role: user.role,
-    student_id: user.studentId,
-    hostel_info: user.hostelInfo,
-    avatar: user.avatar
+    student_id: user.studentId || null,
+    hostel_info: user.hostelInfo || null,
+    avatar: user.avatar || ''
   };
 }
 
