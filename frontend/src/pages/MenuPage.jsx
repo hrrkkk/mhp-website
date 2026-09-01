@@ -268,7 +268,7 @@ const MenuPage = () => {
 
   const handleAddToCart = (item) => {
     if (!isOrderingOpen) {
-      showToast('error', 'Ordering is currently closed. Ordering window is 9:30 AM – 10:30 AM.');
+      showToast('error', `Ordering is currently closed. Today's ordering window is ${getOrderingTimeWindowText(orderingSlot)}.`);
       return;
     }
 
@@ -291,7 +291,7 @@ const MenuPage = () => {
     if (success !== false) {
       showToast('success', `Added ${item.name} to cart`);
     } else {
-      showToast('error', 'Ordering is currently closed. Ordering window is 9:30 AM – 10:30 AM.');
+      showToast('error', `Ordering is currently closed. Today's ordering window is ${getOrderingTimeWindowText(orderingSlot)}.`);
     }
   };
 
@@ -299,7 +299,7 @@ const MenuPage = () => {
     e.preventDefault();
     if (cartItems.length === 0) return;
     if (!isOrderingOpen) {
-      showToast('error', 'Ordering window is closed. Place orders between 9:30 AM and 10:30 AM.');
+      showToast('error', `Ordering window is closed. Today's active ordering window is ${getOrderingTimeWindowText(orderingSlot)}.`);
       return;
     }
 

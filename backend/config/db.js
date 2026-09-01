@@ -410,7 +410,9 @@ class SupabaseDatabase {
     };
 
     const dailyOverrides = this.cache.settings?.orderingSlot?.dailyOverrides || {};
-    const todayOverride = dailyOverrides[todayStr] || null;
+    const overrideKeys = Object.keys(dailyOverrides);
+    const latestKey = overrideKeys.length > 0 ? overrideKeys[overrideKeys.length - 1] : null;
+    const todayOverride = dailyOverrides[todayStr] || (latestKey ? dailyOverrides[latestKey] : null) || this.cache.settings?.orderingSlot?.latestCustomSlot || null;
 
     const activeSlot = {
       orderingStartTime: todayOverride?.orderingStartTime || defaults.orderingStartTime,
@@ -466,12 +468,15 @@ class SupabaseDatabase {
       const currentFull = this.getOrderingSlot(todayStr);
       const currentActive = currentFull.activeSlot;
 
-      this.cache.settings.orderingSlot.dailyOverrides[todayStr] = {
+      const newOverride = {
         orderingStartTime: orderingStartTime || existingToday.orderingStartTime || currentActive.orderingStartTime,
         orderingEndTime: orderingEndTime || existingToday.orderingEndTime || currentActive.orderingEndTime,
         pickupStartTime: pickupStartTime || existingToday.pickupStartTime || currentActive.pickupStartTime,
         pickupEndTime: pickupEndTime || existingToday.pickupEndTime || currentActive.pickupEndTime
       };
+
+      this.cache.settings.orderingSlot.dailyOverrides[todayStr] = newOverride;
+      this.cache.settings.orderingSlot.latestCustomSlot = newOverride;
     }
 
     this.saveSettingsToSupabase();

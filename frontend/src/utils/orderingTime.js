@@ -27,15 +27,27 @@ export const getISTCurrentMinutes = () => {
   }
 };
 
-/**
- * Checks if ordering is permitted based on API slot status or local IST time (9:30 AM - 10:30 AM).
- * @param {Object|null} slotData - Data returned from GET /api/ordering-slot
- * @returns {boolean} true if ordering is allowed, false otherwise.
- */
 export const isOrderingTimeOpen = (slotData = null) => {
   if (slotData && typeof slotData.isOpen === 'boolean') {
     return slotData.isOpen;
   }
+
+  // Check local storage cached admin slot override
+  try {
+    const cachedSlot = localStorage.getItem('mhp_today_slot');
+    if (cachedSlot) {
+      const parsed = JSON.parse(cachedSlot);
+      if (parsed.orderingStartTime && parsed.orderingEndTime) {
+        const currentMins = getISTCurrentMinutes();
+        const [sh, sm] = parsed.orderingStartTime.split(':').map(Number);
+        const [eh, em] = parsed.orderingEndTime.split(':').map(Number);
+        const startMins = sh * 60 + sm;
+        const endMins = eh * 60 + em;
+        return currentMins >= startMins && currentMins < endMins;
+      }
+    }
+  } catch (e) {}
+
   // Default window: 9:30 AM (570 mins) to 10:30 AM (630 mins) IST
   const currentMins = getISTCurrentMinutes();
   const startMins = 9 * 60 + 30; // 09:30 AM
@@ -50,5 +62,14 @@ export const getOrderingTimeWindowText = (slotData = null) => {
   if (slotData && slotData.orderingWindow) {
     return slotData.orderingWindow;
   }
+  try {
+    const cachedSlot = localStorage.getItem('mhp_today_slot');
+    if (cachedSlot) {
+      const parsed = JSON.parse(cachedSlot);
+      if (parsed.orderingStartTime && parsed.orderingEndTime) {
+        return `${parsed.orderingStartTime} – ${parsed.orderingEndTime}`;
+      }
+    }
+  } catch (e) {}
   return '9:30 AM – 10:30 AM';
 };
