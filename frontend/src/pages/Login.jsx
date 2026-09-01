@@ -63,13 +63,6 @@ const Login = () => {
     });
   };
 
-  const fillAdminDemo = () => {
-    setFormData({
-      phone: 'admin@mhp.vfstr.ac.in',
-      password: 'AdminPassword123!'
-    });
-  };
-
   return (
     <div className="bg-[#FFF7E8] text-[#202522] min-h-screen py-12 flex items-center justify-center px-4 font-sans selection:bg-[#F47B20] selection:text-white">
       <div className="max-w-md w-full">
@@ -84,38 +77,27 @@ const Login = () => {
                 VFSTR CAMPUS PORTAL
               </span>
               <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-[#183A2A]">
-                Sign In to MHP
+                Student Sign In
               </h1>
             </div>
             <p className="text-xs text-[#7D967E] font-medium leading-relaxed">
-              Sign in with your phone or email (Students & Admin Staff).
+              Sign in with your phone or email.
             </p>
           </div>
 
           {/* Quick Demo Credentials Autofill */}
           <div className="bg-[#FFF7E8] p-3.5 rounded-2xl border border-[#7D967E]/30 text-center space-y-2">
             <span className="text-[10px] font-black text-[#7D967E] uppercase tracking-wider block">
-              QUICK DEMO CREDENTIALS
+              QUICK DEMO STUDENT CREDENTIALS
             </span>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={fillStudentDemo}
-                className="py-2 px-2.5 rounded-xl bg-[#183A2A] hover:bg-[#204935] text-[#FFF7E8] text-[11px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer shadow-xs"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-[#F47B20]" />
-                <span>Demo Student</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={fillAdminDemo}
-                className="py-2 px-2.5 rounded-xl bg-[#F47B20] hover:bg-[#FF882E] text-white text-[11px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer shadow-xs"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-white" />
-                <span>Demo Admin</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={fillStudentDemo}
+              className="w-full py-2 px-3 rounded-xl bg-[#183A2A] hover:bg-[#204935] text-[#FFF7E8] text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#F47B20]" />
+              <span>Auto-fill Demo Student</span>
+            </button>
           </div>
 
           {/* Inline Login Failure Error Alert */}

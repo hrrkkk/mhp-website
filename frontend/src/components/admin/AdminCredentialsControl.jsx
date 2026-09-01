@@ -14,7 +14,7 @@ const AdminCredentialsControl = () => {
   const { user, updateProfile } = useAuth();
   const { showToast } = useToast();
 
-  const [phone, setPhone] = useState(user?.phone || '7672022351');
+  const [phone, setPhone] = useState(user?.phone || '');
   const [updatingPhone, setUpdatingPhone] = useState(false);
 
   const [passwords, setPasswords] = useState({
@@ -168,7 +168,7 @@ const AdminCredentialsControl = () => {
                 <input
                   type="password"
                   required
-                  placeholder="mhp@zest143"
+                  placeholder="Enter current password"
                   value={passwords.currentPassword}
                   onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
                   className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#FFFFFF] border border-[#7D967E]/30 text-[#183A2A] font-bold focus:outline-none focus:border-[#F47B20]"

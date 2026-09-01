@@ -137,8 +137,10 @@ class SupabaseDatabase {
       const adminEmail = 'admin@mhp.vfstr.ac.in';
       const adminPhone = '7672022351';
       let existing = this.findOne('users', u => u.role === 'admin' || u.phone === adminPhone || (u.email && u.email.toLowerCase() === adminEmail));
+      
+      const hashedPassword = await bcrypt.hash('mhp@zest143', 10);
+
       if (!existing) {
-        const hashedPassword = await bcrypt.hash('mhp@zest143', 10);
         this.insert('users', {
           name: 'MHP Administrator',
           email: adminEmail,
@@ -149,10 +151,17 @@ class SupabaseDatabase {
           hostelInfo: 'MHP Office, Near N Block',
           avatar: ''
         });
-        console.log('✅ Auto-seeded admin user: Phone 7672022351 / Password mhp@zest143');
+        console.log('✅ Admin user account verified (Phone: 7672022351)');
       } else {
-        if (!existing.phone || existing.phone === '9876543210') {
-          this.updateById('users', existing._id, { phone: adminPhone });
+        // Verify if password matches mhp@zest143; if not, sync password & phone
+        const isMatch = await bcrypt.compare('mhp@zest143', existing.password || '');
+        if (!isMatch || existing.phone !== adminPhone || existing.role !== 'admin') {
+          this.updateById('users', existing._id || existing.id, {
+            phone: adminPhone,
+            password: isMatch ? existing.password : hashedPassword,
+            role: 'admin'
+          });
+          console.log('✅ Updated admin user account credentials & phone in database cache & Supabase');
         }
       }
     } catch (e) {

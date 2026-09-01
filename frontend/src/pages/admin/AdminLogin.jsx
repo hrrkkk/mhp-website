@@ -38,11 +38,6 @@ const AdminLogin = () => {
     }
   };
 
-  const fillAdminDemo = () => {
-    setPhoneOrEmail('7672022351');
-    setPassword('mhp@zest143');
-  };
-
   return (
     <div className="min-h-screen bg-[#FFF7E8] text-[#202522] flex items-center justify-center px-4 py-12 selection:bg-[#F47B20] selection:text-white font-sans">
       <div className="max-w-md w-full bg-[#183A2A] text-[#FFF7E8] p-6 sm:p-8 rounded-3xl border-2 border-[#7D967E]/40 space-y-6 shadow-2xl">
@@ -72,21 +67,6 @@ const AdminLogin = () => {
           </div>
           <h1 className="font-display font-extrabold text-2xl text-[#FFF7E8]">MHP Staff Login</h1>
           <p className="text-xs text-[#7D967E] font-medium">Internal Portal Access • VFSTR Campus Vadlamudi</p>
-        </div>
-
-        {/* Admin Quick Fill */}
-        <div className="bg-[#204935]/80 p-3.5 rounded-2xl border border-[#7D967E]/30 text-center space-y-2">
-          <p className="text-[10px] font-black text-[#7D967E] uppercase tracking-widest">
-            Admin Staff Credentials
-          </p>
-          <button
-            type="button"
-            onClick={fillAdminDemo}
-            className="w-full py-2 px-3 rounded-xl bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs font-extrabold transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
-          >
-            <ShieldCheck className="w-4 h-4" />
-            Auto-fill Admin (7672022351 / mhp@zest143)
-          </button>
         </div>
 
         {/* Form */}
