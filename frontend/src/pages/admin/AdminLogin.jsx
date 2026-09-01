@@ -6,8 +6,8 @@ import { ShieldCheck, Mail, Lock, LogIn, Globe } from 'lucide-react';
 import ThreeDLogoEmblem from '../../components/common/ThreeDLogoEmblem';
 
 const AdminLogin = () => {
-  const [phoneOrEmail, setPhoneOrEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [phoneOrEmail, setPhoneOrEmail] = useState('7672022351');
+  const [password, setPassword] = useState('mhp@zest143');
   const [submitting, setSubmitting] = useState(false);
 
   const { login } = useAuth();
@@ -32,7 +32,7 @@ const AdminLogin = () => {
       }
     } catch (err) {
       console.error('Admin Login error:', err);
-      showToast('error', err.response?.data?.error || 'Invalid admin credentials');
+      showToast('error', err.response?.data?.error || 'Invalid admin credentials. Use Mobile: 7672022351 & Password: mhp@zest143');
     } finally {
       setSubmitting(false);
     }
@@ -67,6 +67,36 @@ const AdminLogin = () => {
           </div>
           <h1 className="font-display font-extrabold text-2xl text-[#FFF7E8]">MHP Staff Login</h1>
           <p className="text-xs text-[#7D967E] font-medium">Internal Portal Access • VFSTR Campus Vadlamudi</p>
+        </div>
+
+        {/* Default Admin Credentials Helper Card */}
+        <div className="bg-[#10271C] border border-[#F47B20]/40 rounded-2xl p-4 space-y-2.5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-black text-[#F47B20] uppercase tracking-wider flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#F47B20]" />
+              Staff Login Credentials
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setPhoneOrEmail('7672022351');
+                setPassword('mhp@zest143');
+              }}
+              className="text-[10px] bg-[#F47B20]/20 hover:bg-[#F47B20] text-[#F47B20] hover:text-white px-2.5 py-1 rounded-lg font-extrabold border border-[#F47B20]/40 transition-all cursor-pointer"
+            >
+              Auto-fill Credentials
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-[11px] text-[#FFF7E8]/90 font-mono bg-[#183A2A]/80 p-2.5 rounded-xl border border-[#7D967E]/30">
+            <div>
+              <span className="text-[9px] text-[#7D967E] block uppercase font-sans font-bold">Mobile / Email</span>
+              <span className="font-bold text-[#F47B20]">7672022351</span>
+            </div>
+            <div>
+              <span className="text-[9px] text-[#7D967E] block uppercase font-sans font-bold">Password</span>
+              <span className="font-bold">mhp@zest143</span>
+            </div>
+          </div>
         </div>
 
         {/* Form */}

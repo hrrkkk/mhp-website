@@ -32,10 +32,10 @@ export const AuthProvider = ({ children }) => {
     let payload = {};
     if (typeof credentialsOrEmail === 'object' && credentialsOrEmail !== null) {
       payload = credentialsOrEmail;
-    } else if (typeof credentialsOrEmail === 'string' && credentialsOrEmail.includes('@')) {
-      payload = { email: credentialsOrEmail, password };
+    } else if (typeof credentialsOrEmail === 'string' && (credentialsOrEmail.includes('@') || credentialsOrEmail.trim().toLowerCase() === 'admin')) {
+      payload = { email: credentialsOrEmail.trim(), password };
     } else {
-      payload = { phone: credentialsOrEmail, password };
+      payload = { phone: String(credentialsOrEmail).trim(), password };
     }
     const res = await api.post('/auth/login', payload);
     const { token: authToken, user: userData } = res.data;
