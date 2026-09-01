@@ -82,7 +82,7 @@
       "hostelInfo": "MHP Office, Near N Block",
       "avatar": "",
       "createdAt": "2026-09-01T08:32:52.236125+00:00",
-      "updatedAt": "2026-09-01T13:25:09.238Z"
+      "updatedAt": "2026-09-01T08:32:52.236125+00:00"
     }
   ],
   "happenings": [
@@ -2106,7 +2106,15 @@
       "orderingEndTime": "10:30",
       "pickupStartTime": "12:00",
       "hasTodayOverride": false,
-      "orderingStartTime": "09:30"
+      "orderingStartTime": "09:30",
+      "dailyOverrides": {
+        "2026-09-01": {
+          "orderingStartTime": "09:30",
+          "orderingEndTime": "10:30",
+          "pickupStartTime": "12:00",
+          "pickupEndTime": "13:00"
+        }
+      }
     },
     "adminPhoneNumbers": [
       "7672022351"

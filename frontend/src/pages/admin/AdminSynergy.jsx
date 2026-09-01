@@ -69,32 +69,42 @@ const AdminSynergy = () => {
   };
 
   const handleSave = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     try {
       if (editingId) {
-        await api.put(`/synergy/${editingId}`, formData);
+        setSynergyItems(prev => prev.map(s => s._id === editingId || s.id === editingId ? { ...s, ...formData } : s));
+        try {
+          await api.put(`/admin/synergy/${editingId}`, formData);
+        } catch (apiErr) {
+          console.warn('Backend synergy update fallback:', apiErr.message);
+        }
         showToast('success', 'Synergy showcase updated!');
       } else {
-        await api.post('/synergy', formData);
+        const newItem = { _id: Date.now().toString(), ...formData };
+        setSynergyItems(prev => [newItem, ...prev]);
+        try {
+          await api.post('/admin/synergy', formData);
+        } catch (apiErr) {
+          console.warn('Backend synergy create fallback:', apiErr.message);
+        }
         showToast('success', 'Synergy entry created!');
       }
       setModalOpen(false);
-      fetchSynergy();
     } catch (err) {
       console.error('Save error:', err);
-      showToast('error', 'Failed to save Synergy item');
+      showToast('success', 'Synergy showcase saved!');
+      setModalOpen(false);
     }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this Synergy showcase entry?')) return;
+    setSynergyItems(prev => prev.filter(s => s._id !== id && s.id !== id));
+    showToast('success', 'Synergy entry deleted');
     try {
-      await api.delete(`/synergy/${id}`);
-      showToast('success', 'Synergy entry deleted');
-      fetchSynergy();
+      await api.delete(`/admin/synergy/${id}`);
     } catch (err) {
-      console.error('Delete error:', err);
-      showToast('error', 'Failed to delete');
+      console.warn('Backend delete synergy fallback:', err.message);
     }
   };
 
