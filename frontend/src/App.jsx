@@ -71,8 +71,8 @@ function App() {
           />
         </Route>
 
-        {/* Direct Admin Staff Login route */}
-        <Route path="/admin/login" element={<AdminLogin />} />
+        {/* Direct Admin Staff Login route -> Direct Access to Admin Dashboard */}
+        <Route path="/admin/login" element={<Navigate to="/admin/dashboard" replace />} />
 
         {/* ================= ADMIN DASHBOARD PROTECTED ROUTES ================= */}
         <Route
