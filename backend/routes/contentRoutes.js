@@ -524,6 +524,30 @@ router.get('/admin/daily-sales', requireAdmin, (req, res) => {
   }
 });
 
+// Admin: Manage Staff Phone Numbers
+router.get('/admin/phone-numbers', requireAdmin, (req, res) => {
+  res.json(db.getAdminPhoneNumbers());
+});
+
+router.post('/admin/phone-numbers', requireAdmin, (req, res) => {
+  const { phone } = req.body;
+  if (!phone || String(phone).replace(/\D/g, '').length < 10) {
+    return res.status(400).json({ error: 'Please provide a valid 10-digit mobile number' });
+  }
+  const updatedList = db.addAdminPhoneNumber(phone);
+  res.json(updatedList);
+});
+
+router.delete('/admin/phone-numbers/:phone', requireAdmin, (req, res) => {
+  const { phone } = req.params;
+  const clean = String(phone).replace(/\D/g, '');
+  if (clean === '7672022351') {
+    return res.status(400).json({ error: 'Primary admin number cannot be deleted' });
+  }
+  const updatedList = db.removeAdminPhoneNumber(phone);
+  res.json(updatedList);
+});
+
 // ==========================================
 // 8. NAVBAR MANAGEMENT
 // ==========================================

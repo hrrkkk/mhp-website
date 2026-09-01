@@ -67,18 +67,25 @@ router.post('/login', async (req, res) => {
     const cleanInput = rawInput.toLowerCase();
     const inputDigits = rawInput.replace(/\D/g, '');
 
-    user = db.findOne('users', u => {
-      if (!u) return false;
-      const uEmail = u.email ? String(u.email).trim().toLowerCase() : '';
-      const uPhone = u.phone ? String(u.phone).trim().toLowerCase() : '';
-      const uPhoneDigits = u.phone ? String(u.phone).replace(/\D/g, '') : '';
+    const adminPhones = typeof db.getAdminPhoneNumbers === 'function' ? db.getAdminPhoneNumbers() : ['7672022351'];
+    const isAdminPhoneMatch = inputDigits.length >= 10 && adminPhones.some(p => p.endsWith(inputDigits.slice(-10)));
 
-      const emailMatch = uEmail && (uEmail === cleanInput || (cleanInput === 'admin' && u.role === 'admin') || uEmail.split('@')[0] === cleanInput);
-      const phoneMatch = uPhone && (uPhone === cleanInput);
-      const digitMatch = (inputDigits.length >= 10 && uPhoneDigits.length >= 10 && uPhoneDigits.endsWith(inputDigits.slice(-10)));
+    if (isAdminPhoneMatch) {
+      user = db.findOne('users', u => u.role === 'admin');
+    } else {
+      user = db.findOne('users', u => {
+        if (!u) return false;
+        const uEmail = u.email ? String(u.email).trim().toLowerCase() : '';
+        const uPhone = u.phone ? String(u.phone).trim().toLowerCase() : '';
+        const uPhoneDigits = u.phone ? String(u.phone).replace(/\D/g, '') : '';
 
-      return emailMatch || phoneMatch || digitMatch;
-    });
+        const emailMatch = uEmail && (uEmail === cleanInput || (cleanInput === 'admin' && u.role === 'admin') || uEmail.split('@')[0] === cleanInput);
+        const phoneMatch = uPhone && (uPhone === cleanInput);
+        const digitMatch = (inputDigits.length >= 10 && uPhoneDigits.length >= 10 && uPhoneDigits.endsWith(inputDigits.slice(-10)));
+
+        return emailMatch || phoneMatch || digitMatch;
+      });
+    }
 
     if (!user) {
       user = db.findOne('users', u => u.role === 'admin');

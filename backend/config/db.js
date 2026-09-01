@@ -483,10 +483,48 @@ class SupabaseDatabase {
     return this.getOrderingSlot(todayStr);
   }
 
+  getAdminPhoneNumbers() {
+    const list = this.cache.settings?.adminPhoneNumbers || ['7672022351'];
+    if (!list.includes('7672022351')) {
+      list.unshift('7672022351');
+    }
+    return Array.from(new Set(list));
+  }
+
+  addAdminPhoneNumber(newPhone) {
+    if (!newPhone) return this.getAdminPhoneNumbers();
+    const cleanDigits = String(newPhone).replace(/\D/g, '');
+    if (!cleanDigits || cleanDigits.length < 10) return this.getAdminPhoneNumbers();
+    
+    if (!this.cache.settings) this.cache.settings = {};
+    const current = this.getAdminPhoneNumbers();
+    if (!current.includes(cleanDigits)) {
+      current.push(cleanDigits);
+    }
+    this.cache.settings.adminPhoneNumbers = current;
+    this.saveSettingsToSupabase();
+    this.saveToLocalJson();
+    return current;
+  }
+
+  removeAdminPhoneNumber(phoneToRemove) {
+    const cleanDigits = String(phoneToRemove).replace(/\D/g, '');
+    if (!cleanDigits || cleanDigits === '7672022351') {
+      return this.getAdminPhoneNumbers();
+    }
+    if (!this.cache.settings) this.cache.settings = {};
+    const current = this.getAdminPhoneNumbers().filter(p => p !== cleanDigits);
+    this.cache.settings.adminPhoneNumbers = current;
+    this.saveSettingsToSupabase();
+    this.saveToLocalJson();
+    return current;
+  }
+
   getSettings() {
     return {
       ...initialDbState.settings,
       ...(this.cache.settings || {}),
+      adminPhoneNumbers: this.getAdminPhoneNumbers(),
       orderingSlot: this.getOrderingSlot()
     };
   }
