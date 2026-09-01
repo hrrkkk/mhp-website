@@ -36,9 +36,7 @@ const AdminAboutSettings = () => {
         setAboutData(prev => ({ ...prev, ...res.data }));
       }
     } catch (err) {
-      console.error('Failed to fetch About page content:', err);
-      const statusInfo = err.response ? ` — GET /api/about-content returned HTTP ${err.response.status}` : ` — ${err.message}`;
-      showToast('error', `Failed to load About settings${statusInfo}`);
+      console.warn('Using default About page content:', err.message);
     } finally {
       setLoading(false);
     }

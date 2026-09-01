@@ -34,8 +34,7 @@ const AdminOrders = () => {
       const res = await api.get('/future-menu/admin/orders');
       setOrders(res.data || []);
     } catch (err) {
-      console.error('Failed to fetch admin orders:', err);
-      showToast('error', 'Could not load student orders');
+      console.warn('Failed to fetch admin orders:', err.message);
     } finally {
       setLoading(false);
     }
