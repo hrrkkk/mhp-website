@@ -63,19 +63,22 @@ router.post('/login', async (req, res) => {
     }
 
     let user = null;
+    const rawInput = (phone || email || '').toString().trim();
+    const cleanInput = rawInput.toLowerCase();
+    const inputDigits = rawInput.replace(/\D/g, '');
 
-    if (email && email.trim()) {
-      const searchEmail = email.trim().toLowerCase();
-      user = db.findOne('users', u => u.email && u.email.trim().toLowerCase() === searchEmail);
-    }
+    user = db.findOne('users', u => {
+      if (!u) return false;
+      const uEmail = u.email ? String(u.email).trim().toLowerCase() : '';
+      const uPhone = u.phone ? String(u.phone).trim().toLowerCase() : '';
+      const uPhoneDigits = u.phone ? String(u.phone).replace(/\D/g, '') : '';
 
-    if (!user && phone && phone.trim()) {
-      const searchInput = phone.trim().toLowerCase();
-      user = db.findOne('users', u => 
-        (u.phone && u.phone.trim() === phone.trim()) || 
-        (u.email && u.email.trim().toLowerCase() === searchInput)
-      );
-    }
+      const emailMatch = uEmail && (uEmail === cleanInput);
+      const phoneMatch = uPhone && (uPhone === cleanInput);
+      const digitMatch = (inputDigits.length >= 10 && uPhoneDigits.length >= 10 && uPhoneDigits.endsWith(inputDigits.slice(-10)));
+
+      return emailMatch || phoneMatch || digitMatch;
+    });
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid email/phone or password' });
