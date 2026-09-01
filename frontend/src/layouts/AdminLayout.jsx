@@ -21,7 +21,8 @@ import {
   Receipt,
   Navigation,
   Info,
-  Compass
+  Compass,
+  Sliders
 } from 'lucide-react';
 
 const AdminLayout = () => {
@@ -70,6 +71,12 @@ const AdminLayout = () => {
         { name: "What's Happening", path: '/admin/happenings', icon: Sparkles },
         { name: 'Facilities Cards', path: '/admin/facilities', icon: UtensilsCrossed },
         { name: 'Customer Feedback', path: '/admin/feedback', icon: MessageSquare }
+      ]
+    },
+    {
+      group: 'SYSTEM & CREDENTIALS',
+      items: [
+        { name: 'System Settings', path: '/admin/settings', icon: Sliders }
       ]
     }
   ];

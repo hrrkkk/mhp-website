@@ -37,6 +37,7 @@ import AdminLocationSettings from './pages/admin/AdminLocationSettings';
 import AdminFutureMenu from './pages/admin/AdminFutureMenu';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminBillingCounter from './pages/admin/AdminBillingCounter';
+import AdminSystemSettings from './pages/admin/AdminSystemSettings';
 
 // Guards
 import ProtectedAdminRoute from './components/common/ProtectedAdminRoute';
@@ -98,6 +99,7 @@ function App() {
           <Route path="facilities" element={<AdminFacilities />} />
           <Route path="feedback" element={<AdminFeedback />} />
           <Route path="location-settings" element={<AdminLocationSettings />} />
+          <Route path="settings" element={<AdminSystemSettings />} />
         </Route>
 
         {/* Fallback 404 Redirect */}

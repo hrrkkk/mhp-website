@@ -30,8 +30,7 @@ const AdminNavbarManager = () => {
         setNavItems(res.data.sort((a, b) => (a.order || 0) - (b.order || 0)));
       }
     } catch (err) {
-      console.error('Failed to fetch navbar config:', err);
-      showToast('error', 'Failed to load navbar config');
+      console.warn('Using default navbar config:', err.message);
     } finally {
       setLoading(false);
     }

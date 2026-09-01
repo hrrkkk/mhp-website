@@ -52,8 +52,7 @@ const AdminHomeSettings = () => {
         if (res.data.sectionVisibility) setSectionVisibility(prev => ({ ...prev, ...res.data.sectionVisibility }));
       }
     } catch (err) {
-      console.error('Failed to load home page content:', err);
-      showToast('error', 'Failed to load home page content');
+      console.warn('Using default home content:', err.message);
     } finally {
       setLoading(false);
     }

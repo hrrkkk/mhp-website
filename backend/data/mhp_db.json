@@ -75,14 +75,14 @@
       "id": "223f90d4-5bd4-440c-a000-000000000000",
       "name": "MHP Administrator",
       "email": "admin@mhp.vfstr.ac.in",
-      "password": "$2a$10$AVRCu1//Kbf2E4O6wSCogueYMx5Lj2PV/nIxTgV5QBBi8r8cobaWm",
+      "password": "$2a$10$vxZHNhzn7OW9yRxSx3emcuc18R4vGh3aFVq1D/TXntR90e.ufwVNG",
       "phone": "7672022351",
       "role": "admin",
       "studentId": "STAFF-MHP-01",
       "hostelInfo": "MHP Office, Near N Block",
       "avatar": "",
       "createdAt": "2026-09-01T08:32:52.236125+00:00",
-      "updatedAt": "2026-09-01T08:32:52.236125+00:00"
+      "updatedAt": "2026-09-01T13:25:09.238Z"
     }
   ],
   "happenings": [
@@ -2110,7 +2110,11 @@
     },
     "adminPhoneNumbers": [
       "7672022351"
-    ]
+    ],
+    "adminEmails": [
+      "admin@mhp.vfstr.ac.in"
+    ],
+    "adminCustomPassword": "$2a$10$vxZHNhzn7OW9yRxSx3emcuc18R4vGh3aFVq1D/TXntR90e.ufwVNG"
   },
   "location": {
     "institution": "VFSTR (Vignan's Foundation for Science, Technology & Research)",

@@ -507,17 +507,59 @@ class SupabaseDatabase {
     return current;
   }
 
-  removeAdminPhoneNumber(phoneToRemove) {
-    const cleanDigits = String(phoneToRemove).replace(/\D/g, '');
-    if (!cleanDigits || cleanDigits === '7672022351') {
-      return this.getAdminPhoneNumbers();
+  getAdminEmails() {
+    const list = this.cache.settings?.adminEmails || ['admin@mhp.vfstr.ac.in'];
+    if (!list.includes('admin@mhp.vfstr.ac.in')) {
+      list.unshift('admin@mhp.vfstr.ac.in');
     }
+    return Array.from(new Set(list));
+  }
+
+  addAdminEmail(newEmail) {
+    if (!newEmail) return this.getAdminEmails();
+    const clean = String(newEmail).trim().toLowerCase();
+    if (!clean || !clean.includes('@')) return this.getAdminEmails();
+
     if (!this.cache.settings) this.cache.settings = {};
-    const current = this.getAdminPhoneNumbers().filter(p => p !== cleanDigits);
-    this.cache.settings.adminPhoneNumbers = current;
+    const current = this.getAdminEmails();
+    if (!current.includes(clean)) {
+      current.push(clean);
+    }
+    this.cache.settings.adminEmails = current;
     this.saveSettingsToSupabase();
     this.saveToLocalJson();
     return current;
+  }
+
+  removeAdminEmail(emailToRemove) {
+    const clean = String(emailToRemove).trim().toLowerCase();
+    if (!clean || clean === 'admin@mhp.vfstr.ac.in') {
+      return this.getAdminEmails();
+    }
+    if (!this.cache.settings) this.cache.settings = {};
+    const current = this.getAdminEmails().filter(e => e !== clean);
+    this.cache.settings.adminEmails = current;
+    this.saveSettingsToSupabase();
+    this.saveToLocalJson();
+    return current;
+  }
+
+  async changeAdminPassword(newPassword) {
+    if (!newPassword || newPassword.length < 4) {
+      throw new Error('Password must be at least 4 characters');
+    }
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    const admin = this.findOne('users', u => u.role === 'admin' || u.phone === '7672022351' || (u.email && u.email.toLowerCase() === 'admin@mhp.vfstr.ac.in'));
+    if (admin) {
+      this.updateById('users', admin._id || admin.id, { password: hashedPassword });
+    }
+    if (!this.cache.settings) this.cache.settings = {};
+    this.cache.settings.adminCustomPassword = hashedPassword;
+    this.saveSettingsToSupabase();
+    this.saveToLocalJson();
+    return true;
   }
 
   getSettings() {
@@ -525,6 +567,7 @@ class SupabaseDatabase {
       ...initialDbState.settings,
       ...(this.cache.settings || {}),
       adminPhoneNumbers: this.getAdminPhoneNumbers(),
+      adminEmails: this.getAdminEmails(),
       orderingSlot: this.getOrderingSlot()
     };
   }

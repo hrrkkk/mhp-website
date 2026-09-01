@@ -110,8 +110,7 @@ const AdminFutureMenu = () => {
         });
       }
     } catch (err) {
-      console.error('Error fetching admin menu data:', err);
-      showToast('error', 'Failed to fetch menu items');
+      console.warn('Error fetching admin menu data:', err.message);
     } finally {
       setLoading(false);
     }

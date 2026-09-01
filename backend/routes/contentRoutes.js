@@ -548,6 +548,45 @@ router.delete('/admin/phone-numbers/:phone', requireAdmin, (req, res) => {
   res.json(updatedList);
 });
 
+// Admin: Manage Staff Email Addresses
+router.get('/admin/emails', requireAdmin, (req, res) => {
+  res.json(db.getAdminEmails());
+});
+
+router.post('/admin/emails', requireAdmin, (req, res) => {
+  const { email } = req.body;
+  if (!email || !String(email).includes('@')) {
+    return res.status(400).json({ error: 'Please provide a valid email address' });
+  }
+  const updatedList = db.addAdminEmail(email);
+  res.json(updatedList);
+});
+
+router.delete('/admin/emails/:email', requireAdmin, (req, res) => {
+  const { email } = req.params;
+  const clean = String(email).trim().toLowerCase();
+  if (clean === 'admin@mhp.vfstr.ac.in') {
+    return res.status(400).json({ error: 'Primary admin email cannot be deleted' });
+  }
+  const updatedList = db.removeAdminEmail(email);
+  res.json(updatedList);
+});
+
+// Admin: Change Admin Password
+router.put('/admin/change-password', requireAdmin, async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+    if (!newPassword || newPassword.length < 4) {
+      return res.status(400).json({ error: 'Password must be at least 4 characters long' });
+    }
+    await db.changeAdminPassword(newPassword);
+    res.json({ message: 'Admin password updated successfully!' });
+  } catch (err) {
+    console.error('Failed to change admin password:', err);
+    res.status(500).json({ error: 'Failed to update admin password' });
+  }
+});
+
 // ==========================================
 // 8. NAVBAR MANAGEMENT
 // ==========================================

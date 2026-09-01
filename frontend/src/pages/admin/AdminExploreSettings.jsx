@@ -59,9 +59,7 @@ const AdminExploreSettings = () => {
         }));
       }
     } catch (err) {
-      console.error('Failed to fetch Explore page content:', err);
-      const statusInfo = err.response ? ` — GET /api/explore-content returned HTTP ${err.response.status}` : ` — ${err.message}`;
-      showToast('error', `Failed to load Explore settings${statusInfo}`);
+      console.warn('Using default Explore content:', err.message);
     } finally {
       setLoading(false);
     }
