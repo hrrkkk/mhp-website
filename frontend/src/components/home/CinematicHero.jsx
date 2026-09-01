@@ -43,6 +43,15 @@ const CinematicHero = ({ heroData, orderingSlot = null }) => {
 
   const videoSrc = "/videos/mhp_hero_video.mp4";
   const fallbackVideoSrc = "/videos/WhatsApp%20Video%202026-08-27%20at%209.02.26%20PM.mp4";
+  const posterImg = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1600&q=80";
+
+  const [currentVideo, setCurrentVideo] = useState(videoSrc);
+
+  const handleVideoError = () => {
+    if (currentVideo !== fallbackVideoSrc) {
+      setCurrentVideo(fallbackVideoSrc);
+    }
+  };
 
   return (
     <section 
@@ -50,19 +59,27 @@ const CinematicHero = ({ heroData, orderingSlot = null }) => {
       onMouseLeave={handleMouseLeave}
       className="relative min-h-[88vh] flex items-center justify-center pt-8 pb-16 overflow-hidden bg-[#183A2A] text-[#FFF7E8] border-b border-[#7D967E]/30 preserve-3d select-none"
     >
-      {/* BACKGROUND HERO VIDEO AT 100% OPACITY */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-100 z-0">
+      {/* INSTANT AMBIENT BACKDROP IMAGE (Zero Buffering Delay) */}
+      <div 
+        className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-60 z-0 transition-opacity duration-700"
+        style={{ backgroundImage: `url(${posterImg})` }}
+      />
+
+      {/* BACKGROUND HERO VIDEO WITH INSTANT POSTER */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-90 z-0">
         <video
           ref={bgVideoRef}
           autoPlay
           muted
           loop
           playsInline
+          preload="auto"
+          poster={posterImg}
+          onError={handleVideoError}
           aria-hidden="true"
-          className="w-full h-full object-cover pointer-events-none opacity-100"
+          className="w-full h-full object-cover pointer-events-none opacity-100 transition-opacity duration-700"
         >
-          <source src={videoSrc} type="video/mp4" />
-          <source src={fallbackVideoSrc} type="video/mp4" />
+          <source src={currentVideo} type="video/mp4" />
         </video>
       </div>
 

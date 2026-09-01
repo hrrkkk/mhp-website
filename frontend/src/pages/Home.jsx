@@ -3,6 +3,7 @@ import api from '../services/api';
 import CinematicHero from '../components/home/CinematicHero';
 import SignatureDishesSection from '../components/home/SignatureDishesSection';
 import TodayAtMhpSection from '../components/home/TodayAtMhpSection';
+import { FALLBACK_FOOD_ITEMS } from '../data/fallbackMenu';
 
 /**
  * Home — Ultra-Streamlined MHP Home Page Component
@@ -14,8 +15,8 @@ import TodayAtMhpSection from '../components/home/TodayAtMhpSection';
 const Home = () => {
   const [homeContent, setHomeContent] = useState(null);
   const [orderingSlot, setOrderingSlot] = useState(null);
-  const [featuredItems, setFeaturedItems] = useState([]);
-  const [foodItems, setFoodItems] = useState([]);
+  const [featuredItems, setFeaturedItems] = useState(FALLBACK_FOOD_ITEMS.slice(0, 4));
+  const [foodItems, setFoodItems] = useState(FALLBACK_FOOD_ITEMS);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,13 +35,16 @@ const Home = () => {
       if (homeRes?.data) setHomeContent(homeRes.data);
       if (slotRes?.data) setOrderingSlot(slotRes.data);
       
-      if (menuRes?.data) {
+      if (menuRes?.data && Array.isArray(menuRes.data) && menuRes.data.length > 0) {
         setFoodItems(menuRes.data);
         const popular = menuRes.data.filter(item => item.popular).slice(0, 4);
         setFeaturedItems(popular.length >= 2 ? popular : menuRes.data.slice(0, 4));
+      } else {
+        setFeaturedItems(FALLBACK_FOOD_ITEMS.slice(0, 4));
       }
     } catch (err) {
       console.error('Failed to load home data:', err);
+      setFeaturedItems(FALLBACK_FOOD_ITEMS.slice(0, 4));
     } finally {
       setLoading(false);
     }

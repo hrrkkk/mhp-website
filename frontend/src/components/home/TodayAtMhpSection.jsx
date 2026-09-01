@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import { getImageUrl } from '../../utils/imageUtils';
+import { FALLBACK_FOOD_ITEMS } from '../../data/fallbackMenu';
 import { 
   ShoppingBag, 
   Clock, 
@@ -21,6 +22,8 @@ const TodayAtMhpSection = ({ featuredItems = [], orderingSlot = null }) => {
   const toast = useToast();
   const navigate = useNavigate();
   const [addedItems, setAddedItems] = useState({});
+
+  const displayItems = (featuredItems && featuredItems.length > 0) ? featuredItems : FALLBACK_FOOD_ITEMS.slice(0, 4);
 
   const isOpen = orderingSlot?.isOpen !== false;
 
@@ -160,9 +163,9 @@ const TodayAtMhpSection = ({ featuredItems = [], orderingSlot = null }) => {
             </Link>
           </div>
 
-          {featuredItems && featuredItems.length > 0 ? (
+          {displayItems && displayItems.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredItems.map((item) => {
+              {displayItems.map((item) => {
                 const isAdded = addedItems[item._id || item.foodId];
                 const isNonVeg = item.foodType === 'Non-Veg';
 
