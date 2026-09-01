@@ -134,9 +134,6 @@ const AdminDashboard = () => {
       {/* STAGE — ADMIN SLOT TIMING CONTROL */}
       <AdminSlotTimingControl />
 
-      {/* STAGE — ADMIN SECURITY & CREDENTIAL CONTROL */}
-      <AdminCredentialsControl />
-
       {/* ========================================================================= */}
       {/* STAGE — ADMIN DAILY ORDERS & REVENUE TRACKING SUMMARY */}
       {/* ========================================================================= */}

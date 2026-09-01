@@ -305,14 +305,17 @@ router.put('/settings', requireAdmin, (req, res) => {
 });
 
 // Public: Get Ordering Slot config and live status
-router.get('/ordering-slot', (req, res) => {
+const handleGetOrderingSlot = (req, res) => {
   const slotConfig = db.getOrderingSlot();
   const slotStatus = db.checkOrderingSlotStatus(slotConfig);
   res.json(slotStatus);
-});
+};
+
+router.get('/ordering-slot', handleGetOrderingSlot);
+router.get('/admin/ordering-slot', handleGetOrderingSlot);
 
 // Admin: Update Ordering Slot config (Default vs Today's Active Slot)
-router.put('/ordering-slot', requireAdmin, async (req, res) => {
+const handlePutOrderingSlot = async (req, res) => {
   const { target, action, orderingStartTime, orderingEndTime, pickupStartTime, pickupEndTime } = req.body;
 
   if (action === 'reset') {
@@ -344,20 +347,21 @@ router.put('/ordering-slot', requireAdmin, async (req, res) => {
   const updatedSlot = db.updateOrderingSlot(req.body);
   const slotStatus = db.checkOrderingSlotStatus(updatedSlot);
   res.json(slotStatus);
-});
+};
+
+router.put('/ordering-slot', requireAdmin, handlePutOrderingSlot);
+router.put('/admin/ordering-slot', requireAdmin, handlePutOrderingSlot);
 
 // Admin: Reset today's ordering slot to default
-router.post('/ordering-slot/reset', requireAdmin, async (req, res) => {
+const handleResetOrderingSlot = async (req, res) => {
   const updatedSlot = db.resetOrderingSlot();
   const slotStatus = db.checkOrderingSlotStatus(updatedSlot);
   res.json(slotStatus);
-});
+};
 
-router.delete('/ordering-slot', requireAdmin, async (req, res) => {
-  const updatedSlot = db.resetOrderingSlot();
-  const slotStatus = db.checkOrderingSlotStatus(updatedSlot);
-  res.json(slotStatus);
-});
+router.post('/ordering-slot/reset', requireAdmin, handleResetOrderingSlot);
+router.delete('/ordering-slot', requireAdmin, handleResetOrderingSlot);
+router.delete('/admin/ordering-slot', requireAdmin, handleResetOrderingSlot);
 
 // Public: Get home page content
 router.get('/home-content', (req, res) => {
@@ -459,7 +463,7 @@ function getDailySalesMetrics(targetDateStr) {
   };
 }
 
-router.get('/admin/stats', requireAdmin, (req, res) => {
+const handleGetStats = (req, res) => {
   try {
     const users = db.getCollection('users');
     const events = db.getCollection('events');
@@ -497,7 +501,10 @@ router.get('/admin/stats', requireAdmin, (req, res) => {
     console.error('Error fetching admin stats:', err);
     res.status(500).json({ message: 'Failed to fetch admin stats' });
   }
-});
+};
+
+router.get('/admin/stats', requireAdmin, handleGetStats);
+router.get('/stats', handleGetStats);
 
 router.get('/admin/daily-sales', requireAdmin, (req, res) => {
   try {

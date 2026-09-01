@@ -72,9 +72,9 @@ function isRestrictedForDining(categoryName, subcategoryName = '', itemTitle = '
 // PUBLIC & CUSTOMER MENU ENDPOINTS
 // =========================================================================
 
-// @route   GET /api/future-menu/items
+// @route   GET /api/future-menu/items & GET /api/future-menu
 // @desc    Get all menu items (filterable by category, search, veg/non-veg)
-router.get('/items', (req, res) => {
+const handleGetMenuItems = (req, res) => {
   try {
     const { category, search, foodType, availableOnly, serviceType, mode } = req.query;
     let items = db.find('foodItems', {});
@@ -123,7 +123,10 @@ router.get('/items', (req, res) => {
     console.error('Error fetching menu items:', err);
     res.status(500).json({ message: 'Failed to fetch menu items' });
   }
-});
+};
+
+router.get('/', handleGetMenuItems);
+router.get('/items', handleGetMenuItems);
 
 // @route   GET /api/future-menu/categories
 // @desc    Get all menu categories
