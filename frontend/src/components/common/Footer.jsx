@@ -43,7 +43,6 @@ const Footer = () => {
               <li><Link to="/menu?mode=dining" className="hover:text-[#F47B20] transition-colors">🎒 Dining Mode (View-Only)</Link></li>
               <li><Link to="/menu?mode=delivery" className="hover:text-[#F47B20] transition-colors">📦 Delivery / Parcel Takeaway</Link></li>
               <li><Link to="/profile" className="hover:text-[#F47B20] transition-colors">👤 Student Profile & Orders</Link></li>
-              <li><Link to="/admin/login" className="hover:text-[#F47B20] transition-colors">🔐 Admin Portal</Link></li>
             </ul>
           </div>
 

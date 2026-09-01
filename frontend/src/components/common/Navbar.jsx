@@ -139,18 +139,9 @@ const Navbar = () => {
               )}
             </Link>
 
-            {/* Profile / Admin Portal / Sign In */}
+            {/* Profile / Sign In */}
             {isAuthenticated ? (
               <div className="flex items-center gap-2 border-l border-[#7D967E]/30 pl-3">
-                {user?.role === 'admin' && (
-                  <Link
-                    to="/admin/dashboard"
-                    className="px-3.5 py-1.5 rounded-full bg-[#F47B20] hover:bg-[#FF882E] text-white border border-amber-300/40 text-xs font-black transition-all flex items-center gap-1.5 shadow-md animate-pulse"
-                  >
-                    <ShieldCheck className="w-4 h-4 text-white" />
-                    <span>ADMIN PORTAL</span>
-                  </Link>
-                )}
                 <Link
                   to="/profile"
                   className="px-3.5 py-1.5 rounded-full bg-[#204935] hover:bg-[#285740] text-[#FFF7E8] border border-[#7D967E]/30 text-xs font-bold transition-all flex items-center gap-1.5"
