@@ -581,10 +581,103 @@ class SupabaseDatabase {
     return this.getSettings();
   }
 
+  getHomeContent() {
+    return this.cache.homeContent || initialDbState.homeContent || {
+      hero: {
+        eyebrow: 'VFSTR VADLAMUDI CAMPUS',
+        heading: 'WELCOME TO MHP',
+        subheading: 'Mahotsav Food & Hospitality Court',
+        description: 'Serving hot, authentic, hygienic food to students and faculty daily.'
+      },
+      sectionVisibility: {
+        hero: true,
+        signatureDishes: true,
+        liveSlotStatus: true,
+        todaysSpecial: true,
+        orderingOptions: true,
+        whatsHappening: true,
+        galleryPreview: true,
+        campusMap: true
+      }
+    };
+  }
+
+  updateHomeContent(newContent) {
+    this.cache.homeContent = { ...this.getHomeContent(), ...newContent };
+    this.saveSettingsToSupabase();
+    this.saveToLocalJson();
+    return this.getHomeContent();
+  }
+
+  getAboutContent() {
+    return this.cache.aboutContent || initialDbState.aboutContent || {
+      heading: 'About MHP Vadlamudi',
+      description: 'The heartbeat of campus food & hospitality at VFSTR Vadlamudi.',
+      sectionVisibility: {
+        mission: true,
+        history: true,
+        team: true
+      }
+    };
+  }
+
+  updateAboutContent(newContent) {
+    this.cache.aboutContent = { ...this.getAboutContent(), ...newContent };
+    this.saveSettingsToSupabase();
+    this.saveToLocalJson();
+    return this.getAboutContent();
+  }
+
+  getExploreContent() {
+    return this.cache.exploreContent || initialDbState.exploreContent || {
+      gallery: {
+        eyebrow: 'INSIDE MHP',
+        heading: 'GALLERY',
+        subtitle: 'A glimpse into the food, people and moments that make MHP special.',
+        instagramHandle: '@mhp_vfstr',
+        instagramSub: 'Official Campus Handle',
+        items: [
+          { id: 1, title: 'MHP Central Plaza', category: 'Quadrangle Dining & Atmosphere', sub: 'The Heartbeat Near N Block', image: '' },
+          { id: 2, title: "Chef's Special Counters", category: 'Signature Prep', sub: 'Fresh Daily', image: '' },
+          { id: 3, title: 'Student Gatherings', category: 'Campus Break', sub: 'Afternoon Chai & Snack', image: '' },
+          { id: 4, title: 'Authentic Campus Moments', category: 'Editorial Portrait', sub: 'VFSTR Life', image: '' },
+          { id: 5, title: 'Flavors & Good Vibes', category: 'Refreshed Daily', sub: 'Specialty Cuisine', image: '' }
+        ]
+      },
+      reels: {
+        eyebrow: 'THE MOMENTS WE KEEP',
+        heading: 'Events & Memories',
+        subtitle: 'From celebrations and campus events to everyday moments, these are the memories that make MHP more than a place to eat.',
+        videos: [
+          { id: 1, title: 'Campus Evening Vibes', tag: 'DAILY MOMENTS', src: '/videos/mhp_hero_video.mp4', thumbnail: '', visible: true, order: 1 },
+          { id: 2, title: 'Biryani & Conversations', tag: 'SIGNATURE DISHES', src: '/videos/WhatsApp%20Video%202026-08-27%20at%209.02.26%20PM.mp4', thumbnail: '', visible: true, order: 2 },
+          { id: 3, title: 'Synergy Open Mic Night', tag: 'STUDENT STAGE', src: '/videos/mhp_hero_video.mp4', thumbnail: '', visible: true, order: 3 },
+          { id: 4, title: 'Mahotsav Prep & Fest Stalls', tag: 'CAMPUS FESTIVAL', src: '/videos/WhatsApp%20Video%202026-08-27%20at%209.02.26%20PM.mp4', thumbnail: '', visible: true, order: 4 }
+        ]
+      },
+      brandStatement: {
+        heading: "EAT. MEET. REMEMBER. THAT'S MHP.",
+        tagline: 'More than a place to eat. A part of campus life.'
+      }
+    };
+  }
+
+  updateExploreContent(newContent) {
+    this.cache.exploreContent = { ...this.getExploreContent(), ...newContent };
+    this.saveSettingsToSupabase();
+    this.saveToLocalJson();
+    return this.getExploreContent();
+  }
+
   async saveSettingsToSupabase() {
     if (!supabase) return;
     try {
-      await supabase.from('app_settings').upsert([{ key: 'settings', data: this.cache.settings }]);
+      await supabase.from('app_settings').upsert([
+        { key: 'settings', data: this.cache.settings },
+        { key: 'homeContent', data: this.cache.homeContent },
+        { key: 'aboutContent', data: this.cache.aboutContent },
+        { key: 'exploreContent', data: this.cache.exploreContent }
+      ]);
     } catch (e) {}
   }
 
