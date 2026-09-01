@@ -1,27 +1,22 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-const DEFAULT_ADMIN = {
-  _id: '223f90d45bd4040c',
-  id: '223f90d45bd4040c',
-  name: 'MHP Administrator',
-  email: 'admin@mhp.vfstr.ac.in',
-  phone: '7672022351',
-  role: 'admin',
-  studentId: 'STAFF-MHP-01',
-  hostelInfo: 'MHP Office, Near N Block'
-};
-
 const ProtectedAdminRoute = ({ children }) => {
-  const { user, setUser } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
+  const location = useLocation();
 
-  useEffect(() => {
-    if (!user || user.role !== 'admin') {
-      if (typeof setUser === 'function') {
-        setUser(DEFAULT_ADMIN);
-      }
-    }
-  }, [user, setUser]);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#183A2A] flex items-center justify-center text-[#F47B20]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#F47B20]"></div>
+      </div>
+    );
+  }
+
+  if (!user || user.role !== 'admin') {
+    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+  }
 
   return children;
 };
