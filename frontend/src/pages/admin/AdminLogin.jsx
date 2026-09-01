@@ -43,11 +43,15 @@ const AdminLogin = () => {
       }
 
       showToast('success', `Welcome to MHP Admin Portal, ${loggedUser?.name || 'Admin'}!`);
-      navigate('/admin/dashboard');
+      setTimeout(() => {
+        window.location.href = '/admin/dashboard';
+      }, 100);
     } catch (err) {
       console.error('Admin Login error:', err);
       showToast('success', 'Welcome to MHP Admin Portal!');
-      navigate('/admin/dashboard');
+      setTimeout(() => {
+        window.location.href = '/admin/dashboard';
+      }, 100);
     } finally {
       setSubmitting(false);
     }
