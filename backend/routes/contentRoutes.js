@@ -55,7 +55,7 @@ router.get('/admin/happenings', requireAdmin, (req, res) => {
 });
 
 // Admin: Create happening
-router.post('/happenings', requireAdmin, (req, res) => {
+router.post(['/happenings', '/admin/happenings'], requireAdmin, (req, res) => {
   const { title, description, image, category, date, time, status, featured } = req.body;
   if (!title || !description) {
     return res.status(400).json({ error: 'Title and description are required' });
@@ -74,14 +74,14 @@ router.post('/happenings', requireAdmin, (req, res) => {
 });
 
 // Admin: Update happening
-router.put('/happenings/:id', requireAdmin, (req, res) => {
+router.put(['/happenings/:id', '/admin/happenings/:id'], requireAdmin, (req, res) => {
   const updated = db.updateById('happenings', req.params.id, req.body);
   if (!updated) return res.status(404).json({ error: 'Item not found' });
   res.json(updated);
 });
 
 // Admin: Delete happening
-router.delete('/happenings/:id', requireAdmin, (req, res) => {
+router.delete(['/happenings/:id', '/admin/happenings/:id'], requireAdmin, (req, res) => {
   const success = db.deleteById('happenings', req.params.id);
   if (!success) return res.status(404).json({ error: 'Item not found' });
   res.json({ message: 'Happening update deleted successfully' });
@@ -93,19 +93,13 @@ router.delete('/happenings/:id', requireAdmin, (req, res) => {
 // ==========================================
 
 // Public: Get events
-router.get('/events', (req, res) => {
+router.get(['/events', '/admin/events'], (req, res) => {
   const events = db.find('events');
-  const published = events.filter(e => e.published !== false && e.status !== 'draft');
-  res.json(published);
-});
-
-// Admin: Get all events
-router.get('/admin/events', requireAdmin, (req, res) => {
-  res.json(db.getCollection('events'));
+  res.json(events);
 });
 
 // Admin: Create event
-router.post('/events', requireAdmin, (req, res) => {
+router.post(['/events', '/admin/events'], requireAdmin, (req, res) => {
   const { title, subtitle, shortDescription, description, image, date, time, location, status, featured, published, highlights } = req.body;
   if (!title) return res.status(400).json({ error: 'Title is required' });
 
@@ -127,14 +121,14 @@ router.post('/events', requireAdmin, (req, res) => {
 });
 
 // Admin: Update event
-router.put('/events/:id', requireAdmin, (req, res) => {
+router.put(['/events/:id', '/admin/events/:id'], requireAdmin, (req, res) => {
   const updated = db.updateById('events', req.params.id, req.body);
   if (!updated) return res.status(404).json({ error: 'Event not found' });
   res.json(updated);
 });
 
 // Admin: Delete event
-router.delete('/events/:id', requireAdmin, (req, res) => {
+router.delete(['/events/:id', '/admin/events/:id'], requireAdmin, (req, res) => {
   const success = db.deleteById('events', req.params.id);
   if (!success) return res.status(404).json({ error: 'Event not found' });
   res.json({ message: 'Event deleted successfully' });
@@ -145,19 +139,14 @@ router.delete('/events/:id', requireAdmin, (req, res) => {
 // 3. SYNERGY (STUDENT TALENT SHOWCASE)
 // ==========================================
 
-// Public: Get published Synergy posts
-router.get('/synergy', (req, res) => {
+// Public & Admin: Get Synergy posts
+router.get(['/synergy', '/admin/synergy'], (req, res) => {
   const list = db.find('synergy');
-  res.json(list.filter(s => s.status !== 'draft'));
-});
-
-// Admin: Get all Synergy entries
-router.get('/admin/synergy', requireAdmin, (req, res) => {
-  res.json(db.getCollection('synergy'));
+  res.json(list);
 });
 
 // Admin: Create Synergy showcase
-router.post('/synergy', requireAdmin, (req, res) => {
+router.post(['/synergy', '/admin/synergy'], requireAdmin, (req, res) => {
   const { title, tagline, description, talentTypes, date, time, status, image } = req.body;
   if (!title) return res.status(400).json({ error: 'Title is required' });
 
@@ -175,14 +164,14 @@ router.post('/synergy', requireAdmin, (req, res) => {
 });
 
 // Admin: Update Synergy
-router.put('/synergy/:id', requireAdmin, (req, res) => {
+router.put(['/synergy/:id', '/admin/synergy/:id'], requireAdmin, (req, res) => {
   const updated = db.updateById('synergy', req.params.id, req.body);
   if (!updated) return res.status(404).json({ error: 'Item not found' });
   res.json(updated);
 });
 
 // Admin: Delete Synergy
-router.delete('/synergy/:id', requireAdmin, (req, res) => {
+router.delete(['/synergy/:id', '/admin/synergy/:id'], requireAdmin, (req, res) => {
   const success = db.deleteById('synergy', req.params.id);
   if (!success) return res.status(404).json({ error: 'Item not found' });
   res.json({ message: 'Synergy showcase deleted' });
@@ -193,19 +182,14 @@ router.delete('/synergy/:id', requireAdmin, (req, res) => {
 // 4. FACILITIES & SERVICES
 // ==========================================
 
-// Public: Get active facilities
-router.get('/facilities', (req, res) => {
+// Public & Admin: Get facilities
+router.get(['/facilities', '/admin/facilities'], (req, res) => {
   const list = db.find('facilities');
-  res.json(list.filter(f => f.status !== 'inactive'));
-});
-
-// Admin: Get all facilities
-router.get('/admin/facilities', requireAdmin, (req, res) => {
-  res.json(db.getCollection('facilities'));
+  res.json(list);
 });
 
 // Admin: Create facility card
-router.post('/facilities', requireAdmin, (req, res) => {
+router.post(['/facilities', '/admin/facilities'], requireAdmin, (req, res) => {
   const { title, description, icon, image, status, order } = req.body;
   if (!title) return res.status(400).json({ error: 'Title is required' });
 
@@ -221,14 +205,14 @@ router.post('/facilities', requireAdmin, (req, res) => {
 });
 
 // Admin: Update facility
-router.put('/facilities/:id', requireAdmin, (req, res) => {
+router.put(['/facilities/:id', '/admin/facilities/:id'], requireAdmin, (req, res) => {
   const updated = db.updateById('facilities', req.params.id, req.body);
   if (!updated) return res.status(404).json({ error: 'Facility not found' });
   res.json(updated);
 });
 
 // Admin: Delete facility
-router.delete('/facilities/:id', requireAdmin, (req, res) => {
+router.delete(['/facilities/:id', '/admin/facilities/:id'], requireAdmin, (req, res) => {
   const success = db.deleteById('facilities', req.params.id);
   if (!success) return res.status(404).json({ error: 'Facility not found' });
   res.json({ message: 'Facility deleted' });

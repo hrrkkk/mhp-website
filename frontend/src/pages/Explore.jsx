@@ -11,6 +11,13 @@ const Explore = () => {
   const videoRefs = useRef([]);
 
   useEffect(() => {
+    try {
+      const local = localStorage.getItem('mhp_explore_content');
+      if (local) {
+        setExploreContent(JSON.parse(local));
+      }
+    } catch (e) {}
+
     api.get('/explore-content')
       .then(res => {
         if (res.data) setExploreContent(res.data);
