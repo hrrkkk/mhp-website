@@ -691,6 +691,11 @@ function checkOrderingSlotStatus(slotConfig) {
     status = 'BEFORE';
   }
 
+  // In development / testing mode, keep ordering OPEN so developers/students can test ordering & bill generation anytime
+  if (process.env.NODE_ENV === 'development' || process.env.ENABLE_DEV_ORDERING === 'true') {
+    status = 'OPEN';
+  }
+
   const orderingStartFormatted = format12h(active.orderingStartTime || "09:30");
   const orderingEndFormatted = format12h(active.orderingEndTime || "10:30");
   const pickupStartFormatted = format12h(active.pickupStartTime || "12:00");
