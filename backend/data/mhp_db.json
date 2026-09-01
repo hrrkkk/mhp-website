@@ -2,16 +2,16 @@
   "users": [
     {
       "_id": "223f90d45bd4040c",
-      "name": "xyz",
+      "name": "MHP Administrator",
       "email": "admin@mhp.vfstr.ac.in",
-      "password": "$2a$10$lwORIJPVNpydRPUqPcYlkujSc8jeWNXxP.RXYlS1W3cunIYyzPpra",
-      "phone": "9876543210",
+      "password": "$2a$10$Hju6pTkiHnF5n6ZvfUxDZO3pmfhZXDOpMGsqs93vJ0yfL5Y0kPz8K",
+      "phone": "7672022351",
       "role": "admin",
       "studentId": "STAFF-MHP-01",
-      "hostelInfo": "vignan hostel",
+      "hostelInfo": "MHP Office, Near N Block",
       "avatar": "",
       "createdAt": "2026-08-14T14:29:45.545Z",
-      "updatedAt": "2026-09-01T04:17:55.243Z"
+      "updatedAt": "2026-09-01T13:40:00.000Z"
     },
     {
       "_id": "9ae849de39907729",

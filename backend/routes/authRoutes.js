@@ -65,11 +65,16 @@ router.post('/login', async (req, res) => {
     let user = null;
 
     if (email && email.trim()) {
-      user = db.findOne('users', u => u.email && u.email.toLowerCase() === email.toLowerCase().trim());
+      const searchEmail = email.trim().toLowerCase();
+      user = db.findOne('users', u => u.email && u.email.trim().toLowerCase() === searchEmail);
     }
 
     if (!user && phone && phone.trim()) {
-      user = db.findOne('users', u => u.phone === phone.trim() || u.email === phone.trim().toLowerCase());
+      const searchInput = phone.trim().toLowerCase();
+      user = db.findOne('users', u => 
+        (u.phone && u.phone.trim() === phone.trim()) || 
+        (u.email && u.email.trim().toLowerCase() === searchInput)
+      );
     }
 
     if (!user) {

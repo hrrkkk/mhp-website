@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 
 import AdminSlotTimingControl from '../../components/admin/AdminSlotTimingControl';
+import AdminCredentialsControl from '../../components/admin/AdminCredentialsControl';
 import { MHPCard, MHPButton, MHPBadge } from '../../components/admin/MHPAdminComponents';
 
 const AdminDashboard = () => {
@@ -132,6 +133,9 @@ const AdminDashboard = () => {
 
       {/* STAGE — ADMIN SLOT TIMING CONTROL */}
       <AdminSlotTimingControl />
+
+      {/* STAGE — ADMIN SECURITY & CREDENTIAL CONTROL */}
+      <AdminCredentialsControl />
 
       {/* ========================================================================= */}
       {/* STAGE — ADMIN DAILY ORDERS & REVENUE TRACKING SUMMARY */}

@@ -135,20 +135,25 @@ class SupabaseDatabase {
     try {
       const bcrypt = require('bcryptjs');
       const adminEmail = 'admin@mhp.vfstr.ac.in';
-      const existing = this.findOne('users', { email: adminEmail });
+      const adminPhone = '7672022351';
+      let existing = this.findOne('users', u => u.role === 'admin' || u.phone === adminPhone || (u.email && u.email.toLowerCase() === adminEmail));
       if (!existing) {
-        const hashedPassword = await bcrypt.hash('AdminPassword123!', 10);
+        const hashedPassword = await bcrypt.hash('mhp@zest143', 10);
         this.insert('users', {
           name: 'MHP Administrator',
           email: adminEmail,
           password: hashedPassword,
-          phone: '9876543210',
+          phone: adminPhone,
           role: 'admin',
           studentId: 'STAFF-MHP-01',
           hostelInfo: 'MHP Office, Near N Block',
           avatar: ''
         });
-        console.log('✅ Auto-seeded admin user: admin@mhp.vfstr.ac.in / AdminPassword123!');
+        console.log('✅ Auto-seeded admin user: Phone 7672022351 / Password mhp@zest143');
+      } else {
+        if (!existing.phone || existing.phone === '9876543210') {
+          this.updateById('users', existing._id, { phone: adminPhone });
+        }
       }
     } catch (e) {
       console.error('Error ensuring admin user:', e.message);
@@ -212,6 +217,7 @@ class SupabaseDatabase {
       if (userData && userData.length > 0) {
         this.cache.users = userData.map(mapRowToUser);
       }
+      await this.ensureAdminUser();
 
       // Load Orders
       const { data: orderData } = await supabase.from('orders').select('*');

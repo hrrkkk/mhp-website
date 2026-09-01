@@ -6,7 +6,7 @@ import { ShieldCheck, Mail, Lock, LogIn, Globe } from 'lucide-react';
 import ThreeDLogoEmblem from '../../components/common/ThreeDLogoEmblem';
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState('');
+  const [phoneOrEmail, setPhoneOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -16,16 +16,16 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
-      showToast('error', 'Please enter email and password');
+    if (!phoneOrEmail || !password) {
+      showToast('error', 'Please enter mobile number/email and password');
       return;
     }
 
     try {
       setSubmitting(true);
-      const user = await login(email, password);
-      if (user.role === 'admin') {
-        showToast('success', `Welcome to MHP Admin Portal, ${user.name}!`);
+      const user = await login(phoneOrEmail, password);
+      if (user?.role === 'admin') {
+        showToast('success', `Welcome to MHP Admin Portal, ${user.name || 'Admin'}!`);
         navigate('/admin/dashboard');
       } else {
         showToast('error', 'Access denied. Account is not an administrator.');
@@ -39,8 +39,8 @@ const AdminLogin = () => {
   };
 
   const fillAdminDemo = () => {
-    setEmail('admin@mhp.vfstr.ac.in');
-    setPassword('AdminPassword123!');
+    setPhoneOrEmail('7672022351');
+    setPassword('mhp@zest143');
   };
 
   return (
@@ -77,7 +77,7 @@ const AdminLogin = () => {
         {/* Admin Quick Fill */}
         <div className="bg-[#204935]/80 p-3.5 rounded-2xl border border-[#7D967E]/30 text-center space-y-2">
           <p className="text-[10px] font-black text-[#7D967E] uppercase tracking-widest">
-            Demo Admin Staff Credentials
+            Admin Staff Credentials
           </p>
           <button
             type="button"
@@ -85,22 +85,22 @@ const AdminLogin = () => {
             className="w-full py-2 px-3 rounded-xl bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs font-extrabold transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
           >
             <ShieldCheck className="w-4 h-4" />
-            Auto-fill Credentials (admin@mhp.vfstr.ac.in)
+            Auto-fill Admin (7672022351 / mhp@zest143)
           </button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-extrabold text-[#7D967E] uppercase tracking-wider">Staff Email Address</label>
+            <label className="text-xs font-extrabold text-[#7D967E] uppercase tracking-wider">Staff Mobile Number / Email</label>
             <div className="relative">
               <Mail className="w-4 h-4 text-[#7D967E] absolute left-3.5 top-3" />
               <input
-                type="email"
+                type="text"
                 required
-                placeholder="admin@mhp.vfstr.ac.in"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="7672022351 or admin@mhp.vfstr.ac.in"
+                value={phoneOrEmail}
+                onChange={(e) => setPhoneOrEmail(e.target.value)}
                 className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-[#10271C] border border-[#7D967E]/40 text-[#FFF7E8] text-xs font-bold placeholder-[#7D967E]/60 focus:outline-none focus:border-[#F47B20]"
               />
             </div>
