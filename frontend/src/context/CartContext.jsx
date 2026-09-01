@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api';
+import { isOrderingTimeOpen, getOrderingTimeWindowText } from '../utils/orderingTime';
 
 const CartContext = createContext();
 
@@ -14,13 +16,39 @@ export const CartProvider = ({ children }) => {
     }
   });
 
+  const [orderingSlot, setOrderingSlot] = useState(null);
+
   useEffect(() => {
     localStorage.setItem('mhp_cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
+  useEffect(() => {
+    fetchOrderingSlot();
+    const interval = setInterval(fetchOrderingSlot, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchOrderingSlot = async () => {
+    try {
+      const res = await api.get('/ordering-slot');
+      if (res && res.data) {
+        setOrderingSlot(res.data);
+      }
+    } catch (err) {
+      console.warn('Could not fetch ordering slot in CartContext:', err.message);
+    }
+  };
+
+  const isOrderingOpen = isOrderingTimeOpen(orderingSlot);
+
   const foodTypeIcon = (type) => (type === 'Non-Veg' ? 'Non-Veg' : 'Veg');
 
   const addToCart = (foodItem, selectedOption = null) => {
+    if (!isOrderingOpen) {
+      const windowText = getOrderingTimeWindowText(orderingSlot);
+      return false;
+    }
+
     setCartItems(prev => {
       const optionLabel = selectedOption ? selectedOption.label : null;
       const unitPrice = selectedOption ? selectedOption.price : (foodItem.price || foodItem.unitPrice || 0);
@@ -51,6 +79,7 @@ export const CartProvider = ({ children }) => {
         ];
       }
     });
+    return true;
   };
 
   const removeFromCart = (cartId) => {
@@ -88,7 +117,10 @@ export const CartProvider = ({ children }) => {
       updateQuantity,
       clearCart,
       totalCartCount,
-      totalCartAmount
+      totalCartAmount,
+      orderingSlot,
+      isOrderingOpen,
+      refetchOrderingSlot: fetchOrderingSlot
     }}>
       {children}
     </CartContext.Provider>

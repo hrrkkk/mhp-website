@@ -7,7 +7,7 @@ import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 
 const SignatureDishesSection = ({ featuredItems = [] }) => {
-  const { addToCart } = useCart();
+  const { addToCart, isOrderingOpen } = useCart();
   const toast = useToast();
   const [isAdded, setIsAdded] = useState(false);
 
@@ -79,14 +79,24 @@ const SignatureDishesSection = ({ featuredItems = [] }) => {
   };
 
   const handleAddToCart = () => {
-    addToCart(selectedDish);
-    setIsAdded(true);
-    if (toast?.showToast) {
-      toast.showToast('success', `Added ${selectedDish.name} (₹${selectedDish.price}) to cart!`);
+    if (!isOrderingOpen) {
+      if (toast?.showToast) {
+        toast.showToast('error', 'Ordering is currently closed (Available 9:30 AM – 10:30 AM)');
+      }
+      return;
     }
-    setTimeout(() => {
-      setIsAdded(false);
-    }, 1500);
+    const success = addToCart(selectedDish);
+    if (success !== false) {
+      setIsAdded(true);
+      if (toast?.showToast) {
+        toast.showToast('success', `Added ${selectedDish.name} (₹${selectedDish.price}) to cart!`);
+      }
+      setTimeout(() => {
+        setIsAdded(false);
+      }, 1500);
+    } else if (toast?.showToast) {
+      toast.showToast('error', 'Ordering is currently closed (Available 9:30 AM – 10:30 AM)');
+    }
   };
 
   return (
@@ -254,27 +264,38 @@ const SignatureDishesSection = ({ featuredItems = [] }) => {
               {/* ================= PROMINENT ADD TO CART + PRICE BUTTON ================= */}
               <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 
-                {/* VERY OBVIOUS ADD TO CART + ₹PRICE CTA */}
-                <button
-                  onClick={handleAddToCart}
-                  className={`flex-1 py-4 px-8 rounded-2xl text-sm sm:text-base font-black tracking-wider flex items-center justify-center gap-3 shadow-xl transition-all hover:scale-105 active:scale-100 ${
-                    isAdded
-                      ? 'bg-emerald-600 text-white shadow-emerald-600/30'
-                      : 'bg-[#F47B20] hover:bg-[#FF882E] text-white shadow-[#F47B20]/40'
-                  }`}
-                >
-                  {isAdded ? (
-                    <>
-                      <Check className="w-5 h-5" />
-                      <span>ADDED TO CART!</span>
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingBag className="w-5 h-5" />
-                      <span>ADD TO CART • ₹{selectedDish.price}</span>
-                    </>
-                  )}
-                </button>
+                {/* VERY OBVIOUS ADD TO CART + ₹PRICE CTA OR CLOSED BADGE */}
+                {!isOrderingOpen ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="flex-1 py-4 px-8 rounded-2xl text-xs sm:text-sm font-black tracking-wider flex items-center justify-center gap-2 bg-gray-200 text-gray-500 border border-gray-300 cursor-not-allowed opacity-80 shadow-none"
+                    title="Ordering is available strictly from 9:30 AM to 10:30 AM"
+                  >
+                    <span>🔒 ORDERING CLOSED (9:30 AM – 10:30 AM)</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleAddToCart}
+                    className={`flex-1 py-4 px-8 rounded-2xl text-sm sm:text-base font-black tracking-wider flex items-center justify-center gap-3 shadow-xl transition-all hover:scale-105 active:scale-100 cursor-pointer ${
+                      isAdded
+                        ? 'bg-emerald-600 text-white shadow-emerald-600/30'
+                        : 'bg-[#F47B20] hover:bg-[#FF882E] text-white shadow-[#F47B20]/40'
+                    }`}
+                  >
+                    {isAdded ? (
+                      <>
+                        <Check className="w-5 h-5" />
+                        <span>ADDED TO CART!</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingBag className="w-5 h-5" />
+                        <span>ADD TO CART • ₹{selectedDish.price}</span>
+                      </>
+                    )}
+                  </button>
+                )}
 
                 {/* VIEW FULL MENU SECONDARY */}
                 <Link

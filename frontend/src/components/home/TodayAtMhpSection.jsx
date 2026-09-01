@@ -18,33 +18,50 @@ import {
 } from 'lucide-react';
 
 const TodayAtMhpSection = ({ featuredItems = [], orderingSlot = null }) => {
-  const { addToCart } = useCart();
+  const { addToCart, isOrderingOpen } = useCart();
   const toast = useToast();
   const navigate = useNavigate();
   const [addedItems, setAddedItems] = useState({});
 
   const displayItems = (featuredItems && featuredItems.length > 0) ? featuredItems : FALLBACK_FOOD_ITEMS.slice(0, 4);
 
-  const isOpen = orderingSlot?.isOpen !== false;
+  const isOpen = isOrderingOpen && (orderingSlot?.isOpen !== false);
 
   const handleAddToCart = (e, item) => {
     e.stopPropagation();
-    addToCart(item);
-    
-    setAddedItems(prev => ({ ...prev, [item._id || item.foodId]: true }));
-    if (toast?.showToast) {
-      toast.showToast('success', `Added ${item.name} to your order!`);
+    if (!isOpen) {
+      if (toast?.showToast) {
+        toast.showToast('error', 'Ordering is currently closed (Available 9:30 AM – 10:30 AM)');
+      }
+      return;
     }
+    const success = addToCart(item);
+    if (success !== false) {
+      setAddedItems(prev => ({ ...prev, [item._id || item.foodId]: true }));
+      if (toast?.showToast) {
+        toast.showToast('success', `Added ${item.name} to your order!`);
+      }
 
-    setTimeout(() => {
-      setAddedItems(prev => ({ ...prev, [item._id || item.foodId]: false }));
-    }, 1500);
+      setTimeout(() => {
+        setAddedItems(prev => ({ ...prev, [item._id || item.foodId]: false }));
+      }, 1500);
+    } else if (toast?.showToast) {
+      toast.showToast('error', 'Ordering is currently closed (Available 9:30 AM – 10:30 AM)');
+    }
   };
 
   const handleQuickOrderNow = (e, item) => {
     e.stopPropagation();
-    addToCart(item);
-    navigate('/cart');
+    if (!isOpen) {
+      if (toast?.showToast) {
+        toast.showToast('error', 'Ordering is currently closed (Available 9:30 AM – 10:30 AM)');
+      }
+      return;
+    }
+    const success = addToCart(item);
+    if (success !== false) {
+      navigate('/cart');
+    }
   };
 
   return (
@@ -224,36 +241,47 @@ const TodayAtMhpSection = ({ featuredItems = [], orderingSlot = null }) => {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      {!isOpen ? (
                         <button
-                          onClick={(e) => handleAddToCart(e, item)}
-                          className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                            isAdded
-                              ? 'bg-emerald-600 text-white shadow-md'
-                              : 'bg-[#183A2A] hover:bg-[#F47B20] text-[#FFF7E8] hover:text-white border border-[#7D967E]/40'
-                          }`}
-                          title="Add to Cart"
+                          type="button"
+                          disabled
+                          className="px-3 py-2 rounded-xl text-[11px] font-extrabold bg-rose-950/80 text-rose-300 border border-rose-800/60 cursor-not-allowed opacity-80"
+                          title="Ordering is available strictly from 9:30 AM to 10:30 AM"
                         >
-                          {isAdded ? (
-                            <>
-                              <Check className="w-3.5 h-3.5" />
-                              <span>ADDED</span>
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="w-3.5 h-3.5 text-[#F47B20] group-hover:text-white" />
-                              <span>ADD</span>
-                            </>
-                          )}
+                          <span>Closed (9:30–10:30 AM)</span>
                         </button>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={(e) => handleAddToCart(e, item)}
+                            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                              isAdded
+                                ? 'bg-emerald-600 text-white shadow-md'
+                                : 'bg-[#183A2A] hover:bg-[#F47B20] text-[#FFF7E8] hover:text-white border border-[#7D967E]/40'
+                            }`}
+                            title="Add to Cart"
+                          >
+                            {isAdded ? (
+                              <>
+                                <Check className="w-3.5 h-3.5" />
+                                <span>ADDED</span>
+                              </>
+                            ) : (
+                              <>
+                                <Plus className="w-3.5 h-3.5 text-[#F47B20] group-hover:text-white" />
+                                <span>ADD</span>
+                              </>
+                            )}
+                          </button>
 
-                        <button
-                          onClick={(e) => handleQuickOrderNow(e, item)}
-                          className="px-3.5 py-2 rounded-xl bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs font-extrabold shadow-md transition-all flex items-center gap-1 hover:scale-105"
-                        >
-                          <span>ORDER</span>
-                        </button>
-                      </div>
+                          <button
+                            onClick={(e) => handleQuickOrderNow(e, item)}
+                            className="px-3.5 py-2 rounded-xl bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs font-extrabold shadow-md transition-all flex items-center gap-1 hover:scale-105 cursor-pointer"
+                          >
+                            <span>ORDER</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

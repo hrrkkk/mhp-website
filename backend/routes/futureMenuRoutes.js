@@ -205,10 +205,10 @@ router.post('/orders/initiate-payment', async (req, res) => {
   try {
     const slotConfig = db.getOrderingSlot();
     const slotStatus = db.checkOrderingSlotStatus(slotConfig);
-    if (!slotStatus.isOpen && process.env.STRICT_SLOT_CHECK === 'true') {
+    if (!slotStatus.isOpen) {
       return res.status(400).json({ 
-        error: slotStatus.message,
-        message: slotStatus.message,
+        error: `Ordering is currently closed. Today's ordering window is ${slotStatus.orderingWindow}.`,
+        message: `Ordering is currently closed. Today's ordering window is ${slotStatus.orderingWindow}.`,
         orderingStatus: slotStatus
       });
     }

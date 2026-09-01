@@ -25,14 +25,14 @@ import OrderStatusTracker from '../components/orders/OrderStatusTracker';
 import { getImageUrl, handleImageError } from '../utils/imageUtils';
 
 const CartPage = () => {
-  const { cartItems, removeFromCart, updateQuantity, clearCart, totalCartCount, totalCartAmount } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, clearCart, totalCartCount, totalCartAmount, orderingSlot: contextOrderingSlot, isOrderingOpen } = useCart();
   const { showToast } = useToast();
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const urlMode = searchParams.get('mode');
 
   const [orderMode, setOrderMode] = useState(urlMode === 'dining' ? 'Dining' : 'Delivery');
-  const [orderingSlot, setOrderingSlot] = useState(null);
+  const [orderingSlot, setOrderingSlot] = useState(contextOrderingSlot);
   const [paymentMethod, setPaymentMethod] = useState('UPI');
   const [orderSubmitting, setOrderSubmitting] = useState(false);
   const [placedOrder, setPlacedOrder] = useState(null);
@@ -82,8 +82,8 @@ const CartPage = () => {
   const handlePlaceOrderSubmit = async (e) => {
     e.preventDefault();
     if (cartItems.length === 0) return;
-    if (orderingSlot && orderingSlot.isOpen === false) {
-      showToast('error', orderingSlot?.message || 'Ordering window is currently closed.');
+    if (!isOrderingOpen || (orderingSlot && orderingSlot.isOpen === false)) {
+      showToast('error', orderingSlot?.message || 'Ordering window is currently closed (Accepted 9:30 AM – 10:30 AM).');
       return;
     }
 
@@ -213,18 +213,34 @@ const CartPage = () => {
           </div>
 
           {/* Ordering Window Slot Info */}
-          {orderingSlot && (
-            <div className="flex items-center gap-2 text-xs bg-white px-4 py-2 rounded-2xl border border-[#7D967E]/30 shadow-xs">
-              <Clock className="w-4 h-4 text-[#F47B20]" />
-              <span className="font-bold text-[#183A2A]">{orderingSlot.orderingWindow || '09:30 AM — 10:30 AM'}</span>
-              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                orderingSlot.isOpen ? 'bg-[#183A2A] text-[#FFF7E8]' : 'bg-rose-100 text-rose-700 border border-rose-300'
-              }`}>
-                {orderingSlot.isOpen ? 'OPEN' : 'CLOSED'}
-              </span>
-            </div>
-          )}
+          <div className="flex items-center gap-2 text-xs bg-white px-4 py-2 rounded-2xl border border-[#7D967E]/30 shadow-xs">
+            <Clock className="w-4 h-4 text-[#F47B20]" />
+            <span className="font-bold text-[#183A2A]">{orderingSlot?.orderingWindow || '09:30 AM — 10:30 AM'}</span>
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+              isOrderingOpen ? 'bg-[#183A2A] text-[#FFF7E8]' : 'bg-rose-100 text-rose-700 border border-rose-300'
+            }`}>
+              {isOrderingOpen ? 'OPEN' : 'CLOSED'}
+            </span>
+          </div>
         </div>
+
+        {/* CLOSED ORDERING WINDOW BANNER */}
+        {!isOrderingOpen && (
+          <div className="bg-rose-900 border-2 border-rose-500 p-4 sm:p-5 rounded-3xl text-rose-100 flex items-center justify-between gap-4 shadow-xl">
+            <div className="flex items-center gap-3">
+              <Clock className="w-6 h-6 text-rose-300 shrink-0" />
+              <div>
+                <h4 className="font-extrabold text-sm text-white">Ordering Window Currently Closed</h4>
+                <p className="text-xs text-rose-200 mt-0.5">
+                  Ordering is accepted strictly between <strong>9:30 AM and 10:30 AM</strong>. You cannot place orders at this time.
+                </p>
+              </div>
+            </div>
+            <span className="px-3 py-1 bg-rose-950 text-rose-300 text-[10px] font-black rounded-full uppercase border border-rose-700 shrink-0">
+              CLOSED (9:30–10:30 AM)
+            </span>
+          </div>
+        )}
 
         {/* ORDER FAILURE / ERROR ALERT BANNER */}
         {orderErrorNotice && (
@@ -638,12 +654,20 @@ const CartPage = () => {
 
                     <button
                       type="submit"
-                      disabled={orderSubmitting}
-                      className="w-full py-4 px-6 rounded-2xl bg-[#F47B20] hover:bg-[#FF882E] text-white text-sm sm:text-base font-black tracking-wider shadow-xl shadow-[#F47B20]/40 flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer disabled:opacity-50"
+                      disabled={orderSubmitting || !isOrderingOpen}
+                      className={`w-full py-4 px-6 rounded-2xl text-sm sm:text-base font-black tracking-wider flex items-center justify-center gap-3 transition-all ${
+                        !isOrderingOpen
+                          ? 'bg-gray-200 text-gray-500 border border-gray-300 cursor-not-allowed shadow-none opacity-80'
+                          : 'bg-[#F47B20] hover:bg-[#FF882E] text-white shadow-xl shadow-[#F47B20]/40 hover:scale-[1.02] active:scale-95 cursor-pointer disabled:opacity-50'
+                      }`}
                     >
                       <ShoppingBag className="w-5 h-5" />
-                      <span>{orderSubmitting ? 'PROCESSING ORDER...' : `PLACE ORDER • ₹${grandTotalAmount}`}</span>
-                      <ArrowRight className="w-5 h-5" />
+                      <span>
+                        {orderSubmitting 
+                          ? 'PROCESSING ORDER...' 
+                          : (!isOrderingOpen ? 'ORDERING CLOSED (9:30 AM – 10:30 AM)' : `PLACE ORDER • ₹${grandTotalAmount}`)}
+                      </span>
+                      {isOrderingOpen && <ArrowRight className="w-5 h-5" />}
                     </button>
                   </div>
 

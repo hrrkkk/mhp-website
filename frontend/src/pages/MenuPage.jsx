@@ -59,7 +59,7 @@ const DELIVERY_CATEGORIES = [
 ];
 
 const MenuPage = () => {
-  const { cartItems, addToCart, removeFromCart, updateQuantity, clearCart, totalCartCount, totalCartAmount } = useCart();
+  const { cartItems, addToCart, removeFromCart, updateQuantity, clearCart, totalCartCount, totalCartAmount, isOrderingOpen } = useCart();
   const { showToast } = useToast();
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
@@ -267,6 +267,11 @@ const MenuPage = () => {
   };
 
   const handleAddToCart = (item) => {
+    if (!isOrderingOpen) {
+      showToast('error', 'Ordering is currently closed. Ordering window is 9:30 AM – 10:30 AM.');
+      return;
+    }
+
     const hasOptions = item.priceOptions && item.priceOptions.length > 0;
     const selectedOpt = hasOptions ? (itemOptions[item._id] || item.priceOptions[0]) : null;
 
@@ -282,13 +287,21 @@ const MenuPage = () => {
       serviceType: item.serviceType
     };
 
-    addToCart(cartItemPayload);
-    showToast('success', `Added ${item.name} to cart`);
+    const success = addToCart(cartItemPayload);
+    if (success !== false) {
+      showToast('success', `Added ${item.name} to cart`);
+    } else {
+      showToast('error', 'Ordering is currently closed. Ordering window is 9:30 AM – 10:30 AM.');
+    }
   };
 
   const handlePlaceOrderSubmit = async (e) => {
     e.preventDefault();
     if (cartItems.length === 0) return;
+    if (!isOrderingOpen) {
+      showToast('error', 'Ordering window is closed. Place orders between 9:30 AM and 10:30 AM.');
+      return;
+    }
 
     try {
       setOrderSubmitting(true);
@@ -486,8 +499,17 @@ const MenuPage = () => {
               </span>
             </div>
 
-            {/* INSTANT INLINE [- 1 +] OR [ ADD ] BUTTON */}
-            {cartQuantity > 0 ? (
+            {/* INSTANT INLINE [- 1 +] OR [ ADD ] BUTTON OR CLOSED BADGE */}
+            {!isOrderingOpen ? (
+              <button
+                type="button"
+                disabled
+                className="px-3 py-2 rounded-xl text-[11px] font-extrabold bg-gray-200 text-gray-500 border border-gray-300 cursor-not-allowed flex items-center gap-1 opacity-80"
+                title="Ordering is available strictly from 9:30 AM to 10:30 AM"
+              >
+                <span>Closed (9:30–10:30 AM)</span>
+              </button>
+            ) : cartQuantity > 0 ? (
               <div className="flex items-center gap-1.5 bg-[#183A2A] text-white p-1 rounded-2xl shadow-md border border-[#7D967E]/40">
                 <button
                   type="button"
@@ -515,7 +537,7 @@ const MenuPage = () => {
               <button
                 type="button"
                 onClick={() => handleAddToCart(item)}
-                className="px-4 py-2 rounded-xl text-xs font-extrabold bg-[#F47B20] hover:bg-[#FF882E] text-white shadow-md transition-all hover:scale-105 active:scale-95 flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl text-xs font-extrabold bg-[#F47B20] hover:bg-[#FF882E] text-white shadow-md transition-all hover:scale-105 active:scale-95 flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>ADD</span>
@@ -667,7 +689,31 @@ const MenuPage = () => {
       </div>
 
       {/* FOOD ITEMS MAIN GRID SECTION */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        {/* CLOSED ORDERING NOTICE BANNER */}
+        {!isOrderingOpen && (
+          <div className="bg-[#10271C] border-2 border-rose-500/80 p-4 sm:p-5 rounded-3xl text-[#FFF7E8] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+            <div className="flex items-start sm:items-center gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0 border border-rose-500/40">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-display font-extrabold text-sm sm:text-base text-white flex items-center gap-2">
+                  <span>⏰ Ordering is Currently Closed</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-rose-950 text-rose-300 text-[10px] uppercase font-black border border-rose-700">CLOSED</span>
+                </h4>
+                <p className="text-xs text-[#FFF7E8]/80 font-medium mt-0.5 leading-relaxed">
+                  Food ordering is permitted strictly between <strong>9:30 AM and 10:30 AM</strong>. Menu items can be viewed below, but adding to cart is disabled outside ordering hours.
+                </p>
+              </div>
+            </div>
+            <div className="shrink-0 bg-[#183A2A] px-4 py-2 rounded-2xl border border-[#7D967E]/40 text-center">
+              <span className="text-[10px] text-[#7D967E] font-black uppercase tracking-wider block">Ordering Window</span>
+              <span className="text-xs font-mono font-bold text-[#F47B20]">09:30 AM — 10:30 AM</span>
+            </div>
+          </div>
+        )}
         
         {/* ================= 🔥 STUDENT FAVORITES / MHP PICKS SECTION ================= */}
         {selectedCategory === 'All' && !searchQuery && favoritesData && favoritesData.items && favoritesData.items.length > 0 && (
