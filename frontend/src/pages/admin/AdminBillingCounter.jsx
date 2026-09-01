@@ -38,24 +38,35 @@ const AdminBillingCounter = () => {
 
   const prevOrderIdsRef = useRef(new Set());
 
-  useEffect(() => {
-    fetchBillingData();
-    // 5-second lightweight polling interval for real-time incoming orders
-    const interval = setInterval(() => {
-      fetchBillingData(true);
-    }, 5000);
+  const isMountedRef = useRef(true);
 
-    return () => clearInterval(interval);
+  useEffect(() => {
+    isMountedRef.current = true;
+    fetchBillingData();
+    
+    // 8-second lightweight polling interval for real-time incoming orders
+    const interval = setInterval(() => {
+      if (isMountedRef.current) {
+        fetchBillingData(true);
+      }
+    }, 8000);
+
+    return () => {
+      isMountedRef.current = false;
+      clearInterval(interval);
+    };
   }, []);
 
   const fetchBillingData = async (isBackground = false) => {
     try {
-      if (!isBackground) setLoading(true);
+      if (!isBackground && isMountedRef.current) setLoading(true);
 
       const [ordersRes, slotRes] = await Promise.all([
         api.get('/future-menu/admin/orders').catch(() => ({ data: [] })),
         api.get('/ordering-slot').catch(() => null)
       ]);
+
+      if (!isMountedRef.current) return;
 
       const fetchedOrders = ordersRes.data || [];
       if (slotRes?.data) setOrderingSlot(slotRes.data);
@@ -69,18 +80,20 @@ const AdminBillingCounter = () => {
             freshCount++;
           }
         });
-        if (freshCount > 0) {
+        if (freshCount > 0 && isMountedRef.current) {
           setNewOrderCount(prev => prev + freshCount);
           showToast('info', `${freshCount} new order(s) arrived at the Billing Counter!`);
         }
       }
       prevOrderIdsRef.current = currentIds;
 
-      setOrders(fetchedOrders);
+      if (isMountedRef.current) {
+        setOrders(fetchedOrders);
+      }
     } catch (err) {
-      console.error('Error fetching billing counter data:', err);
+      console.warn('Error fetching billing counter data:', err.message);
     } finally {
-      if (!isBackground) setLoading(false);
+      if (!isBackground && isMountedRef.current) setLoading(false);
     }
   };
 

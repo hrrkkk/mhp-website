@@ -24,19 +24,35 @@ const AdminOrders = () => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('All');
 
+  const isMountedRef = React.useRef(true);
+
   useEffect(() => {
+    isMountedRef.current = true;
     fetchOrders();
+
+    const interval = setInterval(() => {
+      if (isMountedRef.current) {
+        fetchOrders(true);
+      }
+    }, 8000);
+
+    return () => {
+      isMountedRef.current = false;
+      clearInterval(interval);
+    };
   }, []);
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (isBackground = false) => {
     try {
-      setLoading(true);
+      if (!isBackground && isMountedRef.current) setLoading(true);
       const res = await api.get('/future-menu/admin/orders');
-      setOrders(res.data || []);
+      if (isMountedRef.current) {
+        setOrders(res.data || []);
+      }
     } catch (err) {
       console.warn('Failed to fetch admin orders:', err.message);
     } finally {
-      setLoading(false);
+      if (!isBackground && isMountedRef.current) setLoading(false);
     }
   };
 

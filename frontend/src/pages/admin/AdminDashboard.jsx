@@ -47,39 +47,51 @@ const AdminDashboard = () => {
 
   const isTodaySelected = selectedDate === getTodayYYYYMMDD();
 
+  const isMountedRef = React.useRef(true);
+
   useEffect(() => {
+    isMountedRef.current = true;
     fetchStats();
     fetchSalesMetrics(selectedDate);
 
-    // Live update: Auto-poll every 5 seconds to keep counters live
+    // Live update: Auto-poll every 8 seconds to keep counters live without request backlog
     const pollInterval = setInterval(() => {
-      fetchSalesMetrics(selectedDate, true);
-    }, 5000);
+      if (isMountedRef.current) {
+        fetchSalesMetrics(selectedDate, true);
+      }
+    }, 8000);
 
-    return () => clearInterval(pollInterval);
+    return () => {
+      isMountedRef.current = false;
+      clearInterval(pollInterval);
+    };
   }, [selectedDate]);
 
   const fetchStats = async () => {
     try {
-      setLoading(true);
-      const res = await api.get('/stats');
-      setStats(res.data);
+      if (isMountedRef.current) setLoading(true);
+      const res = await api.get('/admin/stats').catch(() => api.get('/stats'));
+      if (isMountedRef.current && res?.data) {
+        setStats(res.data);
+      }
     } catch (err) {
-      console.error('Failed to load stats:', err);
+      console.warn('Failed to load stats:', err.message);
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) setLoading(false);
     }
   };
 
   const fetchSalesMetrics = async (dateStr, isSilent = false) => {
     try {
-      if (!isSilent) setSalesLoading(true);
+      if (!isSilent && isMountedRef.current) setSalesLoading(true);
       const res = await api.get(`/admin/daily-sales?date=${dateStr}`);
-      setSalesData(res.data);
+      if (isMountedRef.current && res?.data) {
+        setSalesData(res.data);
+      }
     } catch (err) {
-      console.error('Failed to fetch daily sales metrics:', err);
+      console.warn('Failed to fetch daily sales metrics:', err.message);
     } finally {
-      if (!isSilent) setSalesLoading(false);
+      if (!isSilent && isMountedRef.current) setSalesLoading(false);
     }
   };
 
