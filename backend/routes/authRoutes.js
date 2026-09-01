@@ -64,16 +64,16 @@ router.post('/login', async (req, res) => {
 
     let user = null;
 
-    if (phone && phone.trim()) {
-      user = db.findOne('users', { phone: phone.trim() });
-      if (!user) {
-        return res.status(401).json({ error: 'Invalid phone number or password' });
-      }
-    } else if (email && email.trim()) {
-      user = db.findOne('users', { email: email.toLowerCase().trim() });
-      if (!user) {
-        return res.status(401).json({ error: 'Invalid email or password' });
-      }
+    if (email && email.trim()) {
+      user = db.findOne('users', u => u.email && u.email.toLowerCase() === email.toLowerCase().trim());
+    }
+
+    if (!user && phone && phone.trim()) {
+      user = db.findOne('users', u => u.phone === phone.trim() || u.email === phone.trim().toLowerCase());
+    }
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid email/phone or password' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);

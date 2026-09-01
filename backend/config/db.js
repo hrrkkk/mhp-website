@@ -126,9 +126,33 @@ const initialDbState = {
 
 class SupabaseDatabase {
   constructor() {
-    this.cache = JSON.parse(JSON.stringify(initialDbState));
     this.loadFromLocalJson();
+    this.ensureAdminUser();
     this.initFromSupabase();
+  }
+
+  async ensureAdminUser() {
+    try {
+      const bcrypt = require('bcryptjs');
+      const adminEmail = 'admin@mhp.vfstr.ac.in';
+      const existing = this.findOne('users', { email: adminEmail });
+      if (!existing) {
+        const hashedPassword = await bcrypt.hash('AdminPassword123!', 10);
+        this.insert('users', {
+          name: 'MHP Administrator',
+          email: adminEmail,
+          password: hashedPassword,
+          phone: '9876543210',
+          role: 'admin',
+          studentId: 'STAFF-MHP-01',
+          hostelInfo: 'MHP Office, Near N Block',
+          avatar: ''
+        });
+        console.log('✅ Auto-seeded admin user: admin@mhp.vfstr.ac.in / AdminPassword123!');
+      }
+    } catch (e) {
+      console.error('Error ensuring admin user:', e.message);
+    }
   }
 
   loadFromLocalJson() {
