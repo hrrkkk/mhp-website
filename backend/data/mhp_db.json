@@ -2144,6 +2144,43 @@
       "billingStatus": "BILLED",
       "externalSyncStatus": "LOCAL_ONLY",
       "orderCreatedAt": "2026-09-02T05:54:47.231Z"
+    },
+    {
+      "_id": "b0b8d37aa192fa0d",
+      "id": "9e896c7ddddb7632",
+      "createdAt": "2026-09-02T06:29:21.293Z",
+      "billingNumber": "mhp086",
+      "orderId": "3d4657fde5306814",
+      "orderNumber": "mhp085",
+      "studentId": "223f90d4-5bd4-440c-a000-000000000000",
+      "customerName": "MHP Administrator",
+      "customerPhone": "7672022351",
+      "orderType": "Delivery",
+      "items": [
+        {
+          "_id": "493016d1-41db-404c-af1f-7121355d117d",
+          "foodId": "493016d1-41db-404c-af1f-7121355d117d",
+          "name": "Panner Majestic",
+          "category": "Starters",
+          "subcategory": "Veg Starters",
+          "foodType": "veg",
+          "image": "https://i.ytimg.com/vi/J0O-AjGiAVQ/maxresdefault.jpg",
+          "unitPrice": 159,
+          "price": 159,
+          "quantity": 3,
+          "selectedOptionLabel": null,
+          "subtotal": 477
+        }
+      ],
+      "itemQuantities": 3,
+      "subtotal": 477,
+      "parcelCharge": 30,
+      "total": 507,
+      "paymentMethod": "UPI",
+      "paymentStatus": "PAID",
+      "billingStatus": "BILLED",
+      "externalSyncStatus": "LOCAL_ONLY",
+      "orderCreatedAt": "2026-09-02T06:29:21.285Z"
     }
   ],
   "settings": {
@@ -2180,7 +2217,21 @@
       "orderingEndTime": "10:30",
       "pickupStartTime": "12:00",
       "hasTodayOverride": false,
-      "orderingStartTime": "09:30"
+      "orderingStartTime": "09:30",
+      "dailyOverrides": {
+        "2026-09-02": {
+          "orderingStartTime": "09:30",
+          "orderingEndTime": "13:30",
+          "pickupStartTime": "12:00",
+          "pickupEndTime": "13:00"
+        }
+      },
+      "latestCustomSlot": {
+        "orderingStartTime": "09:30",
+        "orderingEndTime": "13:30",
+        "pickupStartTime": "12:00",
+        "pickupEndTime": "13:00"
+      }
     },
     "adminPhoneNumbers": [
       "7672022351"
@@ -10530,6 +10581,62 @@
       "orderReceived": false,
       "orderReceivedStatus": "NOT CONFIRMED",
       "updatedAt": "2026-09-02T05:54:47.246Z"
+    },
+    {
+      "_id": "3d4657fde5306814",
+      "id": "c2ec99c86467ccef",
+      "createdAt": "2026-09-02T06:29:10.600Z",
+      "orderId": "mhp085",
+      "orderNumber": "mhp085",
+      "billingNumber": "mhp086",
+      "customerName": "MHP Administrator",
+      "customerPhone": "7672022351",
+      "studentPhone": "7672022351",
+      "studentId": "223f90d4-5bd4-440c-a000-000000000000",
+      "pickupPoint": "N BLOCK",
+      "pickupLocation": "N BLOCK",
+      "items": [
+        {
+          "_id": "493016d1-41db-404c-af1f-7121355d117d",
+          "foodId": "493016d1-41db-404c-af1f-7121355d117d",
+          "name": "Panner Majestic",
+          "category": "Starters",
+          "subcategory": "Veg Starters",
+          "foodType": "veg",
+          "image": "https://i.ytimg.com/vi/J0O-AjGiAVQ/maxresdefault.jpg",
+          "unitPrice": 159,
+          "price": 159,
+          "quantity": 3,
+          "selectedOptionLabel": null,
+          "subtotal": 477
+        }
+      ],
+      "totalItemCount": 3,
+      "subtotal": 477,
+      "orderType": "Parcel",
+      "orderMode": "Parcel",
+      "parcelCharge": 30,
+      "total": 507,
+      "totalAmount": 507,
+      "paymentMethod": "UPI",
+      "paymentMode": "UPI",
+      "paymentStatus": "PAID",
+      "paymentReference": "TXN-TEST-1788330550599-7842",
+      "transactionId": "TXN-TEST-1788330550599-7842",
+      "orderStatus": "CONFIRMED",
+      "status": "CONFIRMED",
+      "notes": "",
+      "razorpayOrderId": "order_TX4NRzzDF6CtoW",
+      "paymentSignature": "5e20d0aa6157fee9122cf3a555ae8cfe1d33487bc03fd3e369b338e60ea0ff13",
+      "paidAt": "2026-09-02T06:29:21.285Z",
+      "placedAt": "2026-09-02T06:29:21.285Z",
+      "razorpayPaymentId": null,
+      "updatedAt": "2026-09-02T06:29:21.302Z",
+      "billingId": "b0b8d37aa192fa0d",
+      "billingStatus": "BILLED",
+      "externalSyncStatus": "LOCAL_ONLY",
+      "orderReceived": false,
+      "orderReceivedStatus": "NOT CONFIRMED"
     }
   ]
 }
