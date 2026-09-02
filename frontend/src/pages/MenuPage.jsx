@@ -399,8 +399,8 @@ const MenuPage = () => {
       }
     } catch (err) {
       console.error('Place order error:', err);
-      const backendMsg = err.response?.data?.error || err.response?.data?.message;
-      showToast('error', backendMsg || 'Failed to place order. Please try again.');
+      const backendMsg = err.response?.data?.error || err.response?.data?.message || (typeof err.response?.data === 'string' ? err.response.data : null) || err.message || 'Failed to place order. Please try again.';
+      showToast('error', backendMsg);
     } finally {
       setOrderSubmitting(false);
     }

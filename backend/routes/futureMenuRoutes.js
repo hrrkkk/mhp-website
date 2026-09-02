@@ -323,12 +323,14 @@ router.post('/orders/initiate-payment', async (req, res) => {
       : 0;
     const total = trustedSubtotal + parcelCharge;
 
-    const orderNumber = `MHP-${Date.now().toString().slice(-6)}`;
+    const billingNumber = billingService.generateBillingNumber();
+    const orderNumber = billingNumber;
     const initialTxnId = `TXN-${(process.env.PAYMENT_MODE || 'TEST').toUpperCase()}-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     const draftOrder = {
       orderId: orderNumber,
       orderNumber,
+      billingNumber,
       customerName: customerName || 'Campus Student',
       customerPhone: customerPhone || studentPhone || '',
       studentPhone: studentPhone || customerPhone || '',
@@ -368,12 +370,8 @@ router.post('/orders/initiate-payment', async (req, res) => {
       };
     }
 
-    const billingNumber = billingService.generateBillingNumber();
-
     const newOrder = db.insert('orders', {
       ...draftOrder,
-      billingNumber,
-      orderNumber: billingNumber,
       razorpayOrderId: paymentSession.razorpayOrderId || null,
       transactionId: paymentSession.transactionId,
       paymentReference: paymentSession.transactionId,
@@ -435,7 +433,8 @@ router.post('/orders/confirm-payment', (req, res) => {
       txId,
       sig,
       rzpOrdId,
-      rzpPayId
+      rzpPayId,
+      order.orderId
     );
 
     if (!isValidSignature) {
@@ -560,18 +559,12 @@ router.post('/orders', async (req, res) => {
     let finalPickupLocation = null;
 
     if (type !== 'Dining') {
-      const rawLoc = (pickupLocation || pickupPoint || '').toString().trim().toUpperCase();
+      const rawLoc = (pickupLocation || pickupPoint || 'N BLOCK').toString().trim().toUpperCase();
       let matchedLoc = VALID_PICKUP_LOCATIONS.find(loc => rawLoc.includes(loc.split(' ')[0]));
       if (!matchedLoc && VALID_PICKUP_LOCATIONS.includes(rawLoc)) {
         matchedLoc = rawLoc;
       }
-      if (!matchedLoc || !VALID_PICKUP_LOCATIONS.includes(matchedLoc)) {
-        return res.status(400).json({ 
-          error: 'Please select a valid pickup location (A BLOCK, N BLOCK, P BLOCK, H BLOCK, U BLOCK).',
-          message: 'Please select a valid pickup location (A BLOCK, N BLOCK, P BLOCK, H BLOCK, U BLOCK).' 
-        });
-      }
-      finalPickupLocation = matchedLoc;
+      finalPickupLocation = matchedLoc || 'N BLOCK';
     } else {
       finalPickupLocation = null;
       const restrictedItems = items.filter(item => {

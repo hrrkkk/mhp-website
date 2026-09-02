@@ -267,12 +267,12 @@ router.put('/admin/feedback/:id', requireAdmin, (req, res) => {
 // ==========================================
 
 // Public: Get location info
-router.get('/location', (req, res) => {
+router.get(['/location', '/location-settings'], (req, res) => {
   res.json(db.getLocation());
 });
 
 // Admin: Update location info
-router.put('/location', requireAdmin, (req, res) => {
+router.put(['/location', '/location-settings'], requireAdmin, (req, res) => {
   const updated = db.updateLocation(req.body);
   res.json(updated);
 });
@@ -348,12 +348,12 @@ router.delete('/ordering-slot', requireAdmin, handleResetOrderingSlot);
 router.delete('/admin/ordering-slot', requireAdmin, handleResetOrderingSlot);
 
 // Public: Get home page content
-router.get('/home-content', (req, res) => {
+router.get(['/home-content', '/home-settings'], (req, res) => {
   res.json(db.getHomeContent());
 });
 
 // Admin: Update home page content
-router.put('/home-content', requireAdmin, (req, res) => {
+router.put(['/home-content', '/home-settings'], requireAdmin, (req, res) => {
   const updated = db.updateHomeContent(req.body);
   res.json(updated);
 });

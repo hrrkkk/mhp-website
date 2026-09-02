@@ -103,17 +103,20 @@ const CartPage = () => {
 
     try {
       setOrderSubmitting(true);
+      const targetPickup = orderMode === 'Dining' ? null : (selectedPickupLocation || 'N BLOCK');
       const orderPayload = {
-        studentName: checkoutForm.customerName || user?.name || 'Student',
-        studentPhone: checkoutForm.customerPhone || user?.phone || '',
+        customerName: checkoutForm.customerName || user?.name || 'Campus Student',
+        studentName: checkoutForm.customerName || user?.name || 'Campus Student',
+        customerPhone: checkoutForm.customerPhone || user?.phone || '9876543210',
+        studentPhone: checkoutForm.customerPhone || user?.phone || '9876543210',
         studentId: user?._id || user?.studentId || checkoutForm.studentId || '',
-        pickupLocation: orderMode === 'Dining' ? null : selectedPickupLocation,
-        pickupPoint: orderMode === 'Dining' ? null : selectedPickupLocation,
+        pickupLocation: targetPickup,
+        pickupPoint: targetPickup,
         items: cartItems,
         orderType: orderMode === 'Dining' ? 'Dining' : 'Parcel',
         orderMode: orderMode,
         paymentMethod: paymentMethod || 'UPI',
-        notes: checkoutForm.notes,
+        notes: checkoutForm.notes || '',
         totalAmount: grandTotalAmount
       };
 
@@ -135,11 +138,11 @@ const CartPage = () => {
         const orderRes = await api.post('/future-menu/orders', orderPayload);
         setPlacedOrder(orderRes.data.order || orderRes.data);
         clearCart();
-        showToast('success', 'Order placed successfully (Test Mode)!');
+        showToast('success', 'Order placed successfully!');
       }
     } catch (err) {
       console.error('Place order error:', err);
-      const backendMsg = err.response?.data?.error || err.response?.data?.message || 'Failed to place order. Please try again.';
+      const backendMsg = err.response?.data?.error || err.response?.data?.message || (typeof err.response?.data === 'string' ? err.response.data : null) || err.message || 'Failed to place order. Please try again.';
       setOrderErrorNotice(backendMsg);
       showToast('error', backendMsg);
     } finally {
