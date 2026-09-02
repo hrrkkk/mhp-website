@@ -24,8 +24,13 @@ export const CartProvider = ({ children }) => {
 
   useEffect(() => {
     fetchOrderingSlot();
-    const interval = setInterval(fetchOrderingSlot, 60000);
-    return () => clearInterval(interval);
+    const interval = setInterval(fetchOrderingSlot, 10000);
+    const handleFocus = () => fetchOrderingSlot();
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const fetchOrderingSlot = async () => {

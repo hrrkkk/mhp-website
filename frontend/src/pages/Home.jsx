@@ -21,6 +21,25 @@ const Home = () => {
 
   useEffect(() => {
     fetchHomeData();
+    const interval = setInterval(async () => {
+      try {
+        const slotRes = await api.get('/ordering-slot');
+        if (slotRes?.data) setOrderingSlot(slotRes.data);
+      } catch (e) {}
+    }, 10000);
+
+    const handleFocus = async () => {
+      try {
+        const slotRes = await api.get('/ordering-slot');
+        if (slotRes?.data) setOrderingSlot(slotRes.data);
+      } catch (e) {}
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const fetchHomeData = async () => {

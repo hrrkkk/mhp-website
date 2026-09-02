@@ -111,6 +111,24 @@ const Explore = () => {
     ? exploreContent.reels.videos 
     : defaultVideos;
 
+  // Auto-play all videos by default when opening the Explore page
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (videoRefs.current) {
+        Object.keys(videoRefs.current).forEach((indexKey) => {
+          const video = videoRefs.current[indexKey];
+          if (video) {
+            video.muted = true;
+            video.play().then(() => {
+              setPlayingState(prev => ({ ...prev, [indexKey]: true }));
+            }).catch(() => {});
+          }
+        });
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [videoList]);
+
   const brandHeading = exploreContent?.brandStatement?.heading || "EAT. MEET. REMEMBER. THAT'S MHP.";
   const brandTagline = exploreContent?.brandStatement?.tagline || "More than a place to eat. A part of campus life.";
 
@@ -118,8 +136,9 @@ const Explore = () => {
     const video = videoRefs.current[index];
     if (!video) return;
     if (video.paused) {
-      video.play().catch(() => {});
-      setPlayingState(prev => ({ ...prev, [index]: true }));
+      video.play().then(() => {
+        setPlayingState(prev => ({ ...prev, [index]: true }));
+      }).catch(() => {});
     } else {
       video.pause();
       setPlayingState(prev => ({ ...prev, [index]: false }));
@@ -414,6 +433,12 @@ const Explore = () => {
                         playsInline
                         poster={posterUrl || undefined}
                         aria-label={v.title}
+                        onPlay={() => setPlayingState(prev => ({ ...prev, [index]: true }))}
+                        onLoadedData={() => {
+                          if (videoRefs.current[index]) {
+                            videoRefs.current[index].play().catch(() => {});
+                          }
+                        }}
                         className="w-full h-full object-cover absolute inset-0 pointer-events-none"
                       >
                         <source src={v.src} type="video/mp4" />
