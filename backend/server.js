@@ -77,6 +77,13 @@ app.get('/', (req, res) => {
   `);
 });
 
+// Serve frontend dist build if present
+const fs = require('fs');
+const frontendDist = path.join(__dirname, '../frontend/dist');
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+}
+
 // API 404 handler (JSON response for unhandled API endpoints)
 app.use('/api/*', (req, res) => {
   res.status(404).json({
@@ -84,6 +91,16 @@ app.use('/api/*', (req, res) => {
     requestedPath: req.originalUrl
   });
 });
+
+// SPA fallback for non-API routes if frontend build is served
+if (fs.existsSync(frontendDist)) {
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {

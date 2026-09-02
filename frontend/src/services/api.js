@@ -40,21 +40,17 @@ api.interceptors.response.use(
     }
 
     const config = error.config;
-    
-    if (!config || config.__isRetry) {
-      if (error.message === 'Network Error' || error.code === 'ECONNABORTED') {
-        error.message = 'Server is starting up... Please wait a few seconds and try again.';
-      }
+    if (!config) {
       return Promise.reject(error);
     }
 
     const isTrueNetworkError = !error.response && (error.code === 'ECONNABORTED' || error.message === 'Network Error');
     if (isTrueNetworkError) {
-      config.__isRetry = true;
       config.__retryCount = (config.__retryCount || 0) + 1;
-      if (config.__retryCount <= 2) {
-        // Wait 2.5 seconds before retrying
-        await new Promise((resolve) => setTimeout(resolve, 2500));
+      // Retry up to 12 times (12 * 3000ms = 36 seconds) to cover full Render cold start window
+      if (config.__retryCount <= 12) {
+        console.log(`[API Retry] ⚡ Retrying request to ${config.url} (Attempt ${config.__retryCount}/12)...`);
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         return api(config);
       }
       error.message = 'Server is starting up... Please wait a few seconds and try again.';
