@@ -134,6 +134,9 @@ const CartPage = () => {
           showToast('success', 'Order placed successfully!');
         }
       } catch (payErr) {
+        if (payErr.response && payErr.response.status === 400) {
+          throw payErr;
+        }
         console.warn('Payment session initiate warning, using direct test order fallback:', payErr.message);
         const orderRes = await api.post('/future-menu/orders', orderPayload);
         setPlacedOrder(orderRes.data.order || orderRes.data);

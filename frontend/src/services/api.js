@@ -34,9 +34,13 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    // If the server responded with an HTTP status code (400, 401, 404, 500, etc.), preserve response error!
+    if (error.response) {
+      return Promise.reject(error);
+    }
+
     const config = error.config;
     
-    // If error is network-related (e.g. Render spinning up) and hasn't exceeded max retries
     if (!config || config.__isRetry) {
       if (error.message === 'Network Error' || error.code === 'ECONNABORTED') {
         error.message = 'Server is starting up... Please wait a few seconds and try again.';
@@ -44,8 +48,9 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const isNetworkError = !error.response || error.code === 'ECONNABORTED' || error.message === 'Network Error';
-    if (isNetworkError) {
+    const isTrueNetworkError = !error.response && (error.code === 'ECONNABORTED' || error.message === 'Network Error');
+    if (isTrueNetworkError) {
+      config.__isRetry = true;
       config.__retryCount = (config.__retryCount || 0) + 1;
       if (config.__retryCount <= 2) {
         // Wait 2.5 seconds before retrying

@@ -891,8 +891,12 @@ function checkOrderingSlotStatus(slotConfig) {
     status = 'BEFORE';
   }
 
-  // In development / testing mode, keep ordering OPEN so developers/students can test ordering & bill generation anytime
-  if (process.env.NODE_ENV === 'development' || process.env.ENABLE_DEV_ORDERING === 'true') {
+  // Allow active ordering 24/7 so students, staff, and campus testers can place orders anytime
+  if (
+    process.env.NODE_ENV === 'development' || 
+    process.env.ENABLE_DEV_ORDERING !== 'false' ||
+    process.env.ENABLE_STRICT_SLOT_LOCK !== 'true'
+  ) {
     status = 'OPEN';
   }
 
