@@ -102,4 +102,21 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`💳 Payment Gateway Mode: ${pConfig.paymentMode.toUpperCase()} | Key ID: ${pConfig.keyId}`);
   console.log(`📍 VFSTR Campus, Vadlamudi, Guntur, AP`);
   console.log(`==================================================`);
+
+  // Automated 10-minute Self-Ping Routine to keep Render instance awake 24/7
+  const PING_INTERVAL_MS = 10 * 60 * 1000;
+  setInterval(() => {
+    try {
+      const pingUrl = process.env.RENDER_EXTERNAL_URL 
+        ? `${process.env.RENDER_EXTERNAL_URL}/api/health` 
+        : 'https://mhp-backend-ee3o.onrender.com/api/health';
+        
+      const client = pingUrl.startsWith('https') ? require('https') : require('http');
+      client.get(pingUrl, (res) => {
+        if (res.statusCode === 200) {
+          console.log(`[KeepAlive] ⚡ Health ping successful (${new Date().toLocaleTimeString('en-US')})`);
+        }
+      }).on('error', () => {});
+    } catch (e) {}
+  }, PING_INTERVAL_MS);
 });

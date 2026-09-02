@@ -5,12 +5,16 @@ import Footer from '../components/common/Footer';
 import LiveThreeDBackground from '../components/common/LiveThreeDBackground';
 import MobileBottomBar from '../components/common/MobileBottomBar';
 import NetworkOfflineBanner from '../components/common/NetworkOfflineBanner';
+import ServerWarmupBanner from '../components/common/ServerWarmupBanner';
 
 const CustomerLayout = () => {
   return (
     <div className="min-h-screen bg-[#FFF7E8] text-[#202522] flex flex-col selection:bg-[#F47B20] selection:text-white relative overflow-x-hidden preserve-3d pb-16 md:pb-0">
       {/* Real-time Internet Connectivity Monitor */}
       <NetworkOfflineBanner />
+
+      {/* Render Cold-Start Server Warmup Monitor */}
+      <ServerWarmupBanner />
 
       {/* Live Animated 3D Environmental Background System */}
       <LiveThreeDBackground />
