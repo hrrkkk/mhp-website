@@ -12,6 +12,7 @@ const API_BASE_URL = (rawBase && !rawBase.includes('/api'))
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 45000,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -27,6 +28,35 @@ api.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+// Automatic Retry Interceptor for Render Free Tier Cold-Starts & Network Flakes
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const config = error.config;
+    
+    // If error is network-related (e.g. Render spinning up) and hasn't exceeded max retries
+    if (!config || config.__isRetry) {
+      if (error.message === 'Network Error' || error.code === 'ECONNABORTED') {
+        error.message = 'Server is starting up... Please wait a few seconds and try again.';
+      }
+      return Promise.reject(error);
+    }
+
+    const isNetworkError = !error.response || error.code === 'ECONNABORTED' || error.message === 'Network Error';
+    if (isNetworkError) {
+      config.__retryCount = (config.__retryCount || 0) + 1;
+      if (config.__retryCount <= 2) {
+        // Wait 2.5 seconds before retrying
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+        return api(config);
+      }
+      error.message = 'Server is starting up... Please wait a few seconds and try again.';
+    }
+
+    return Promise.reject(error);
+  }
 );
 
 export default api;
