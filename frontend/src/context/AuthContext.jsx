@@ -18,20 +18,40 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('mhp_user');
-      return saved ? JSON.parse(saved) : null;
+      if (saved && saved !== 'undefined' && saved !== 'null') {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') return parsed;
+      }
     } catch (e) {
-      return null;
+      try { localStorage.removeItem('mhp_user'); } catch (_) {}
     }
+    return null;
   });
-  const [token, setToken] = useState(localStorage.getItem('mhp_token') || null);
+
+  const [token, setToken] = useState(() => {
+    try {
+      const savedToken = localStorage.getItem('mhp_token');
+      if (savedToken && savedToken !== 'undefined' && savedToken !== 'null') {
+        return savedToken;
+      }
+    } catch (e) {
+      try { localStorage.removeItem('mhp_token'); } catch (_) {}
+    }
+    return null;
+  });
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     if (token) {
-      fetchCurrentUser();
+      fetchCurrentUser().finally(() => {
+        if (isMounted) setLoading(false);
+      });
     } else {
       setLoading(false);
     }
+    return () => { isMounted = false; };
   }, [token]);
 
   const fetchCurrentUser = async () => {
@@ -39,14 +59,14 @@ export const AuthProvider = ({ children }) => {
       const res = await api.get('/auth/me');
       if (res?.data?.user) {
         setUser(res.data.user);
-        localStorage.setItem('mhp_user', JSON.stringify(res.data.user));
+        try { localStorage.setItem('mhp_user', JSON.stringify(res.data.user)); } catch (_) {}
       }
     } catch (err) {
       console.warn('Network sync for user session, maintaining active offline session:', err.message);
       const curToken = localStorage.getItem('mhp_token');
       if (curToken && (curToken.includes('admin') || curToken === 'mhp_admin_session_token')) {
         setUser(DEFAULT_ADMIN_FALLBACK);
-        localStorage.setItem('mhp_user', JSON.stringify(DEFAULT_ADMIN_FALLBACK));
+        try { localStorage.setItem('mhp_user', JSON.stringify(DEFAULT_ADMIN_FALLBACK)); } catch (_) {}
       } else if (err.response && (err.response.status === 401 || err.response.status === 403)) {
         // Only log out if token is explicitly rejected by backend (401/403)
         logout();
