@@ -99,8 +99,10 @@ export const CartProvider = ({ children }) => {
       return prev.map(item => {
         const matches = item.cartId === cartId || item.foodId === cartId || item._id === cartId;
         if (matches) {
-          const newQty = item.quantity + delta;
-          return newQty > 0 ? { ...item, quantity: newQty } : null;
+          const change = typeof delta === 'number' ? delta : 1;
+          const targetQty = item.quantity + change;
+          const clampedQty = Math.min(Math.max(0, targetQty), 30);
+          return clampedQty > 0 ? { ...item, quantity: clampedQty } : null;
         }
         return item;
       }).filter(Boolean);

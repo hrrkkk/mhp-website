@@ -526,7 +526,7 @@ const MenuPage = () => {
               <div className="flex items-center gap-1.5 bg-[#183A2A] text-white p-1 rounded-2xl shadow-md border border-[#7D967E]/40">
                 <button
                   type="button"
-                  onClick={() => updateQuantity(cartItemId, cartQuantity - 1)}
+                  onClick={() => updateQuantity(cartItemId, -1)}
                   className="w-7 h-7 rounded-xl bg-[#204935] hover:bg-rose-600 text-white flex items-center justify-center font-black transition-colors"
                   title="Reduce Quantity"
                 >
@@ -539,7 +539,7 @@ const MenuPage = () => {
 
                 <button
                   type="button"
-                  onClick={() => updateQuantity(cartItemId, cartQuantity + 1)}
+                  onClick={() => updateQuantity(cartItemId, 1)}
                   className="w-7 h-7 rounded-xl bg-[#F47B20] hover:bg-[#FF882E] text-white flex items-center justify-center font-black transition-colors"
                   title="Increase Quantity"
                 >
@@ -890,7 +890,7 @@ const MenuPage = () => {
                           <div className="flex items-center gap-1.5 bg-[#FFFFFF] px-2 py-1 rounded-lg border border-[#7D967E]/30">
                             <button
                               type="button"
-                              onClick={() => updateQuantity(itemId, item.quantity - 1)}
+                              onClick={() => updateQuantity(itemId, -1)}
                               className="p-1 rounded text-[#183A2A] hover:text-[#F47B20] transition-colors cursor-pointer"
                               title="Decrease Quantity"
                             >
@@ -899,7 +899,7 @@ const MenuPage = () => {
                             <span className="font-bold text-xs px-1 text-[#183A2A]">{item.quantity}</span>
                             <button
                               type="button"
-                              onClick={() => updateQuantity(itemId, item.quantity + 1)}
+                              onClick={() => updateQuantity(itemId, 1)}
                               className="p-1 rounded text-[#183A2A] hover:text-[#F47B20] transition-colors cursor-pointer"
                               title="Increase Quantity"
                             >
