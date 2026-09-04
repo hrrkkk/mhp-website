@@ -371,12 +371,19 @@ class SupabaseDatabase {
   }
 
   async clearCustomerUsers() {
+    const customers = (this.cache.users || []).filter(u => u && u.role !== 'admin');
     this.cache.users = (this.cache.users || []).filter(u => u && u.role === 'admin');
     await this.ensureAdminUser();
     this.saveToLocalJson();
     if (supabase) {
       try {
         await supabase.from('users').delete().neq('role', 'admin');
+        for (const u of customers) {
+          const targetId = u._id || u.id;
+          if (targetId) {
+            await supabase.from('users').delete().eq('id', targetId);
+          }
+        }
       } catch (err) {
         console.warn('Supabase clear customer users warning:', err.message);
       }
