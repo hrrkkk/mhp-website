@@ -70,15 +70,15 @@ const Navbar = () => {
       <TopInfoBanner />
       <header className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled 
-          ? 'py-2 bg-[#183A2A]/98 backdrop-blur-xl border-b border-[#7D967E]/30 shadow-xl' 
-          : 'py-3.5 bg-[#183A2A]/90 backdrop-blur-md border-b border-[#7D967E]/20'
+          ? 'py-2 bg-[#183A2A]/98 backdrop-blur-2xl border-b border-[#F47B20]/30 shadow-2xl shadow-black/20' 
+          : 'py-3 bg-[#183A2A]/90 backdrop-blur-xl border-b border-[#7D967E]/30'
       }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
           
           {/* LEFT SIDE: Compact MHP Logo + "THE MOST HAPPENING PLACE" */}
           <Link to="/" className="flex items-center gap-2.5 group shrink-0">
-            <ThreeDLogoEmblem size="small" className="w-9 h-9 sm:w-10 sm:h-10" />
+            <ThreeDLogoEmblem size="small" className="w-9 h-9 sm:w-10 sm:h-10 transition-transform group-hover:scale-105" />
             <div className="flex flex-col justify-center">
               <span className="font-display font-extrabold text-[#FFF7E8] text-base sm:text-lg tracking-tight leading-none group-hover:text-[#F47B20] transition-colors">
                 MHP
@@ -90,20 +90,23 @@ const Navbar = () => {
           </Link>
 
           {/* CENTER: Navigation Links */}
-          <div className="hidden lg:flex items-center gap-1.5">
+          <div className="hidden lg:flex items-center gap-1.5 bg-[#10271C]/60 p-1.5 rounded-full border border-[#7D967E]/20">
             {navLinks.map((link) => {
               const active = isActive(link.path);
               return (
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold font-sans transition-all duration-200 ${
+                  className={`px-4 py-1.5 rounded-full text-xs font-extrabold font-sans transition-all duration-200 relative ${
                     active
-                      ? 'text-[#FFF7E8] bg-[#204935] border border-[#7D967E]/40 shadow-sm'
-                      : 'text-[#FFF7E8]/80 hover:text-[#FFF7E8] hover:bg-[#204935]/50'
+                      ? 'text-[#FFF7E8] bg-gradient-to-r from-[#204935] to-[#183A2A] border border-[#7D967E]/50 shadow-md shadow-black/30'
+                      : 'text-[#FFF7E8]/75 hover:text-[#FFF7E8] hover:bg-[#204935]/50'
                   }`}
                 >
-                  {link.name}
+                  <span>{link.name}</span>
+                  {active && (
+                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#F47B20] shadow-sm shadow-[#F47B20]" />
+                  )}
                 </Link>
               );
             })}
@@ -115,25 +118,25 @@ const Navbar = () => {
             {/* 1. ORDER NOW — STRONGEST CTA */}
             <Link
               to="/menu?mode=delivery"
-              className="px-4 py-2 rounded-full bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs font-black tracking-wider flex items-center gap-2 shadow-lg shadow-[#F47B20]/30 transition-all hover:scale-105"
+              className="px-4.5 py-2 rounded-full bg-gradient-to-r from-[#F47B20] to-[#FF882E] hover:from-[#FF882E] hover:to-[#FFA04D] text-white text-xs font-black tracking-wider flex items-center gap-2 shadow-lg shadow-[#F47B20]/40 transition-all hover:scale-105 active:scale-95"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
               <span>ORDER NOW</span>
             </Link>
 
-            {/* 2. HIGH CONTRAST CART BUTTON — IMPOSSIBLE TO MISS */}
+            {/* 2. HIGH CONTRAST CART BUTTON */}
             <Link
               to="/cart"
               className={`px-4 py-2 rounded-2xl text-xs font-black tracking-wider flex items-center gap-2 transition-all shadow-lg hover:scale-105 border ${
                 totalCartCount > 0
-                  ? 'bg-[#F47B20] hover:bg-[#FF882E] text-white border-[#F47B20] shadow-[#F47B20]/40 animate-pulse'
+                  ? 'bg-gradient-to-r from-[#F47B20] to-[#FF882E] text-white border-[#F47B20] shadow-[#F47B20]/50 animate-pulse'
                   : 'bg-[#204935] hover:bg-[#285740] text-[#FFF7E8] border-[#7D967E]/40'
               }`}
             >
               <span className="text-sm">🛒</span>
               <span>Cart ({totalCartCount})</span>
               {totalCartCount > 0 && (
-                <span className="font-mono text-[11px] bg-black/25 px-2 py-0.5 rounded-lg border border-white/20">
+                <span className="font-mono text-[11px] bg-black/30 px-2 py-0.5 rounded-lg border border-white/20">
                   ₹{totalCartAmount}
                 </span>
               )}

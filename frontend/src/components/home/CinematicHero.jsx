@@ -100,22 +100,22 @@ const CinematicHero = ({ heroData, orderingSlot = null }) => {
         <div className="max-w-3xl space-y-6 text-center lg:text-left preserve-3d">
           
           {/* Campus Landmark Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFF7E8]/10 border border-[#7D967E]/40 text-[#FFF7E8] text-xs font-extrabold tracking-wider uppercase backdrop-blur-md">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFF7E8]/10 border border-[#7D967E]/50 text-[#FFF7E8] text-xs font-extrabold tracking-wider uppercase backdrop-blur-xl shadow-lg shadow-black/20">
             <Sparkles className="w-3.5 h-3.5 text-[#F47B20]" />
             <span>VFSTR CAMPUS · NEAR N BLOCK</span>
           </div>
 
           {/* Headline Hierarchy */}
           <div className="space-y-3 preserve-3d">
-            <h1 className="font-display font-extrabold text-4xl sm:text-6xl lg:text-7xl tracking-tight text-[#FFF7E8] leading-[1.05] drop-shadow-md">
+            <h1 className="font-display font-extrabold text-4xl sm:text-6xl lg:text-7xl tracking-tight text-[#FFF7E8] leading-[1.05] drop-shadow-xl">
               MORE THAN FOOD.
             </h1>
             
-            <h2 className="font-display font-bold text-2xl sm:text-4xl text-[#F47B20] tracking-tight">
+            <h2 className="font-display font-bold text-2xl sm:text-4xl text-gradient-orange tracking-tight">
               The heartbeat of VFSTR.
             </h2>
 
-            <p className="text-sm sm:text-lg text-[#FFF7E8]/90 font-sans font-semibold tracking-wide pt-1">
+            <p className="text-sm sm:text-lg text-[#FFF7E8]/95 font-sans font-semibold tracking-wide pt-1">
               Good Food • Great Vibes • Best Memories
             </p>
           </div>
@@ -125,7 +125,7 @@ const CinematicHero = ({ heroData, orderingSlot = null }) => {
             {/* 1. ORDER NOW -> STRONGEST PRIMARY CTA */}
             <Link
               to="/menu?mode=delivery"
-              className="px-8 py-3.5 rounded-full bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs sm:text-sm font-black tracking-wider flex items-center gap-2.5 shadow-2xl shadow-[#F47B20]/40 transition-all hover:scale-105 border-2 border-[#F47B20]"
+              className="px-8 py-3.5 rounded-full bg-gradient-to-r from-[#F47B20] via-[#FF882E] to-[#FFA04D] hover:from-[#FF882E] hover:to-[#FFB066] text-white text-xs sm:text-sm font-black tracking-wider flex items-center gap-2.5 shadow-2xl shadow-[#F47B20]/50 transition-all hover:scale-105 active:scale-95 border-2 border-[#F47B20]"
             >
               <ShoppingBag className="w-4 h-4" />
               <span>ORDER NOW</span>
@@ -134,7 +134,7 @@ const CinematicHero = ({ heroData, orderingSlot = null }) => {
             {/* 2. VIEW MENU -> SECONDARY CTA */}
             <Link
               to="/menu"
-              className="px-8 py-3.5 rounded-full bg-[#204935]/90 hover:bg-[#204935] text-[#FFF7E8] text-xs sm:text-sm font-bold tracking-wider flex items-center gap-2 border border-[#7D967E]/40 backdrop-blur-md transition-all hover:border-[#FFF7E8]/60"
+              className="px-8 py-3.5 rounded-full bg-[#204935]/90 hover:bg-[#285740] text-[#FFF7E8] text-xs sm:text-sm font-bold tracking-wider flex items-center gap-2 border border-[#7D967E]/50 backdrop-blur-xl transition-all hover:border-[#F47B20] hover:scale-105"
             >
               <UtensilsCrossed className="w-4 h-4 text-[#F47B20]" />
               <span>VIEW MENU</span>

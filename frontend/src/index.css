@@ -5,11 +5,12 @@
 @layer base {
   :root {
     --mhp-primary: #183A2A;   /* Deep Forest Green */
-    --mhp-bg: #FFF7E8;        /* Warm Cream */
-    --mhp-accent: #F47B20;    /* Food Orange */
+    --mhp-bg: #FFF7E8;        /* Warm Luxury Cream */
+    --mhp-accent: #F47B20;    /* Vibrant MHP Food Orange */
     --mhp-secondary: #7D967E; /* Sage Green */
-    --mhp-text: #202522;      /* Charcoal */
-    --mhp-card: #FFFFFF;      /* Soft White */
+    --mhp-text: #202522;      /* Charcoal Text */
+    --mhp-card: #FFFFFF;      /* Soft Pure White */
+    --mhp-gold: #EAB308;      /* Warm Gold Accent */
   }
 
   body {
@@ -28,7 +29,29 @@
   }
 }
 
-/* 3D Spatial Environment Utilities */
+/* Premium Typography Gradients */
+.text-gradient-mhp {
+  background: linear-gradient(135deg, #FFF7E8 0%, #F47B20 50%, #FFD099 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-orange {
+  background: linear-gradient(135deg, #F47B20 0%, #FF882E 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-primary {
+  background: linear-gradient(135deg, #F47B20 0%, #FF9B42 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 3D Spatial Environment & Glassmorphism System */
 .preserve-3d {
   transform-style: preserve-3d;
 }
@@ -39,6 +62,22 @@
 
 .perspective-1000 {
   perspective: 1000px;
+}
+
+.glass-card-mhp {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 20px 50px -12px rgba(24, 58, 42, 0.12);
+}
+
+.glass-card-forest {
+  background: rgba(24, 58, 42, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(125, 150, 126, 0.35);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35);
 }
 
 /* Stadium & Arch Cutout Frames */
@@ -57,18 +96,36 @@
   border-radius: 120px;
 }
 
+/* Glow & Shimmer Micro-Animations */
+.glow-orange-sm {
+  box-shadow: 0 0 20px rgba(244, 123, 32, 0.35);
+}
+
+.glow-orange-lg {
+  box-shadow: 0 0 35px rgba(244, 123, 32, 0.5);
+}
+
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
 /* MHP Reusable Card System */
 .card-mhp-white {
   background-color: #FFFFFF;
-  border: 1px solid rgba(125, 150, 126, 0.3);
+  border: 1px solid rgba(125, 150, 126, 0.25);
   border-radius: 1.5rem;
-  box-shadow: 0 10px 30px -8px rgba(24, 58, 42, 0.08);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 12px 32px -8px rgba(24, 58, 42, 0.08);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-mhp-white:hover {
-  border-color: rgba(244, 123, 32, 0.4);
-  box-shadow: 0 20px 40px -10px rgba(24, 58, 42, 0.14);
+  border-color: rgba(244, 123, 32, 0.45);
+  box-shadow: 0 22px 45px -10px rgba(24, 58, 42, 0.16);
+  transform: translateY(-3px);
 }
 
 .card-mhp-forest {
@@ -77,24 +134,25 @@
   border: 1px solid rgba(125, 150, 126, 0.4);
   border-radius: 1.5rem;
   box-shadow: 0 14px 35px -10px rgba(0, 0, 0, 0.2);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-mhp-forest:hover {
   border-color: #F47B20;
-  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 24px 50px -10px rgba(0, 0, 0, 0.35);
+  transform: translateY(-3px);
 }
 
 /* MHP Reusable Button System */
 .btn-mhp-primary {
-  background: #F47B20;
+  background: linear-gradient(135deg, #F47B20 0%, #FF882E 100%);
   color: #FFFFFF;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
-  border-radius: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 20px -4px rgba(244, 123, 32, 0.4);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 24px -4px rgba(244, 123, 32, 0.45);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -103,9 +161,9 @@
 }
 
 .btn-mhp-primary:hover {
-  background: #FF882E;
-  transform: translateY(-1.5px);
-  box-shadow: 0 12px 25px -4px rgba(244, 123, 32, 0.55);
+  background: linear-gradient(135deg, #FF882E 0%, #FFA04D 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px -4px rgba(244, 123, 32, 0.6);
 }
 
 .btn-mhp-primary:active {
@@ -117,10 +175,10 @@
   color: #FFF7E8;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
-  border-radius: 0.75rem;
+  border-radius: 0.85rem;
   border: 1px solid rgba(125, 150, 126, 0.4);
   box-shadow: 0 6px 18px -4px rgba(24, 58, 42, 0.25);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -132,8 +190,8 @@
   background: #204935;
   color: #FFFFFF;
   border-color: #F47B20;
-  transform: translateY(-1.5px);
-  box-shadow: 0 10px 22px -4px rgba(24, 58, 42, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px -4px rgba(24, 58, 42, 0.35);
 }
 
 .btn-mhp-outline {
@@ -141,7 +199,7 @@
   color: #183A2A;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 700;
-  border-radius: 0.75rem;
+  border-radius: 0.85rem;
   border: 1.5px solid #183A2A;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
@@ -175,21 +233,21 @@
 
 /* Input & Form Control Utility */
 .input-mhp {
-  background-color: rgba(255, 247, 232, 0.5);
-  border: 1px solid rgba(125, 150, 126, 0.4);
+  background-color: rgba(255, 247, 232, 0.6);
+  border: 1px solid rgba(125, 150, 126, 0.35);
   color: #202522;
-  border-radius: 0.75rem;
+  border-radius: 0.85rem;
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  font-weight: 600;
+  transition: all 0.25s ease;
 }
 
 .input-mhp:focus {
   outline: none;
   background-color: #FFFFFF;
   border-color: #F47B20;
-  box-shadow: 0 0 0 3px rgba(244, 123, 32, 0.15);
+  box-shadow: 0 0 0 4px rgba(244, 123, 32, 0.18);
 }
 
 /* Custom Scrollbars */
@@ -201,8 +259,8 @@
 }
 ::-webkit-scrollbar-thumb {
   background: #7D967E;
-  border-radius: 4px;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #183A2A;
+  background: #F47B20;
 }
