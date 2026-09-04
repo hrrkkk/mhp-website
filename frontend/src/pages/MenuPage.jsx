@@ -10,6 +10,7 @@ import SmartImage from '../components/common/SmartImage';
 import EmptyMenuState from '../components/common/EmptyMenuState';
 import ApiFailureNotice from '../components/common/ApiFailureNotice';
 import { getImageUrl, handleImageError } from '../utils/imageUtils';
+import { getOrderingTimeWindowText } from '../utils/orderingTime';
 import { 
   Search, 
   ShoppingBag, 
