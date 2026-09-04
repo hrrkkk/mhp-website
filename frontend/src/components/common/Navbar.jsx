@@ -18,7 +18,7 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
-  const { totalCartCount } = useCart();
+  const { totalCartCount, totalCartAmount } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -134,7 +134,7 @@ const Navbar = () => {
               <span>Cart ({totalCartCount})</span>
               {totalCartCount > 0 && (
                 <span className="font-mono text-[11px] bg-black/25 px-2 py-0.5 rounded-lg border border-white/20">
-                  ₹{useCart().totalCartAmount}
+                  ₹{totalCartAmount}
                 </span>
               )}
             </Link>
