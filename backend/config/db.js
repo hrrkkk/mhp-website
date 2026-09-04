@@ -203,40 +203,38 @@ class SupabaseDatabase {
 
   async initFromSupabase() {
     if (!supabase) return;
+
+    const fetchWithTimeout = (promise, ms = 2500) => {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase query timeout')), ms))
+      ]);
+    };
+
     try {
-      // Load Menu Items
-      const { data: menuData } = await supabase.from('menu_items').select('*');
-      if (menuData && menuData.length > 0) {
-        this.cache.foodItems = menuData.map(mapRowToMenuItem);
-      } else if (menuData && menuData.length === 0 && this.cache.foodItems && this.cache.foodItems.length > 0) {
-        console.log('🌱 Supabase menu_items table is empty. Auto-seeding 206 local food items to Supabase...');
-        try {
-          const rows = this.cache.foodItems.map(mapMenuItemToRow).filter(Boolean);
-          if (rows.length > 0) {
-            await supabase.from('menu_items').upsert(rows);
-            console.log(`✅ Successfully seeded ${rows.length} menu items to Supabase!`);
-          }
-        } catch (seedErr) {
-          console.error('Error auto-seeding menu items to Supabase:', seedErr.message);
-        }
+      const [menuRes, userRes, orderRes, exploreRes, settingsRes] = await Promise.allSettled([
+        fetchWithTimeout(supabase.from('menu_items').select('*')),
+        fetchWithTimeout(supabase.from('users').select('*')),
+        fetchWithTimeout(supabase.from('orders').select('*')),
+        fetchWithTimeout(supabase.from('explore_content').select('*').eq('key', 'explore_main').maybeSingle()),
+        fetchWithTimeout(supabase.from('app_settings').select('*'))
+      ]);
+
+      if (menuRes.status === 'fulfilled' && menuRes.value?.data && menuRes.value.data.length > 0) {
+        this.cache.foodItems = menuRes.value.data.map(mapRowToMenuItem);
       }
 
-      // Load Users
-      const { data: userData } = await supabase.from('users').select('*');
-      if (userData && userData.length > 0) {
-        this.cache.users = userData.map(mapRowToUser);
+      if (userRes.status === 'fulfilled' && userRes.value?.data && userRes.value.data.length > 0) {
+        this.cache.users = userRes.value.data.map(mapRowToUser);
       }
       await this.ensureAdminUser();
 
-      // Load Orders
-      const { data: orderData } = await supabase.from('orders').select('*');
-      if (orderData && orderData.length > 0) {
-        this.cache.orders = orderData.map(mapRowToOrder);
+      if (orderRes.status === 'fulfilled' && orderRes.value?.data && orderRes.value.data.length > 0) {
+        this.cache.orders = orderRes.value.data.map(mapRowToOrder);
       }
 
-      // Load Explore Content
-      const { data: exploreData } = await supabase.from('explore_content').select('*').eq('key', 'explore_main').maybeSingle();
-      if (exploreData) {
+      if (exploreRes.status === 'fulfilled' && exploreRes.value?.data) {
+        const exploreData = exploreRes.value.data;
         this.cache.exploreContent = {
           gallery: exploreData.gallery || initialDbState.exploreContent.gallery,
           reels: exploreData.reels || initialDbState.exploreContent.reels,
@@ -244,10 +242,8 @@ class SupabaseDatabase {
         };
       }
 
-      // Load App Settings
-      const { data: settingsRows } = await supabase.from('app_settings').select('*');
-      if (settingsRows && settingsRows.length > 0) {
-        for (const row of settingsRows) {
+      if (settingsRes.status === 'fulfilled' && settingsRes.value?.data && settingsRes.value.data.length > 0) {
+        for (const row of settingsRes.value.data) {
           if (row.key === 'settings') this.cache.settings = { ...this.cache.settings, ...(row.data || {}) };
           else if (row.key === 'homeContent') this.cache.homeContent = { ...this.cache.homeContent, ...(row.data || {}) };
           else if (row.key === 'aboutContent') this.cache.aboutContent = { ...this.cache.aboutContent, ...(row.data || {}) };

@@ -15,9 +15,11 @@ const { seedAllTablesToSupabase, isSupabaseConfigured } = require('./config/supa
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Seed / verify Supabase PostgreSQL connection
+// Asynchronously verify / seed Supabase in background without blocking server startup
 if (isSupabaseConfigured()) {
-  seedAllTablesToSupabase();
+  setImmediate(() => {
+    seedAllTablesToSupabase().catch(() => {});
+  });
 }
 
 // CORS setup - Allow all origins gracefully in production & local dev

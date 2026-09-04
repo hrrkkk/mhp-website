@@ -47,13 +47,16 @@ api.interceptors.response.use(
     const isTrueNetworkError = !error.response && (error.code === 'ECONNABORTED' || error.message === 'Network Error');
     if (isTrueNetworkError) {
       config.__retryCount = (config.__retryCount || 0) + 1;
-      // Retry up to 12 times (12 * 3000ms = 36 seconds) to cover full Render cold start window
-      if (config.__retryCount <= 12) {
-        console.log(`[API Retry] ⚡ Retrying request to ${config.url} (Attempt ${config.__retryCount}/12)...`);
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+      const isAuthRequest = config.url && (config.url.includes('/auth/login') || config.url.includes('/auth/register'));
+      const maxRetries = isAuthRequest ? 2 : 6;
+      const retryDelay = isAuthRequest ? 1000 : 1500;
+
+      if (config.__retryCount <= maxRetries) {
+        console.log(`[API Retry] ⚡ Retrying request to ${config.url} (Attempt ${config.__retryCount}/${maxRetries})...`);
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
         return api(config);
       }
-      error.message = 'Server is starting up... Please wait a few seconds and try again.';
+      error.message = 'Server connection issue. Please check your internet or try again.';
     }
 
     return Promise.reject(error);
