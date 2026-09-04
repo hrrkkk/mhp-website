@@ -788,28 +788,6 @@ const MenuPage = () => {
 
       </div>
 
-      {/* FLOATING INSTANT CART BAR (When items exist in cart) */}
-      {totalCartCount > 0 && !cartModalOpen && (
-        <div className="fixed bottom-16 md:bottom-6 left-4 right-4 max-w-md mx-auto z-40">
-          <button
-            onClick={() => setCartModalOpen(true)}
-            className="w-full bg-[#F47B20] hover:bg-[#FF882E] text-white py-3.5 px-6 rounded-2xl shadow-2xl flex items-center justify-between font-black text-sm tracking-wider transition-all hover:scale-105 active:scale-95 animate-pulse"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center font-black text-xs">
-                {totalCartCount}
-              </div>
-              <span>VIEW CART</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-base font-mono">₹{grandTotalAmount}</span>
-              <span>→</span>
-            </div>
-          </button>
-        </div>
-      )}
-
       {/* Cart & Checkout Modal */}
       {cartModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#183A2A]/70 backdrop-blur-md">
