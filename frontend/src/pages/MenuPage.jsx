@@ -334,11 +334,12 @@ const MenuPage = () => {
         const orderData = res.data.order || res.data;
         const paymentSession = res.data.paymentSession;
 
-        const isLiveKey = paymentSession && 
+        const hasValidKey = paymentSession && 
           paymentSession.keyId && 
-          paymentSession.keyId.startsWith('rzp_live_');
+          paymentSession.keyId.trim() !== '' && 
+          !paymentSession.keyId.includes('demo');
 
-        if (window.Razorpay && isLiveKey) {
+        if (window.Razorpay && hasValidKey) {
           const options = {
             key: paymentSession.keyId,
             amount: paymentSession.amountInPaise,
@@ -361,10 +362,14 @@ const MenuPage = () => {
                 fetchFavorites();
                 showToast('success', '🎉 Order placed & confirmed!');
               } catch (confirmErr) {
-                setPlacedOrder(orderData);
-                setCartModalOpen(false);
-                clearCart();
-                showToast('success', '🎉 Order placed successfully!');
+                console.error('Confirm payment error:', confirmErr);
+                const errorMsg = confirmErr.response?.data?.error || confirmErr.response?.data?.message || 'Payment verification failed.';
+                showToast('error', errorMsg);
+              }
+            },
+            modal: {
+              ondismiss: function () {
+                showToast('info', 'Payment cancelled by user.');
               }
             },
             prefill: {
