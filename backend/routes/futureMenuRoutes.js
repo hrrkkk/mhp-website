@@ -881,14 +881,30 @@ router.delete('/admin/items/:id', requireAdmin, (req, res) => {
 });
 
 // @route   GET /api/future-menu/admin/orders
-// @desc    Get all orders for admin management
+// @desc    Get all orders for admin management (sorted most recent first)
 router.get('/admin/orders', requireAdmin, (req, res) => {
   try {
-    const orders = db.find('orders', {});
-    orders.sort((a, b) => new Date(b.placedAt) - new Date(a.placedAt));
+    const orders = db.find('orders', {}) || [];
+    orders.sort((a, b) => {
+      const dateB = new Date(b.placedAt || b.createdAt || 0);
+      const dateA = new Date(a.placedAt || a.createdAt || 0);
+      return dateB - dateA;
+    });
     res.json(orders);
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch admin orders' });
+  }
+});
+
+// @route   DELETE /api/future-menu/admin/orders/clear-all
+// @desc    Clear all test orders & bills from database
+router.delete('/admin/orders/clear-all', requireAdmin, async (req, res) => {
+  try {
+    await db.clearAllOrders();
+    res.json({ message: 'All test orders cleared successfully' });
+  } catch (err) {
+    console.error('Clear test orders error:', err);
+    res.status(500).json({ error: 'Failed to clear test orders', message: 'Failed to clear test orders' });
   }
 });
 

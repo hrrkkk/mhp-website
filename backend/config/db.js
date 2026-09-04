@@ -354,6 +354,22 @@ class SupabaseDatabase {
     return true;
   }
 
+  async clearAllOrders() {
+    this.cache.orders = [];
+    this.cache.bills = [];
+    this.saveToLocalJson();
+    if (supabase) {
+      try {
+        await supabase.from('orders').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('bills').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('app_settings').upsert([{ key: 'bills', data: [] }]);
+      } catch (err) {
+        console.warn('Supabase clear orders warning:', err.message);
+      }
+    }
+    return true;
+  }
+
   async syncCollectionToSupabase(collectionName, item, action) {
     if (!supabase) return;
     try {

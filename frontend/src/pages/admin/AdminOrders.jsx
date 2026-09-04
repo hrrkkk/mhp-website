@@ -13,7 +13,8 @@ import {
   ChefHat,
   Filter,
   Package,
-  CreditCard
+  CreditCard,
+  Trash2
 } from 'lucide-react';
 
 import { MHPCard, MHPButton, MHPBadge } from '../../components/admin/MHPAdminComponents';
@@ -53,6 +54,19 @@ const AdminOrders = () => {
       console.warn('Failed to fetch admin orders:', err.message);
     } finally {
       if (!isBackground && isMountedRef.current) setLoading(false);
+    }
+  };
+
+  const handleClearAllOrders = async () => {
+    if (!window.confirm('Are you sure you want to clear all test orders and reset the live order list?')) {
+      return;
+    }
+    try {
+      await api.delete('/future-menu/admin/orders/clear-all');
+      showToast('success', '🧹 All test orders cleared successfully!');
+      setOrders([]);
+    } catch (err) {
+      showToast('error', err.response?.data?.message || 'Failed to clear test orders.');
     }
   };
 
@@ -140,14 +154,26 @@ const AdminOrders = () => {
             </p>
           </div>
 
-          <MHPButton
-            onClick={fetchOrders}
-            variant="outline"
-            size="sm"
-          >
-            <RotateCw className="w-4 h-4 text-[#F47B20]" />
-            <span>Refresh Orders</span>
-          </MHPButton>
+          <div className="flex items-center gap-2">
+            <MHPButton
+              onClick={handleClearAllOrders}
+              variant="outline"
+              size="sm"
+              className="!border-red-300 !text-red-600 hover:!bg-red-50"
+            >
+              <Trash2 className="w-4 h-4 text-red-500" />
+              <span>Clear Test Data</span>
+            </MHPButton>
+
+            <MHPButton
+              onClick={fetchOrders}
+              variant="outline"
+              size="sm"
+            >
+              <RotateCw className="w-4 h-4 text-[#F47B20]" />
+              <span>Refresh Orders</span>
+            </MHPButton>
+          </div>
         </div>
       </MHPCard>
 
