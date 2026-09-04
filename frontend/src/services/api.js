@@ -5,7 +5,13 @@ const DEFAULT_DEV_API = 'http://localhost:5000/api';
 
 const isProduction = import.meta.env.PROD || (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1');
 
-const rawBase = import.meta.env.VITE_API_URL || (isProduction ? DEFAULT_PROD_API : DEFAULT_DEV_API);
+let rawBase = import.meta.env.VITE_API_URL || (isProduction ? DEFAULT_PROD_API : DEFAULT_DEV_API);
+
+// Ensure HTTPS protocol when running on HTTPS or production to prevent Mixed Content security blocking
+if (typeof window !== 'undefined' && (window.location.protocol === 'https:' || isProduction) && rawBase.startsWith('http://')) {
+  rawBase = rawBase.replace('http://', 'https://');
+}
+
 const API_BASE_URL = (rawBase && !rawBase.includes('/api')) 
   ? `${rawBase.replace(/\/$/, '')}/api` 
   : rawBase;
@@ -44,12 +50,22 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const isTrueNetworkError = !error.response && (error.code === 'ECONNABORTED' || error.message === 'Network Error');
+    // Catch any request failure where no response was received (ERR_NETWORK, ECONNABORTED, ETIMEDOUT, etc.)
+    const isTrueNetworkError = !error.response && (
+      error.code === 'ECONNABORTED' ||
+      error.code === 'ERR_NETWORK' ||
+      error.code === 'ETIMEDOUT' ||
+      error.code === 'ERR_BAD_RESPONSE' ||
+      error.message === 'Network Error' ||
+      (error.message && error.message.toLowerCase().includes('network')) ||
+      (error.message && error.message.toLowerCase().includes('timeout'))
+    );
+
     if (isTrueNetworkError) {
       config.__retryCount = (config.__retryCount || 0) + 1;
       const isAuthRequest = config.url && (config.url.includes('/auth/login') || config.url.includes('/auth/register'));
-      const maxRetries = isAuthRequest ? 2 : 6;
-      const retryDelay = isAuthRequest ? 1000 : 1500;
+      const maxRetries = isAuthRequest ? 3 : 5;
+      const retryDelay = 2000;
 
       if (config.__retryCount <= maxRetries) {
         console.log(`[API Retry] ⚡ Retrying request to ${config.url} (Attempt ${config.__retryCount}/${maxRetries})...`);

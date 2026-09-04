@@ -27,6 +27,7 @@ app.use(cors({
   origin: true,
   credentials: true
 }));
+app.options('*', cors({ origin: true, credentials: true }));
 
 // Body Parsers
 app.use(express.json({ limit: '15mb' }));
