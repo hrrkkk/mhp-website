@@ -127,8 +127,11 @@ const MenuPage = () => {
   }, []);
 
   const fetchFoodItems = async () => {
+    // Immediately show fallback menu items so the menu displays INSTANTLY without waiting for backend cold-start
+    setFoodItems(FALLBACK_FOOD_ITEMS);
+    setLoading(false);
+
     try {
-      setLoading(true);
       let items = [];
       try {
         const res = await api.get('/menu');
@@ -152,16 +155,11 @@ const MenuPage = () => {
         }
       }
 
-      if (!items || items.length === 0) {
-        items = FALLBACK_FOOD_ITEMS;
+      if (items && items.length > 0) {
+        setFoodItems(items);
       }
-
-      setFoodItems(items);
     } catch (err) {
       console.error('Error in fetchFoodItems:', err);
-      setFoodItems(FALLBACK_FOOD_ITEMS);
-    } finally {
-      setLoading(false);
     }
   };
 

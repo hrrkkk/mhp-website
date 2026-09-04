@@ -25,7 +25,6 @@ const Explore = () => {
       .catch(() => {});
   }, []);
 
-  // Gallery items default schema (for 5-6 editorial placeholder spaces)
   const defaultGalleryItems = [
     {
       id: 1,
@@ -33,7 +32,7 @@ const Explore = () => {
       category: "Quadrangle Dining & Atmosphere",
       sub: "MHP Central Plaza",
       aspect: "landscape-large",
-      image: ""
+      image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80"
     },
     {
       id: 2,
@@ -41,7 +40,7 @@ const Explore = () => {
       category: "Signature Prep",
       sub: "Fresh Daily",
       aspect: "portrait-tall",
-      image: ""
+      image: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=800&q=80"
     },
     {
       id: 3,
@@ -49,7 +48,7 @@ const Explore = () => {
       category: "Campus Break",
       sub: "Afternoon Chai & Snack",
       aspect: "square-medium",
-      image: ""
+      image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80"
     },
     {
       id: 4,
@@ -57,7 +56,7 @@ const Explore = () => {
       category: "Editorial Portrait",
       sub: "VFSTR Life",
       aspect: "portrait-tall",
-      image: ""
+      image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80"
     },
     {
       id: 5,
@@ -65,7 +64,7 @@ const Explore = () => {
       category: "Refreshed Daily",
       sub: "Specialty Cuisine",
       aspect: "landscape-wide",
-      image: ""
+      image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=80"
     }
   ];
 
@@ -190,91 +189,65 @@ const Explore = () => {
           
           {/* SLOT 1: Large Featured Landscape Visual (Col-Span 8) */}
           <div className="md:col-span-8 bg-[#FFFFFF] rounded-3xl border border-[#7D967E]/30 overflow-hidden shadow-md group relative min-h-[22rem] sm:min-h-[28rem] flex flex-col justify-end p-6 sm:p-8 transition-all duration-500 hover:shadow-xl hover:border-[#183A2A]/40">
-            {galleryItems[0]?.image ? (
-              <img
-                src={getImageUrl(galleryItems[0].image, 'dining')}
-                alt={galleryItems[0].title}
-                onError={(e) => handleImageError(e, 'dining')}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-            ) : (
-              /* Polished Architectural Placeholder Texture */
-              <div className="absolute inset-0 bg-gradient-to-br from-[#183A2A]/8 via-[#7D967E]/12 to-[#183A2A]/15 group-hover:scale-105 transition-transform duration-700 flex items-center justify-center">
-                <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#183A2A_1px,transparent_1px)] [background-size:16px_16px]" />
-                <div className="w-20 h-20 rounded-full border border-[#183A2A]/20 flex items-center justify-center bg-[#FFFFFF]/40 backdrop-blur-md">
-                  <Camera className="w-8 h-8 text-[#183A2A]/40" />
-                </div>
-              </div>
-            )}
+            <img
+              src={getImageUrl(galleryItems[0]?.image || defaultGalleryItems[0]?.image, 'dining')}
+              alt={galleryItems[0]?.title || defaultGalleryItems[0]?.title}
+              onError={(e) => handleImageError(e, 'dining')}
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            />
 
             {/* Subtle Gradient Readability Backdrop */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#183A2A]/90 via-[#183A2A]/20 to-transparent pointer-events-none" />
 
             {/* Tag Badge */}
             <div className="absolute top-5 left-5 bg-[#183A2A] text-[#FFF7E8] text-[10px] font-extrabold tracking-wider uppercase px-3.5 py-1.5 rounded-full shadow-xs border border-[#FFF7E8]/20 z-10">
-              {galleryItems[0]?.sub || "MHP Central Plaza"}
+              {galleryItems[0]?.sub || defaultGalleryItems[0]?.sub || "MHP Central Plaza"}
             </div>
 
             {/* Content Overlay */}
             <div className="relative z-10 space-y-1.5 text-white">
               <span className="text-xs font-bold text-[#F47B20] uppercase tracking-wider block">
-                {galleryItems[0]?.category || "Quadrangle Dining & Atmosphere"}
+                {galleryItems[0]?.category || defaultGalleryItems[0]?.category || "Quadrangle Dining & Atmosphere"}
               </span>
               <h2 className="font-display font-extrabold text-2xl sm:text-3xl text-[#FFF7E8] tracking-tight">
-                {galleryItems[0]?.title || "The Heartbeat Near N Block"}
+                {galleryItems[0]?.title || defaultGalleryItems[0]?.title || "The Heartbeat Near N Block"}
               </h2>
             </div>
           </div>
 
           {/* SLOT 2: Tall Portrait Visual (Col-Span 4) */}
           <div className="md:col-span-4 bg-[#FFFFFF] rounded-3xl border border-[#7D967E]/30 overflow-hidden shadow-md group relative min-h-[22rem] sm:min-h-[28rem] flex flex-col justify-end p-6 transition-all duration-500 hover:shadow-xl hover:border-[#183A2A]/40">
-            {galleryItems[1]?.image ? (
-              <img
-                src={getImageUrl(galleryItems[1].image, 'starter')}
-                alt={galleryItems[1].title}
-                onError={(e) => handleImageError(e, 'starter')}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-gradient-to-tr from-[#F47B20]/10 via-[#FFF7E8] to-[#183A2A]/10 group-hover:scale-105 transition-transform duration-700 flex items-center justify-center">
-                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#F47B20_1px,transparent_1px)] [background-size:20px_20px]" />
-                <div className="w-16 h-16 rounded-full border border-[#F47B20]/30 flex items-center justify-center bg-[#FFFFFF]/40 backdrop-blur-md">
-                  <Sparkles className="w-6 h-6 text-[#F47B20]/50" />
-                </div>
-              </div>
-            )}
+            <img
+              src={getImageUrl(galleryItems[1]?.image || defaultGalleryItems[1]?.image, 'starter')}
+              alt={galleryItems[1]?.title || defaultGalleryItems[1]?.title}
+              onError={(e) => handleImageError(e, 'starter')}
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            />
 
             <div className="absolute inset-0 bg-gradient-to-t from-[#183A2A]/90 via-[#183A2A]/20 to-transparent pointer-events-none" />
 
             <div className="relative z-10 space-y-1 text-white">
               <span className="text-[11px] font-bold text-[#F47B20] uppercase tracking-wider block">
-                {galleryItems[1]?.category || "Signature Prep"}
+                {galleryItems[1]?.category || defaultGalleryItems[1]?.category || "Signature Prep"}
               </span>
               <h3 className="font-display font-extrabold text-xl text-[#FFF7E8]">
-                {galleryItems[1]?.title || "Chef's Special Counters"}
+                {galleryItems[1]?.title || defaultGalleryItems[1]?.title || "Chef's Special Counters"}
               </h3>
             </div>
           </div>
 
-          {/* LOWER ROW: Dedicated Instagram Slot + Supporting Visuals */}
-
-          {/* SLOT 3: RESERVED INSTAGRAM POST SLOT (Col-Span 4) */}
-          <div className="md:col-span-4 bg-[#FFFFFF] rounded-3xl border-2 border-[#F47B20]/40 overflow-hidden shadow-lg p-6 flex flex-col justify-between relative group hover:border-[#F47B20] transition-all duration-500 min-h-[22rem]">
-            {/* Header branding */}
-            <div className="flex items-center justify-between border-b border-[#7D967E]/20 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#F47B20] via-rose-500 to-purple-600 p-0.5 flex items-center justify-center text-white shadow-xs">
-                  <div className="w-full h-full bg-[#FFFFFF] rounded-full p-0.5 flex items-center justify-center">
+          {/* SLOT 3: Instagram Highlights Card */}
+          <div className="md:col-span-4 bg-white rounded-3xl border border-[#7D967E]/30 p-6 flex flex-col justify-between shadow-md hover:shadow-xl transition-all group">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#F47B20] to-rose-500 p-0.5 shadow-xs">
+                  <div className="w-full h-full bg-white rounded-full flex items-center justify-center text-[#183A2A]">
                     <Instagram className="w-4 h-4 text-[#F47B20]" />
                   </div>
                 </div>
                 <div>
-                  <span className="text-xs font-extrabold text-[#183A2A] block leading-tight">
-                    {galleryHeader.instagramHandle || "@mhp_vfstr"}
-                  </span>
-                  <span className="text-[10px] text-[#7D967E] font-bold block">
-                    {galleryHeader.instagramSub || "Official Campus Handle"}
-                  </span>
+                  <h4 className="text-xs font-extrabold text-[#183A2A]">{galleryHeader.instagramHandle || "@zestvignan_mhp"}</h4>
+                  <span className="text-[10px] text-[#7D967E] font-medium block">{galleryHeader.instagramSub || "Official Campus Handle"}</span>
                 </div>
               </div>
 
@@ -288,89 +261,47 @@ const Explore = () => {
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </a>
             </div>
-
-            {/* Instagram Media Container Space */}
-            <div className="my-4 py-8 rounded-2xl bg-[#FFF7E8] border border-[#7D967E]/20 text-center flex flex-col items-center justify-center space-y-2 relative overflow-hidden group-hover:bg-[#FFF7E8]/80 transition-colors">
-              <div className="w-12 h-12 rounded-full bg-white shadow-xs flex items-center justify-center text-[#F47B20] border border-[#F47B20]/20">
-                <Instagram className="w-6 h-6" />
-              </div>
-              <span className="text-xs font-extrabold text-[#183A2A] px-4">
-                Official Instagram Post
-              </span>
-              <p className="text-[10px] text-[#7D967E] max-w-xs px-6 font-medium leading-relaxed">
-                Reserved space for official campus Instagram embed.
-              </p>
-            </div>
-
-            {/* Footer metadata */}
-            <div className="flex items-center justify-between text-xs text-[#7D967E] pt-3 border-t border-[#7D967E]/20 font-bold">
-              <div className="flex items-center gap-1.5 text-[#F47B20]">
-                <Heart className="w-3.5 h-3.5 fill-[#F47B20]" />
-                <span>Featured Memory</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Share2 className="w-3.5 h-3.5 text-[#7D967E]" />
-                <span className="text-[10px]">VFSTR Campus</span>
-              </div>
-            </div>
+            {/* Instagram placeholder space could go here if needed */}
           </div>
 
           {/* SLOT 4: Editorial Square Visual Slot (Col-Span 4) */}
           <div className="md:col-span-4 bg-[#FFFFFF] rounded-3xl border border-[#7D967E]/30 overflow-hidden shadow-md group relative min-h-[22rem] flex flex-col justify-end p-6 transition-all duration-500 hover:shadow-xl hover:border-[#183A2A]/40">
-            {galleryItems[2]?.image ? (
-              <img
-                src={getImageUrl(galleryItems[2].image, 'breakfast')}
-                alt={galleryItems[2].title}
-                onError={(e) => handleImageError(e, 'breakfast')}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-gradient-to-tl from-[#183A2A]/15 via-[#7D967E]/10 to-[#F47B20]/5 group-hover:scale-105 transition-transform duration-700 flex items-center justify-center">
-                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#183A2A_1px,transparent_1px)] [background-size:18px_18px]" />
-                <div className="w-16 h-16 rounded-full border border-[#183A2A]/30 flex items-center justify-center bg-[#FFFFFF]/40 backdrop-blur-md">
-                  <Camera className="w-6 h-6 text-[#183A2A]/40" />
-                </div>
-              </div>
-            )}
+            <img
+              src={getImageUrl(galleryItems[2]?.image || defaultGalleryItems[2]?.image, 'breakfast')}
+              alt={galleryItems[2]?.title || defaultGalleryItems[2]?.title}
+              onError={(e) => handleImageError(e, 'breakfast')}
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            />
 
             <div className="absolute inset-0 bg-gradient-to-t from-[#183A2A]/90 via-[#183A2A]/20 to-transparent pointer-events-none" />
 
             <div className="relative z-10 space-y-1 text-white">
               <span className="text-[11px] font-bold text-[#F47B20] uppercase tracking-wider block">
-                {galleryItems[2]?.category || "Campus Break"}
+                {galleryItems[2]?.category || defaultGalleryItems[2]?.category || "Campus Break"}
               </span>
               <h3 className="font-display font-extrabold text-xl text-[#FFF7E8]">
-                {galleryItems[2]?.title || "Student Gatherings"}
+                {galleryItems[2]?.title || defaultGalleryItems[2]?.title || "Student Gatherings"}
               </h3>
             </div>
           </div>
 
           {/* SLOT 5: Editorial Visual Slot (Col-Span 4) */}
           <div className="md:col-span-4 bg-[#FFFFFF] rounded-3xl border border-[#7D967E]/30 overflow-hidden shadow-md group relative min-h-[22rem] flex flex-col justify-end p-6 transition-all duration-500 hover:shadow-xl hover:border-[#183A2A]/40">
-            {galleryItems[3]?.image ? (
-              <img
-                src={getImageUrl(galleryItems[3].image, 'burger')}
-                alt={galleryItems[3].title}
-                onError={(e) => handleImageError(e, 'burger')}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-gradient-to-b from-[#183A2A]/5 via-[#7D967E]/15 to-[#183A2A]/20 group-hover:scale-105 transition-transform duration-700 flex items-center justify-center">
-                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#7D967E_1px,transparent_1px)] [background-size:16px_16px]" />
-                <div className="w-16 h-16 rounded-full border border-[#7D967E]/40 flex items-center justify-center bg-[#FFFFFF]/40 backdrop-blur-md">
-                  <Sparkles className="w-6 h-6 text-[#7D967E]/60" />
-                </div>
-              </div>
-            )}
+            <img
+              src={getImageUrl(galleryItems[3]?.image || defaultGalleryItems[3]?.image, 'burger')}
+              alt={galleryItems[3]?.title || defaultGalleryItems[3]?.title}
+              onError={(e) => handleImageError(e, 'burger')}
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            />
 
             <div className="absolute inset-0 bg-gradient-to-t from-[#183A2A]/90 via-[#183A2A]/20 to-transparent pointer-events-none" />
 
             <div className="relative z-10 space-y-1 text-white">
               <span className="text-[11px] font-bold text-[#F47B20] uppercase tracking-wider block">
-                {galleryItems[3]?.category || "Editorial Portrait"}
+                {galleryItems[3]?.category || defaultGalleryItems[3]?.category || "Editorial Portrait"}
               </span>
               <h3 className="font-display font-extrabold text-xl text-[#FFF7E8]">
-                {galleryItems[3]?.title || "Authentic Campus Moments"}
+                {galleryItems[3]?.title || defaultGalleryItems[3]?.title || "Authentic Campus Moments"}
               </h3>
             </div>
           </div>

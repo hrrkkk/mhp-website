@@ -97,11 +97,11 @@ const initialDbState = {
       instagramHandle: "@mhp_vfstr",
       instagramSub: "Official Campus Handle",
       items: [
-        { id: 1, title: "MHP Central Plaza", category: "Quadrangle Dining & Atmosphere", sub: "The Heartbeat Near N Block", image: "" },
-        { id: 2, title: "Chef's Special Counters", category: "Signature Prep", sub: "", image: "" },
-        { id: 3, title: "Student Gatherings", category: "Campus Break", sub: "", image: "" },
-        { id: 4, title: "Authentic Campus Moments", category: "Editorial Portrait", sub: "", image: "" },
-        { id: 5, title: "Flavors & Good Vibes", category: "Refreshed Daily", sub: "", image: "" }
+        { id: 1, title: "MHP Central Plaza", category: "Quadrangle Dining & Atmosphere", sub: "The Heartbeat Near N Block", image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80" },
+        { id: 2, title: "Chef's Special Counters", category: "Signature Prep", sub: "Fresh Daily", image: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=800&q=80" },
+        { id: 3, title: "Student Gatherings", category: "Campus Break", sub: "Afternoon Chai & Snack", image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80" },
+        { id: 4, title: "Authentic Campus Moments", category: "Editorial Portrait", sub: "VFSTR Life", image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80" },
+        { id: 5, title: "Flavors & Good Vibes", category: "Refreshed Daily", sub: "Specialty Cuisine", image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=80" }
       ]
     },
     reels: {
@@ -648,11 +648,11 @@ class SupabaseDatabase {
         instagramHandle: '@mhp_vfstr',
         instagramSub: 'Official Campus Handle',
         items: [
-          { id: 1, title: 'MHP Central Plaza', category: 'Quadrangle Dining & Atmosphere', sub: 'The Heartbeat Near N Block', image: '' },
-          { id: 2, title: "Chef's Special Counters", category: 'Signature Prep', sub: 'Fresh Daily', image: '' },
-          { id: 3, title: 'Student Gatherings', category: 'Campus Break', sub: 'Afternoon Chai & Snack', image: '' },
-          { id: 4, title: 'Authentic Campus Moments', category: 'Editorial Portrait', sub: 'VFSTR Life', image: '' },
-          { id: 5, title: 'Flavors & Good Vibes', category: 'Refreshed Daily', sub: 'Specialty Cuisine', image: '' }
+          { id: 1, title: 'MHP Central Plaza', category: 'Quadrangle Dining & Atmosphere', sub: 'The Heartbeat Near N Block', image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80' },
+          { id: 2, title: "Chef's Special Counters", category: 'Signature Prep', sub: 'Fresh Daily', image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=800&q=80' },
+          { id: 3, title: 'Student Gatherings', category: 'Campus Break', sub: 'Afternoon Chai & Snack', image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80' },
+          { id: 4, title: 'Authentic Campus Moments', category: 'Editorial Portrait', sub: 'VFSTR Life', image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80' },
+          { id: 5, title: 'Flavors & Good Vibes', category: 'Refreshed Daily', sub: 'Specialty Cuisine', image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=80' }
         ]
       },
       reels: {
