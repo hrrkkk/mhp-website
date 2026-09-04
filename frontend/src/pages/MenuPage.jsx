@@ -61,7 +61,8 @@ const DELIVERY_CATEGORIES = [
 const MenuPage = () => {
   const { cartItems, addToCart, removeFromCart, updateQuantity, clearCart, totalCartCount, totalCartAmount, isOrderingOpen } = useCart();
   const { showToast } = useToast();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const urlMode = searchParams.get('mode');
 
@@ -296,6 +297,13 @@ const MenuPage = () => {
   const handlePlaceOrderSubmit = async (e) => {
     e.preventDefault();
     if (cartItems.length === 0) return;
+
+    if (!isAuthenticated || !user) {
+      showToast('error', '🔒 Please sign in or create a student account to place your order.');
+      navigate('/login?redirect=/menu');
+      return;
+    }
+
     if (!isOrderingOpen) {
       showToast('error', `Ordering window is closed. Today's active ordering window is ${getOrderingTimeWindowText(orderingSlot)}.`);
       return;

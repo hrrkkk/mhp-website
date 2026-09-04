@@ -15,7 +15,14 @@ const DEFAULT_ADMIN_FALLBACK = {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('mhp_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
   const [token, setToken] = useState(localStorage.getItem('mhp_token') || null);
   const [loading, setLoading] = useState(true);
 
@@ -32,15 +39,16 @@ export const AuthProvider = ({ children }) => {
       const res = await api.get('/auth/me');
       if (res?.data?.user) {
         setUser(res.data.user);
-      } else {
-        setUser(DEFAULT_ADMIN_FALLBACK);
+        localStorage.setItem('mhp_user', JSON.stringify(res.data.user));
       }
     } catch (err) {
-      console.error('Failed to fetch user:', err);
+      console.warn('Network sync for user session, maintaining active offline session:', err.message);
       const curToken = localStorage.getItem('mhp_token');
       if (curToken && (curToken.includes('admin') || curToken === 'mhp_admin_session_token')) {
         setUser(DEFAULT_ADMIN_FALLBACK);
-      } else {
+        localStorage.setItem('mhp_user', JSON.stringify(DEFAULT_ADMIN_FALLBACK));
+      } else if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+        // Only log out if token is explicitly rejected by backend (401/403)
         logout();
       }
     } finally {
@@ -60,6 +68,7 @@ export const AuthProvider = ({ children }) => {
     const res = await api.post('/auth/login', payload);
     const { token: authToken, user: userData } = res.data;
     localStorage.setItem('mhp_token', authToken);
+    localStorage.setItem('mhp_user', JSON.stringify(userData));
     setToken(authToken);
     setUser(userData);
     return userData;
@@ -69,6 +78,7 @@ export const AuthProvider = ({ children }) => {
     const res = await api.post('/auth/register', userData);
     const { token: authToken, user: newUser } = res.data;
     localStorage.setItem('mhp_token', authToken);
+    localStorage.setItem('mhp_user', JSON.stringify(newUser));
     setToken(authToken);
     setUser(newUser);
     return newUser;
@@ -76,6 +86,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('mhp_token');
+    localStorage.removeItem('mhp_user');
     setToken(null);
     setUser(null);
   };
@@ -83,6 +94,7 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (data) => {
     const res = await api.put('/auth/profile', data);
     setUser(res.data.user);
+    localStorage.setItem('mhp_user', JSON.stringify(res.data.user));
     return res.data.user;
   };
 

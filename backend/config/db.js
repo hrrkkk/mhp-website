@@ -370,6 +370,20 @@ class SupabaseDatabase {
     return true;
   }
 
+  async clearCustomerUsers() {
+    this.cache.users = (this.cache.users || []).filter(u => u && u.role === 'admin');
+    await this.ensureAdminUser();
+    this.saveToLocalJson();
+    if (supabase) {
+      try {
+        await supabase.from('users').delete().neq('role', 'admin');
+      } catch (err) {
+        console.warn('Supabase clear customer users warning:', err.message);
+      }
+    }
+    return true;
+  }
+
   async syncCollectionToSupabase(collectionName, item, action) {
     if (!supabase) return;
     try {

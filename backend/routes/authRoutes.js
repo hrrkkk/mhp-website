@@ -221,4 +221,16 @@ router.post('/change-password', authenticateToken, async (req, res) => {
   }
 });
 
+// @route   DELETE /api/auth/clear-customer-accounts
+// @desc    Delete all customer student user accounts (keep admin intact)
+router.delete('/clear-customer-accounts', requireAdmin, async (req, res) => {
+  try {
+    await db.clearCustomerUsers();
+    res.json({ message: 'All student accounts cleared successfully' });
+  } catch (err) {
+    console.error('Error clearing student accounts:', err);
+    res.status(500).json({ error: 'Failed to clear student accounts' });
+  }
+});
+
 module.exports = router;

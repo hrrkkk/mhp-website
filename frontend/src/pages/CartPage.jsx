@@ -28,7 +28,8 @@ import { getImageUrl, handleImageError } from '../utils/imageUtils';
 const CartPage = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart, totalCartCount, totalCartAmount, orderingSlot: contextOrderingSlot, isOrderingOpen } = useCart();
   const { showToast } = useToast();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const urlMode = searchParams.get('mode');
 
@@ -83,6 +84,13 @@ const CartPage = () => {
   const handlePlaceOrderSubmit = async (e) => {
     e.preventDefault();
     if (cartItems.length === 0) return;
+
+    if (!isAuthenticated || !user) {
+      showToast('error', '🔒 Please sign in or create a student account to place your order.');
+      navigate('/login?redirect=/cart');
+      return;
+    }
+
     if (!isOrderingOpen || (orderingSlot && orderingSlot.isOpen === false)) {
       showToast('error', orderingSlot?.message || 'Ordering window is currently closed (Accepted 9:30 AM – 10:30 AM).');
       return;
