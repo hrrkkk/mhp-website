@@ -7,6 +7,11 @@ const isProduction = import.meta.env.PROD || (typeof window !== 'undefined' && w
 
 let rawBase = import.meta.env.VITE_API_URL || (isProduction ? DEFAULT_PROD_API : DEFAULT_DEV_API);
 
+// Auto-correct invalid/typo URL (oo30 -> ee3o) from Render dashboard environment settings
+if (rawBase && rawBase.includes('mhp-backend-oo30')) {
+  rawBase = rawBase.replace('mhp-backend-oo30', 'mhp-backend-ee3o');
+}
+
 // Ensure HTTPS protocol when running on HTTPS or production to prevent Mixed Content security blocking
 if (typeof window !== 'undefined' && (window.location.protocol === 'https:' || isProduction) && rawBase.startsWith('http://')) {
   rawBase = rawBase.replace('http://', 'https://');
