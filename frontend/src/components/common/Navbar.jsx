@@ -11,7 +11,9 @@ import {
   Menu as MenuIcon, 
   X,
   ShoppingBag,
-  ShieldCheck
+  ShieldCheck,
+  ArrowRight,
+  Sparkles
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -270,6 +272,32 @@ const Navbar = () => {
                 </Link>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Integrated Sticky View Cart Bar attached to Header */}
+      {totalCartCount > 0 && location.pathname !== '/cart' && (
+        <div className="bg-gradient-to-r from-[#F47B20] via-[#FF882E] to-[#F47B20] text-white py-2 px-4 border-t border-white/20 shadow-lg">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-white/25 flex items-center justify-center font-black text-xs">
+                {totalCartCount}
+              </span>
+              <span className="text-xs font-black tracking-wider uppercase flex items-center gap-1.5">
+                <span>CART: {totalCartCount} {totalCartCount === 1 ? 'ITEM' : 'ITEMS'}</span>
+                <Sparkles className="w-3.5 h-3.5 text-yellow-200" />
+              </span>
+            </div>
+
+            <Link
+              to="/cart"
+              className="px-3 py-1 rounded-xl bg-white text-[#183A2A] hover:bg-[#FFF7E8] font-black text-xs flex items-center gap-1.5 shadow-md transition-all hover:scale-105 active:scale-95 shrink-0"
+            >
+              <span>VIEW CART & CHECKOUT</span>
+              <span className="font-mono bg-[#183A2A]/10 px-1.5 py-0.5 rounded text-[11px]">₹{totalCartAmount}</span>
+              <ArrowRight className="w-3.5 h-3.5 text-[#F47B20]" />
+            </Link>
           </div>
         </div>
       )}
