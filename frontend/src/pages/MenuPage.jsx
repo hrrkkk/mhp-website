@@ -70,8 +70,8 @@ const MenuPage = () => {
   const [favoritesData, setFavoritesData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Default mode to 'delivery' so users land directly on the menu without blocking screens
-  const [selectedMode, setSelectedMode] = useState(urlMode || 'delivery');
+  // Default mode to 'dining' so users land directly on the full menu containing all items
+  const [selectedMode, setSelectedMode] = useState(urlMode || 'dining');
 
   const location = useLocation();
 
@@ -426,9 +426,10 @@ const MenuPage = () => {
    * [ - 1 + ] or [ ADD ]
    */
   const renderFoodCard = (item) => {
-    const hasOptions = item.priceOptions && item.priceOptions.length > 0;
+    if (!item) return null;
+    const hasOptions = item.priceOptions && Array.isArray(item.priceOptions) && item.priceOptions.length > 0;
     const currentOption = hasOptions ? (itemOptions[item._id] || item.priceOptions[0]) : null;
-    const displayPrice = hasOptions ? currentOption.price : item.price;
+    const displayPrice = hasOptions ? (currentOption?.price ?? item.price) : item.price;
 
     const itemFt = (item.foodType || '').toLowerCase();
     const itemSub = (item.subcategory || '').toLowerCase();
