@@ -41,6 +41,10 @@ function createRazorpayOrderRemote(amountInPaise, receipt) {
           resolve(null);
         });
       });
+      req.setTimeout(5000, () => {
+        try { req.destroy(); } catch (e) {}
+        resolve(null);
+      });
       req.on('error', () => resolve(null));
       req.write(postData);
       req.end();

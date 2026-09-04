@@ -6,41 +6,16 @@ const billingService = require('../services/billingService');
 const paymentService = require('../services/paymentService');
 const { supabase, isSupabaseConfigured, mapRowToMenuItem, mapMenuItemToRow } = require('../config/supabase');
 
-async function findMenuItem(item) {
+function findMenuItem(item) {
+  if (!item) return null;
   const targetId = item._id || item.foodId || item.id;
-  let dbItem = null;
+  
+  // Instant in-memory cache lookup (0ms)
+  let dbItem = db.findById('foodItems', targetId) || 
+               db.findOne('foodItems', { _id: targetId }) || 
+               (item.name ? db.findOne('foodItems', { name: item.name }) : null);
 
-  if (isSupabaseConfigured()) {
-    try {
-      if (targetId) {
-        const { data, error } = await supabase
-          .from('menu_items')
-          .select('*')
-          .eq('id', targetId)
-          .maybeSingle();
-        if (data && !error) {
-          dbItem = mapRowToMenuItem(data);
-        }
-      }
-      if (!dbItem && item.name) {
-        const { data, error } = await supabase
-          .from('menu_items')
-          .select('*')
-          .ilike('name', item.name)
-          .maybeSingle();
-        if (data && !error) {
-          dbItem = mapRowToMenuItem(data);
-        }
-      }
-    } catch (e) {}
-  }
-
-  if (!dbItem) {
-    dbItem = db.findById('foodItems', targetId) || 
-             db.findOne('foodItems', { _id: targetId }) || 
-             (item.name ? db.findOne('foodItems', { name: item.name }) : null);
-  }
-
+  // Fallback to submitted item properties if valid price is provided
   if (!dbItem && item && item.name && item.price !== undefined) {
     dbItem = {
       _id: targetId || item.name,

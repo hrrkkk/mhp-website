@@ -2107,80 +2107,6 @@
       "itemQuantities": 2,
       "orderCreatedAt": "2026-09-01T16:54:57.980Z",
       "externalSyncStatus": "LOCAL_ONLY"
-    },
-    {
-      "_id": "a92301996421b628",
-      "id": "7aa4bf9657b5deb8",
-      "createdAt": "2026-09-02T05:54:47.237Z",
-      "billingNumber": "mhp084",
-      "orderId": "64b2b20548bf30ef",
-      "orderNumber": "mhp083",
-      "studentId": "123456",
-      "customerName": "Campus Student",
-      "customerPhone": "9876543210",
-      "orderType": "Delivery",
-      "items": [
-        {
-          "_id": "non_existent_item_id_123",
-          "foodId": "non_existent_item_id_123",
-          "name": "Special Biryani",
-          "category": "Biryanis",
-          "subcategory": "",
-          "foodType": "veg",
-          "image": "",
-          "unitPrice": 180,
-          "price": 180,
-          "quantity": 1,
-          "selectedOptionLabel": null,
-          "subtotal": 180
-        }
-      ],
-      "itemQuantities": 1,
-      "subtotal": 180,
-      "parcelCharge": 10,
-      "total": 190,
-      "paymentMethod": "UPI",
-      "paymentStatus": "PAID",
-      "billingStatus": "BILLED",
-      "externalSyncStatus": "LOCAL_ONLY",
-      "orderCreatedAt": "2026-09-02T05:54:47.231Z"
-    },
-    {
-      "_id": "b0b8d37aa192fa0d",
-      "id": "9e896c7ddddb7632",
-      "createdAt": "2026-09-02T06:29:21.293Z",
-      "billingNumber": "mhp086",
-      "orderId": "3d4657fde5306814",
-      "orderNumber": "mhp085",
-      "studentId": "223f90d4-5bd4-440c-a000-000000000000",
-      "customerName": "MHP Administrator",
-      "customerPhone": "7672022351",
-      "orderType": "Delivery",
-      "items": [
-        {
-          "_id": "493016d1-41db-404c-af1f-7121355d117d",
-          "foodId": "493016d1-41db-404c-af1f-7121355d117d",
-          "name": "Panner Majestic",
-          "category": "Starters",
-          "subcategory": "Veg Starters",
-          "foodType": "veg",
-          "image": "https://i.ytimg.com/vi/J0O-AjGiAVQ/maxresdefault.jpg",
-          "unitPrice": 159,
-          "price": 159,
-          "quantity": 3,
-          "selectedOptionLabel": null,
-          "subtotal": 477
-        }
-      ],
-      "itemQuantities": 3,
-      "subtotal": 477,
-      "parcelCharge": 30,
-      "total": 507,
-      "paymentMethod": "UPI",
-      "paymentStatus": "PAID",
-      "billingStatus": "BILLED",
-      "externalSyncStatus": "LOCAL_ONLY",
-      "orderCreatedAt": "2026-09-02T06:29:21.285Z"
     }
   ],
   "settings": {
@@ -2217,21 +2143,7 @@
       "orderingEndTime": "10:30",
       "pickupStartTime": "12:00",
       "hasTodayOverride": false,
-      "orderingStartTime": "09:30",
-      "dailyOverrides": {
-        "2026-09-02": {
-          "orderingStartTime": "09:30",
-          "orderingEndTime": "13:30",
-          "pickupStartTime": "12:00",
-          "pickupEndTime": "13:00"
-        }
-      },
-      "latestCustomSlot": {
-        "orderingStartTime": "09:30",
-        "orderingEndTime": "13:30",
-        "pickupStartTime": "12:00",
-        "pickupEndTime": "13:00"
-      }
+      "orderingStartTime": "09:30"
     },
     "adminPhoneNumbers": [
       "7672022351"
@@ -10637,6 +10549,114 @@
       "externalSyncStatus": "LOCAL_ONLY",
       "orderReceived": false,
       "orderReceivedStatus": "NOT CONFIRMED"
+    },
+    {
+      "_id": "de84c36242f2aab8",
+      "id": "d81217a88e2d2bad",
+      "createdAt": "2026-09-04T04:13:00.938Z",
+      "orderId": "mhp087",
+      "orderNumber": "mhp087",
+      "billingNumber": "mhp087",
+      "customerName": "Speed Test Student",
+      "customerPhone": "9876543210",
+      "studentPhone": "9876543210",
+      "studentId": "",
+      "pickupPoint": null,
+      "pickupLocation": null,
+      "items": [
+        {
+          "_id": "41a5efce-311b-45f0-acd2-e8155f43378c",
+          "foodId": "41a5efce-311b-45f0-acd2-e8155f43378c",
+          "name": "Plain Dosa",
+          "category": "Breakfast",
+          "subcategory": "",
+          "foodType": "Veg",
+          "image": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=600&q=80&dish=plain-dosa",
+          "unitPrice": 40,
+          "price": 40,
+          "quantity": 2,
+          "selectedOptionLabel": null,
+          "subtotal": 80
+        },
+        {
+          "_id": "9fff9856-6121-44a1-a044-a788b7f226c6",
+          "foodId": "9fff9856-6121-44a1-a044-a788b7f226c6",
+          "name": "Idly",
+          "category": "Breakfast",
+          "subcategory": "",
+          "foodType": "Veg",
+          "image": "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80&dish=steamed-idly-4pcs",
+          "unitPrice": 30,
+          "price": 30,
+          "quantity": 1,
+          "selectedOptionLabel": null,
+          "subtotal": 30
+        }
+      ],
+      "totalItemCount": 3,
+      "subtotal": 110,
+      "orderType": "Dining",
+      "orderMode": "Dining",
+      "parcelCharge": 0,
+      "total": 110,
+      "totalAmount": 110,
+      "paymentMethod": "UPI",
+      "paymentMode": "UPI",
+      "paymentStatus": "PENDING",
+      "paymentReference": "TXN-TEST-1788495180938-8683",
+      "transactionId": "TXN-TEST-1788495180938-8683",
+      "orderStatus": "PENDING_PAYMENT",
+      "status": "PENDING_PAYMENT",
+      "notes": "",
+      "razorpayOrderId": "order_TXp7rZnFp4ApMI",
+      "paymentSignature": "4c8962bae21beab344c00a1046b3165f3a7807405b22cef18671eba910bf4fae"
+    },
+    {
+      "_id": "fcf47124ab2fc6d6",
+      "id": "7cebe798fe4f27b1",
+      "createdAt": "2026-09-04T04:13:18.590Z",
+      "orderId": "mhp088",
+      "orderNumber": "mhp088",
+      "billingNumber": "mhp088",
+      "customerName": "Instant Test Student",
+      "customerPhone": "9123456789",
+      "studentPhone": "9123456789",
+      "studentId": "",
+      "pickupPoint": null,
+      "pickupLocation": null,
+      "items": [
+        {
+          "_id": "41a5efce-311b-45f0-acd2-e8155f43378c",
+          "foodId": "41a5efce-311b-45f0-acd2-e8155f43378c",
+          "name": "Plain Dosa",
+          "category": "Breakfast",
+          "subcategory": "",
+          "foodType": "Veg",
+          "image": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=600&q=80&dish=plain-dosa",
+          "unitPrice": 40,
+          "price": 40,
+          "quantity": 1,
+          "selectedOptionLabel": null,
+          "subtotal": 40
+        }
+      ],
+      "totalItemCount": 1,
+      "subtotal": 40,
+      "orderType": "Dining",
+      "orderMode": "Dining",
+      "parcelCharge": 0,
+      "total": 40,
+      "totalAmount": 40,
+      "paymentMethod": "UPI",
+      "paymentMode": "UPI",
+      "paymentStatus": "PENDING",
+      "paymentReference": "TXN-TEST-1788495198590-6382",
+      "transactionId": "TXN-TEST-1788495198590-6382",
+      "orderStatus": "PENDING_PAYMENT",
+      "status": "PENDING_PAYMENT",
+      "notes": "",
+      "razorpayOrderId": "order_TXp8AooJQsfxQs",
+      "paymentSignature": "3ceac1555327ded4ac01d7e210cd3ff12389a32ce2ea9ceffa5d1951e8fc4010"
     }
   ]
 }
