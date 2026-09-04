@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
@@ -57,6 +57,10 @@ const CartPage = () => {
     if (cat.includes('breakfast') || sub.includes('breakfast') || title.includes('dosa') || title.includes('idly') || title.includes('vada') || title.includes('puri')) return true;
     if (cat.includes('beverage') || cat.includes('shake') || cat.includes('mocktail') || cat.includes('juice') || cat.includes('drink') || sub.includes('beverage')) return true;
     if (cat.includes('burger') || cat.includes('pizza') || cat.includes('sandwich') || cat.includes('wrap') || sub.includes('burger') || sub.includes('pizza') || sub.includes('sandwich')) return true;
+    return false;
+  };
+
+  const isRestrictedForDining = (categoryName = '', subcategoryName = '', itemTitle = '') => {
     return false;
   };
 

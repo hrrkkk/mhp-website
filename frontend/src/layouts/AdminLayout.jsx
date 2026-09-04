@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ThreeDLogoEmblem from '../components/common/ThreeDLogoEmblem';
+import ErrorBoundary from '../components/common/ErrorBoundary';
 import { 
   LayoutDashboard, 
   Home as HomeIcon,
@@ -251,7 +252,9 @@ const AdminLayout = () => {
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
 
     </div>
