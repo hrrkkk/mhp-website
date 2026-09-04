@@ -5,7 +5,7 @@ const { generateToken, authenticateToken, requireAdmin } = require('../middlewar
 
 const router = express.Router();
 
-// Customer Register (Phone + Email + Password)
+// Customer Register (Name + Mobile Phone + Password)
 router.post('/register', async (req, res) => {
   try {
     const { name, password, phone, email, studentId, hostelInfo } = req.body;
@@ -13,10 +13,10 @@ router.post('/register', async (req, res) => {
     const cleanPhone = phone ? phone.trim() : '';
     const cleanEmail = email ? email.trim().toLowerCase() : '';
 
-    if (!cleanPhone && !cleanEmail) {
+    if (!cleanPhone) {
       return res.status(400).json({ 
-        error: 'Mobile phone number or email address is required',
-        message: 'Mobile phone number or email address is required'
+        error: 'Mobile phone number is required',
+        message: 'Mobile phone number is required'
       });
     }
 
@@ -34,19 +34,15 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Check unique phone number or email
+    // Check unique phone number
     const existingUser = db.findOne('users', u => {
       if (!u) return false;
       const uPhone = u.phone ? String(u.phone).trim() : '';
-      const uEmail = u.email ? String(u.email).trim().toLowerCase() : '';
-      return (cleanPhone && uPhone === cleanPhone) || (cleanEmail && uEmail === cleanEmail);
+      return cleanPhone && uPhone === cleanPhone;
     });
 
     if (existingUser) {
-      const isPhoneDuplicate = cleanPhone && existingUser.phone === cleanPhone;
-      const fieldMsg = isPhoneDuplicate 
-        ? 'This phone number is already registered. Please log in.' 
-        : 'This email address is already registered. Please log in.';
+      const fieldMsg = 'This phone number is already registered. Please log in.';
       return res.status(400).json({ 
         error: fieldMsg,
         message: fieldMsg

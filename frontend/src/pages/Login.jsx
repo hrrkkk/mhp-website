@@ -58,8 +58,8 @@ const Login = () => {
 
   const fillStudentDemo = () => {
     setFormData({
-      phone: 'student@vignan.ac.in',
-      password: 'StudentPassword123!'
+      phone: '7672022351',
+      password: 'AdminPassword123!'
     });
   };
 
@@ -81,7 +81,7 @@ const Login = () => {
               </h1>
             </div>
             <p className="text-xs text-[#7D967E] font-medium leading-relaxed">
-              Sign in with your phone or email.
+              Sign in with your registered mobile phone number.
             </p>
           </div>
 
@@ -96,7 +96,7 @@ const Login = () => {
               className="w-full py-2 px-3 rounded-xl bg-[#183A2A] hover:bg-[#204935] text-[#FFF7E8] text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
             >
               <Sparkles className="w-3.5 h-3.5 text-[#F47B20]" />
-              <span>Auto-fill Demo Student</span>
+              <span>Auto-fill Demo Phone Sign In</span>
             </button>
           </div>
 
@@ -115,14 +115,14 @@ const Login = () => {
             
             <div className="space-y-1.5">
               <label className="text-[#183A2A] font-extrabold block">
-                Mobile Phone / Email Address:
+                Mobile Phone Number:
               </label>
               <div className="relative">
                 <User className="w-4 h-4 text-[#7D967E] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   required
-                  placeholder="Enter your phone or email"
+                  placeholder="Enter registered mobile number"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#FFF7E8]/50 border border-[#7D967E]/30 text-[#183A2A] font-bold placeholder-[#7D967E]/60 focus:outline-none focus:border-[#F47B20] focus:ring-1 focus:ring-[#F47B20]"

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import ThreeDLogoEmblem from '../components/common/ThreeDLogoEmblem';
-import { User, Phone, Lock, Mail, UserPlus } from 'lucide-react';
+import { User, Phone, Lock, UserPlus } from 'lucide-react';
 
 /**
  * Student Registration Screen — MHP Brand System
@@ -22,7 +22,6 @@ const Signup = () => {
 
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
     phone: '',
     password: ''
   });
@@ -62,7 +61,7 @@ const Signup = () => {
               </h1>
             </div>
             <p className="text-xs text-[#7D967E] font-medium leading-relaxed">
-              Register to pre-order food parcels online at MHP VFSTR Campus.
+              Register with your phone number to pre-order food parcels online at MHP VFSTR Campus.
             </p>
           </div>
 
@@ -81,23 +80,6 @@ const Signup = () => {
                   placeholder="Student Full Name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#FFF7E8]/50 border border-[#7D967E]/30 text-[#183A2A] font-bold placeholder-[#7D967E]/60 focus:outline-none focus:border-[#F47B20] focus:ring-1 focus:ring-[#F47B20]"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-[#183A2A] font-extrabold block">
-                VFSTR Email Address:
-              </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-[#7D967E] absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="email"
-                  required
-                  placeholder="student@vignan.ac.in"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#FFF7E8]/50 border border-[#7D967E]/30 text-[#183A2A] font-bold placeholder-[#7D967E]/60 focus:outline-none focus:border-[#F47B20] focus:ring-1 focus:ring-[#F47B20]"
                 />
               </div>
