@@ -7,6 +7,7 @@ import MobileBottomBar from '../components/common/MobileBottomBar';
 import NetworkOfflineBanner from '../components/common/NetworkOfflineBanner';
 import ServerWarmupBanner from '../components/common/ServerWarmupBanner';
 import ErrorBoundary from '../components/common/ErrorBoundary';
+import StickyTopCartBar from '../components/common/StickyTopCartBar';
 
 const CustomerLayout = () => {
   return (
@@ -20,7 +21,7 @@ const CustomerLayout = () => {
       {/* Live Animated 3D Environmental Background System */}
       <LiveThreeDBackground />
 
-      {/* Floating Navigation Header with Integrated Persistent Cart Bar */}
+      {/* Floating Navigation Header */}
       <Navbar />
 
       {/* Main Customer Page Content */}
@@ -32,6 +33,9 @@ const CustomerLayout = () => {
 
       {/* Footer */}
       <Footer />
+
+      {/* Floating View Cart Bar (Visible Constantly While Scrolling) */}
+      <StickyTopCartBar />
 
       {/* Mobile Sticky Bottom Navigation Bar (Home, Menu, Cart) */}
       <MobileBottomBar />
