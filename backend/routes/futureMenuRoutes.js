@@ -177,6 +177,18 @@ router.get('/favorites', (req, res) => {
   }
 });
 
+function extractUserFromRequest(req) {
+  let authUser = null;
+  if (req.headers && req.headers.authorization) {
+    try {
+      const token = req.headers.authorization.split(' ')[1];
+      const jwt = require('jsonwebtoken');
+      authUser = jwt.verify(token, process.env.JWT_SECRET || 'mhp_secret_key_2026');
+    } catch (e) {}
+  }
+  return authUser;
+}
+
 // @route   POST /api/future-menu/orders/initiate-payment
 // @desc    Initiate a prepaid order payment session with paymentService signature
 router.post('/orders/initiate-payment', async (req, res) => {
@@ -207,6 +219,8 @@ router.post('/orders/initiate-payment', async (req, res) => {
     if (!items || items.length === 0) {
       return res.status(400).json({ error: 'Cart cannot be empty', message: 'Cart cannot be empty' });
     }
+
+    const authUser = extractUserFromRequest(req);
 
     const method = paymentMethod === 'Net Banking' ? 'Net Banking' : 'UPI';
     const type = orderType === 'Dining' ? 'Dining' : (orderType === 'Parcel' ? 'Parcel' : 'Pickup');
@@ -306,10 +320,12 @@ router.post('/orders/initiate-payment', async (req, res) => {
       orderId: orderNumber,
       orderNumber,
       billingNumber,
-      customerName: customerName || 'Campus Student',
-      customerPhone: customerPhone || studentPhone || '',
-      studentPhone: studentPhone || customerPhone || '',
-      studentId: studentId || '',
+      userId: req.body.userId || (authUser ? (authUser._id || authUser.id) : null),
+      customerName: customerName || (authUser ? authUser.name : 'Campus Student'),
+      customerPhone: customerPhone || studentPhone || (authUser ? authUser.phone : ''),
+      studentPhone: studentPhone || customerPhone || (authUser ? authUser.phone : ''),
+      customerEmail: (authUser ? authUser.email : '') || req.body.userEmail || '',
+      studentId: studentId || (authUser ? (authUser.studentId || authUser._id) : ''),
       pickupPoint: finalPickupLocation,
       pickupLocation: finalPickupLocation,
       items: validatedItems,
@@ -625,14 +641,18 @@ router.post('/orders', async (req, res) => {
     const orderNumber = billingNumber;
     const transactionId = `TXN-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
+    const authUser = extractUserFromRequest(req);
+
     const newOrder = db.insert('orders', {
       billingNumber,
       orderId: orderNumber,
       orderNumber,
-      customerName: customerName || 'Campus Student',
-      customerPhone: customerPhone || studentPhone || '',
-      studentPhone: studentPhone || customerPhone || '',
-      studentId: studentId || '',
+      userId: req.body.userId || (authUser ? (authUser._id || authUser.id) : null),
+      customerName: customerName || (authUser ? authUser.name : 'Campus Student'),
+      customerPhone: customerPhone || studentPhone || (authUser ? authUser.phone : ''),
+      studentPhone: studentPhone || customerPhone || (authUser ? authUser.phone : ''),
+      customerEmail: (authUser ? authUser.email : '') || req.body.userEmail || '',
+      studentId: studentId || (authUser ? (authUser.studentId || authUser._id) : ''),
       pickupPoint: finalPickupLocation,
       pickupLocation: finalPickupLocation,
       items: validatedItems,

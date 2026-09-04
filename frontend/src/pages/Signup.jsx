@@ -37,7 +37,8 @@ const Signup = () => {
       navigate('/menu');
     } catch (err) {
       console.error('Signup error:', err);
-      showToast('error', err.response?.data?.message || 'Registration failed.');
+      const errMsg = err.response?.data?.error || err.response?.data?.message || 'Registration failed. Please check your details and try again.';
+      showToast('error', errMsg);
     } finally {
       setLoading(false);
     }

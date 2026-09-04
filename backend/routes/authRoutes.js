@@ -5,33 +5,60 @@ const { generateToken, authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Customer Register (Phone + Password)
+// Customer Register (Phone + Email + Password)
 router.post('/register', async (req, res) => {
   try {
-    const { name, password, phone, studentId, hostelInfo } = req.body;
+    const { name, password, phone, email, studentId, hostelInfo } = req.body;
 
     const cleanPhone = phone ? phone.trim() : '';
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
 
-    if (!cleanPhone || !password) {
-      return res.status(400).json({ error: 'Phone number and password are required' });
+    if (!cleanPhone && !cleanEmail) {
+      return res.status(400).json({ 
+        error: 'Mobile phone number or email address is required',
+        message: 'Mobile phone number or email address is required'
+      });
+    }
+
+    if (!password) {
+      return res.status(400).json({ 
+        error: 'Password is required',
+        message: 'Password is required' 
+      });
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+      return res.status(400).json({ 
+        error: 'Password must be at least 6 characters long',
+        message: 'Password must be at least 6 characters long' 
+      });
     }
 
-    // Check unique phone number
-    const existingUser = db.findOne('users', { phone: cleanPhone });
+    // Check unique phone number or email
+    const existingUser = db.findOne('users', u => {
+      if (!u) return false;
+      const uPhone = u.phone ? String(u.phone).trim() : '';
+      const uEmail = u.email ? String(u.email).trim().toLowerCase() : '';
+      return (cleanPhone && uPhone === cleanPhone) || (cleanEmail && uEmail === cleanEmail);
+    });
+
     if (existingUser) {
-      return res.status(400).json({ error: 'This phone number is already registered. Please log in.' });
+      const isPhoneDuplicate = cleanPhone && existingUser.phone === cleanPhone;
+      const fieldMsg = isPhoneDuplicate 
+        ? 'This phone number is already registered. Please log in.' 
+        : 'This email address is already registered. Please log in.';
+      return res.status(400).json({ 
+        error: fieldMsg,
+        message: fieldMsg
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = db.insert('users', {
-      name: name && name.trim() ? name.trim() : `Student (${cleanPhone})`,
+      name: name && name.trim() ? name.trim() : `Student (${cleanPhone || cleanEmail})`,
       phone: cleanPhone,
-      email: '',
+      email: cleanEmail,
       password: hashedPassword,
       studentId: studentId ? studentId.trim() : '',
       hostelInfo: hostelInfo ? hostelInfo.trim() : '',
@@ -49,7 +76,7 @@ router.post('/register', async (req, res) => {
     });
   } catch (err) {
     console.error('Register error:', err);
-    res.status(500).json({ error: 'Failed to create account' });
+    res.status(500).json({ error: 'Failed to create account', message: 'Failed to create account' });
   }
 });
 
