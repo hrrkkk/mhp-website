@@ -5,11 +5,11 @@ const DEFAULT_DEV_API = 'http://localhost:5000/api';
 
 const isProduction = import.meta.env.PROD || (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1');
 
-let rawBase = import.meta.env.VITE_API_URL || (isProduction ? DEFAULT_PROD_API : DEFAULT_DEV_API);
+let rawBase = isProduction ? DEFAULT_PROD_API : (import.meta.env.VITE_API_URL || DEFAULT_DEV_API);
 
-// Auto-correct invalid/typo URL (oo30 -> ee3o) from Render dashboard environment settings
+// Guarantee auto-correction for any invalid/typo URL (oo30 -> ee3o)
 if (rawBase && rawBase.includes('mhp-backend-oo30')) {
-  rawBase = rawBase.replace('mhp-backend-oo30', 'mhp-backend-ee3o');
+  rawBase = rawBase.replace(/mhp-backend-oo30/g, 'mhp-backend-ee3o');
 }
 
 // Ensure HTTPS protocol when running on HTTPS or production to prevent Mixed Content security blocking
