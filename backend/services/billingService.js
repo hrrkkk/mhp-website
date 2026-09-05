@@ -38,28 +38,56 @@ function calculateBill(items = [], orderType = 'Dining') {
   };
 }
 
-function formatBillingDate() {
-  const d = db.getISTDate ? db.getISTDate() : new Date();
+function formatBillingDate(orderDate) {
+  const d = orderDate ? new Date(orderDate) : (db.getISTDate ? db.getISTDate() : new Date());
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}${month}${day}`;
 }
 
-function generateBillingNumber() {
+/**
+ * Generates sequential billing numbers per date.
+ * Format: "mhp<DATE><001>" (e.g., mhp20260905001, mhp20260905002, ...)
+ * Starts at 001 for each day and increments continuously.
+ */
+function generateBillingNumber(orderDate) {
+  const dateStr = formatBillingDate(orderDate);
+  const prefix = `mhp${dateStr}`;
+
   const allBills = db.find('bills', {}) || [];
   const allOrders = db.find('orders', {}) || [];
 
-  const maxCount = Math.max(allBills.length, allOrders.length);
-  let seq = maxCount + 1;
-  let seqStr = String(seq).padStart(3, '0');
-  let candidate = `mhp${seqStr}`;
+  const existingNumbers = new Set();
+  allBills.forEach(b => {
+    if (b.billingNumber && b.billingNumber.startsWith(prefix)) {
+      existingNumbers.add(b.billingNumber);
+    }
+  });
+  allOrders.forEach(o => {
+    if (o.billingNumber && o.billingNumber.startsWith(prefix)) {
+      existingNumbers.add(o.billingNumber);
+    }
+    if (o.orderNumber && o.orderNumber.startsWith(prefix)) {
+      existingNumbers.add(o.orderNumber);
+    }
+  });
 
-  let attempt = 1;
-  while (allBills.some(b => b.billingNumber === candidate) || allOrders.some(o => o.billingNumber === candidate || o.orderNumber === candidate)) {
-    seqStr = String(maxCount + 1 + attempt).padStart(3, '0');
-    candidate = `mhp${seqStr}`;
-    attempt++;
+  let maxSeq = 0;
+  existingNumbers.forEach(num => {
+    const seqPart = num.slice(prefix.length);
+    const seqNum = parseInt(seqPart, 10);
+    if (!isNaN(seqNum) && seqNum > maxSeq) {
+      maxSeq = seqNum;
+    }
+  });
+
+  let nextSeq = maxSeq + 1;
+  let candidate = `${prefix}${String(nextSeq).padStart(3, '0')}`;
+
+  while (existingNumbers.has(candidate)) {
+    nextSeq++;
+    candidate = `${prefix}${String(nextSeq).padStart(3, '0')}`;
   }
 
   return candidate;
@@ -76,7 +104,7 @@ function createBillingRecord(order) {
     return existingBill;
   }
 
-  const billingNumber = generateBillingNumber();
+  const billingNumber = order.billingNumber || generateBillingNumber(order.placedAt || order.createdAt);
   const orderTypeFormatted = order.orderType === 'Parcel' ? 'Delivery' : (order.orderType || 'Dining');
   
   const calc = calculateBill(order.items || [], orderTypeFormatted);

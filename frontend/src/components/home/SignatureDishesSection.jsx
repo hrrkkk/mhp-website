@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom';
 import { ShoppingBag, ArrowRight, Sparkles, Utensils, Check, Plus } from 'lucide-react';
 import ThreeDLogoEmblem from '../common/ThreeDLogoEmblem';
 import { handleImageError } from '../../utils/imageUtils';
+import { getOrderingTimeWindowText } from '../../utils/orderingTime';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 
 const SignatureDishesSection = ({ featuredItems = [] }) => {
-  const { addToCart, isOrderingOpen } = useCart();
+  const { addToCart, isOrderingOpen, orderingSlot } = useCart();
   const toast = useToast();
   const [isAdded, setIsAdded] = useState(false);
 
@@ -270,9 +271,9 @@ const SignatureDishesSection = ({ featuredItems = [] }) => {
                     type="button"
                     disabled
                     className="flex-1 py-4 px-8 rounded-2xl text-xs sm:text-sm font-black tracking-wider flex items-center justify-center gap-2 bg-gray-200 text-gray-500 border border-gray-300 cursor-not-allowed opacity-80 shadow-none"
-                    title="Ordering is available strictly from 9:30 AM to 10:30 AM"
+                    title={`Ordering window is ${getOrderingTimeWindowText(orderingSlot)}`}
                   >
-                    <span>🔒 ORDERING CLOSED (9:30 AM – 10:30 AM)</span>
+                    <span>🔒 ORDERING CLOSED ({getOrderingTimeWindowText(orderingSlot)})</span>
                   </button>
                 ) : (
                   <button

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import { getImageUrl } from '../../utils/imageUtils';
+import { getOrderingTimeWindowText } from '../../utils/orderingTime';
 import { FALLBACK_FOOD_ITEMS } from '../../data/fallbackMenu';
 import { 
   ShoppingBag, 
@@ -246,9 +247,9 @@ const TodayAtMhpSection = ({ featuredItems = [], orderingSlot = null }) => {
                           type="button"
                           disabled
                           className="px-3 py-2 rounded-xl text-[11px] font-extrabold bg-rose-950/80 text-rose-300 border border-rose-800/60 cursor-not-allowed opacity-80"
-                          title="Ordering is available strictly from 9:30 AM to 10:30 AM"
+                          title={`Ordering window is ${getOrderingTimeWindowText(orderingSlot)}`}
                         >
-                          <span>Closed (9:30–10:30 AM)</span>
+                          <span>Closed ({getOrderingTimeWindowText(orderingSlot)})</span>
                         </button>
                       ) : (
                         <div className="flex items-center gap-2">

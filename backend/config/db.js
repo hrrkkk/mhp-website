@@ -443,9 +443,7 @@ class SupabaseDatabase {
     };
 
     const dailyOverrides = this.cache.settings?.orderingSlot?.dailyOverrides || {};
-    const overrideKeys = Object.keys(dailyOverrides);
-    const latestKey = overrideKeys.length > 0 ? overrideKeys[overrideKeys.length - 1] : null;
-    const todayOverride = dailyOverrides[todayStr] || (latestKey ? dailyOverrides[latestKey] : null) || this.cache.settings?.orderingSlot?.latestCustomSlot || null;
+    const todayOverride = dailyOverrides[todayStr] || null;
 
     const activeSlot = {
       orderingStartTime: todayOverride?.orderingStartTime || defaults.orderingStartTime,
@@ -519,8 +517,11 @@ class SupabaseDatabase {
 
   resetOrderingSlot(targetDateStr) {
     const todayStr = targetDateStr || getISTDateString();
-    if (this.cache.settings?.orderingSlot?.dailyOverrides) {
-      delete this.cache.settings.orderingSlot.dailyOverrides[todayStr];
+    if (this.cache.settings?.orderingSlot) {
+      if (this.cache.settings.orderingSlot.dailyOverrides) {
+        delete this.cache.settings.orderingSlot.dailyOverrides[todayStr];
+      }
+      delete this.cache.settings.orderingSlot.latestCustomSlot;
       this.saveSettingsToSupabase();
       this.saveToLocalJson();
     }
@@ -924,12 +925,8 @@ function checkOrderingSlotStatus(slotConfig) {
     status = 'BEFORE';
   }
 
-  // Allow active ordering 24/7 so students, staff, and campus testers can place orders anytime
-  if (
-    process.env.NODE_ENV === 'development' || 
-    process.env.ENABLE_DEV_ORDERING !== 'false' ||
-    process.env.ENABLE_STRICT_SLOT_LOCK !== 'true'
-  ) {
+  // Optional manual override for testing if explicitly configured
+  if (process.env.ENABLE_FORCE_SLOT_OPEN === 'true') {
     status = 'OPEN';
   }
 

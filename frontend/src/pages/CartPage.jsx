@@ -24,6 +24,7 @@ import ThreeDLogoEmblem from '../components/common/ThreeDLogoEmblem';
 import OrderStatusTracker from '../components/orders/OrderStatusTracker';
 import MhpOfficialBill from '../components/orders/MhpOfficialBill';
 import { getImageUrl, handleImageError } from '../utils/imageUtils';
+import { getOrderingTimeWindowText } from '../utils/orderingTime';
 
 const CartPage = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart, totalCartCount, totalCartAmount, orderingSlot: contextOrderingSlot, isOrderingOpen } = useCart();
@@ -750,7 +751,7 @@ const CartPage = () => {
                       <span>
                         {orderSubmitting 
                           ? 'PROCESSING ORDER...' 
-                          : (!isOrderingOpen ? 'ORDERING CLOSED (9:30 AM – 10:30 AM)' : `PLACE ORDER • ₹${grandTotalAmount}`)}
+                          : (!isOrderingOpen ? `ORDERING CLOSED (${getOrderingTimeWindowText(orderingSlot)})` : `PLACE ORDER • ₹${grandTotalAmount}`)}
                       </span>
                       {isOrderingOpen && <ArrowRight className="w-5 h-5" />}
                     </button>

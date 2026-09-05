@@ -31,25 +31,39 @@ const authenticateToken = (req, res, next) => {
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    req.user = getFallbackAdmin();
-    return next();
+    return res.status(401).json({ error: 'Access token required' });
   }
 
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) {
-      req.user = getFallbackAdmin();
-      return next();
+      return res.status(401).json({ error: 'Invalid or expired token' });
     }
     
     // Attach fresh user info from DB
     const user = db.findById('users', decoded.id);
-    req.user = user || getFallbackAdmin();
+    req.user = user || {
+      _id: decoded.id,
+      id: decoded.id,
+      email: decoded.email,
+      name: decoded.name,
+      role: decoded.role || 'customer'
+    };
     next();
   });
 };
 
 const requireAdmin = (req, res, next) => {
-  req.user = req.user || getFallbackAdmin();
+  if (!req.user) {
+    return authenticateToken(req, res, () => {
+      if (!req.user || req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin authorization required' });
+      }
+      next();
+    });
+  }
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin authorization required' });
+  }
   next();
 };
 

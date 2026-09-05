@@ -183,7 +183,8 @@ function extractUserFromRequest(req) {
     try {
       const token = req.headers.authorization.split(' ')[1];
       const jwt = require('jsonwebtoken');
-      authUser = jwt.verify(token, process.env.JWT_SECRET || 'mhp_secret_key_2026');
+      const { JWT_SECRET } = require('../middleware/auth');
+      authUser = jwt.verify(token, JWT_SECRET);
     } catch (e) {}
   }
   return authUser;
@@ -312,7 +313,7 @@ router.post('/orders/initiate-payment', async (req, res) => {
       : 0;
     const total = trustedSubtotal + parcelCharge;
 
-    const billingNumber = billingService.generateBillingNumber();
+    const billingNumber = billingService.generateBillingNumber(new Date());
     const orderNumber = billingNumber;
     const initialTxnId = `TXN-${(process.env.PAYMENT_MODE || 'TEST').toUpperCase()}-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
