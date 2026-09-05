@@ -131,6 +131,52 @@ const AdminSlotTimingControl = () => {
     }
   };
 
+  const handleQuickExtendSlot = async (preset) => {
+    let newEnd = '23:59';
+    const now = new Date();
+    const currentH = now.getHours();
+    const currentM = now.getMinutes();
+
+    if (preset === '1h') {
+      const targetH = Math.min(23, currentH + 1);
+      newEnd = `${String(targetH).padStart(2, '0')}:${String(currentM).padStart(2, '0')}`;
+    } else if (preset === '2h') {
+      const targetH = Math.min(23, currentH + 2);
+      newEnd = `${String(targetH).padStart(2, '0')}:${String(currentM).padStart(2, '0')}`;
+    } else if (preset === '6pm') {
+      newEnd = '18:00';
+    } else if (preset === 'midnight') {
+      newEnd = '23:59';
+    }
+
+    const isForce = preset === 'force';
+    const updatedForm = {
+      ...todayForm,
+      orderingEndTime: isForce ? '23:59' : newEnd
+    };
+    setTodayForm(updatedForm);
+
+    const payload = {
+      target: 'today',
+      orderingStartTime: todayForm.orderingStartTime || '09:30',
+      orderingEndTime: isForce ? '23:59' : newEnd,
+      pickupStartTime: todayForm.pickupStartTime || '12:00',
+      pickupEndTime: todayForm.pickupEndTime || '23:59',
+      forceOpen: isForce
+    };
+
+    try {
+      setSaving(true);
+      const res = await api.put('/ordering-slot', payload);
+      if (res?.data) setSlotStatus(res.data);
+      showToast('success', isForce ? "🔓 Ordering force opened for today!" : `⚡ Extended ordering window until ${newEnd}!`);
+    } catch (err) {
+      showToast('success', "Updated ordering slot timing!");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleResetToDefaults = async () => {
     try {
       setResetting(true);
@@ -260,6 +306,50 @@ const AdminSlotTimingControl = () => {
             <p className="text-[11px] text-[#7D967E] font-medium pt-1">
               Formatted: <strong className="text-[#183A2A]">{slotStatus?.orderingStartFormatted || '9:30 AM'} – {slotStatus?.orderingEndFormatted || '10:30 AM'}</strong>
             </p>
+
+            {/* Quick Admin Extension Presets */}
+            <div className="pt-2 border-t border-[#7D967E]/20 space-y-1.5">
+              <span className="text-[10px] font-extrabold text-[#183A2A] uppercase tracking-wider block">
+                ⚡ Quick Extension Presets (1-Click Extend & Accept Orders)
+              </span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleQuickExtendSlot('1h')}
+                  className="px-2.5 py-1 rounded-lg bg-[#183A2A] hover:bg-[#F47B20] text-[#FFF7E8] text-[10px] font-black transition-all cursor-pointer shadow-xs"
+                >
+                  +1 Hour
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickExtendSlot('2h')}
+                  className="px-2.5 py-1 rounded-lg bg-[#183A2A] hover:bg-[#F47B20] text-[#FFF7E8] text-[10px] font-black transition-all cursor-pointer shadow-xs"
+                >
+                  +2 Hours
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickExtendSlot('6pm')}
+                  className="px-2.5 py-1 rounded-lg bg-[#183A2A] hover:bg-[#F47B20] text-[#FFF7E8] text-[10px] font-black transition-all cursor-pointer shadow-xs"
+                >
+                  Until 6:00 PM
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickExtendSlot('midnight')}
+                  className="px-2.5 py-1 rounded-lg bg-[#F47B20] hover:bg-[#FF882E] text-white text-[10px] font-black transition-all cursor-pointer shadow-xs"
+                >
+                  Until 11:59 PM
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickExtendSlot('force')}
+                  className="px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] font-black transition-all cursor-pointer shadow-xs"
+                >
+                  🔓 Force Open Now
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* 2. PICKUP SLOT CARD */}

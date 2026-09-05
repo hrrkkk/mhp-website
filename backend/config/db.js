@@ -916,8 +916,10 @@ function checkOrderingSlotStatus(slotConfig) {
   const [endH, endM] = (active.orderingEndTime || "10:30").split(':').map(Number);
   const endMinutes = endH * 60 + endM;
 
+  const isForceOpen = active?.forceOpen === true || fullConfig?.todayOverride?.forceOpen === true;
+
   let status = 'BEFORE';
-  if (currentMinutes >= startMinutes && currentMinutes < endMinutes) {
+  if (isForceOpen || (currentMinutes >= startMinutes && currentMinutes < endMinutes)) {
     status = 'OPEN';
   } else if (currentMinutes >= endMinutes) {
     status = 'CLOSED';
@@ -942,7 +944,9 @@ function checkOrderingSlotStatus(slotConfig) {
 
   let message = '';
   if (status === 'OPEN') {
-    message = `ORDERING OPEN (Accepting orders until ${orderingEndFormatted})`;
+    message = isForceOpen 
+      ? `ORDERING OPEN (Extended by Administrator — Accepting orders now)` 
+      : `ORDERING OPEN (Accepting orders until ${orderingEndFormatted})`;
   } else if (status === 'BEFORE') {
     message = `Ordering opens today at ${orderingStartFormatted}.`;
   } else {
