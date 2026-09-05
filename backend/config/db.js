@@ -449,7 +449,8 @@ class SupabaseDatabase {
       orderingStartTime: todayOverride?.orderingStartTime || defaults.orderingStartTime,
       orderingEndTime: todayOverride?.orderingEndTime || defaults.orderingEndTime,
       pickupStartTime: todayOverride?.pickupStartTime || defaults.pickupStartTime,
-      pickupEndTime: todayOverride?.pickupEndTime || defaults.pickupEndTime
+      pickupEndTime: todayOverride?.pickupEndTime || defaults.pickupEndTime,
+      forceOpen: todayOverride?.forceOpen === true
     };
 
     return {
@@ -462,7 +463,8 @@ class SupabaseDatabase {
       orderingStartTime: activeSlot.orderingStartTime,
       orderingEndTime: activeSlot.orderingEndTime,
       pickupStartTime: activeSlot.pickupStartTime,
-      pickupEndTime: activeSlot.pickupEndTime
+      pickupEndTime: activeSlot.pickupEndTime,
+      forceOpen: activeSlot.forceOpen
     };
   }
 
@@ -480,7 +482,7 @@ class SupabaseDatabase {
       };
     }
 
-    const { target, orderingStartTime, orderingEndTime, pickupStartTime, pickupEndTime } = payload;
+    const { target, orderingStartTime, orderingEndTime, pickupStartTime, pickupEndTime, forceOpen } = payload;
     const todayStr = getISTDateString();
 
     if (target === 'default') {
@@ -503,7 +505,8 @@ class SupabaseDatabase {
         orderingStartTime: orderingStartTime || existingToday.orderingStartTime || currentActive.orderingStartTime,
         orderingEndTime: orderingEndTime || existingToday.orderingEndTime || currentActive.orderingEndTime,
         pickupStartTime: pickupStartTime || existingToday.pickupStartTime || currentActive.pickupStartTime,
-        pickupEndTime: pickupEndTime || existingToday.pickupEndTime || currentActive.pickupEndTime
+        pickupEndTime: pickupEndTime || existingToday.pickupEndTime || currentActive.pickupEndTime,
+        forceOpen: typeof forceOpen === 'boolean' ? forceOpen : (existingToday.forceOpen || false)
       };
 
       this.cache.settings.orderingSlot.dailyOverrides[todayStr] = newOverride;
