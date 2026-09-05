@@ -32,7 +32,7 @@ const TodayAtMhpSection = ({ featuredItems = [], orderingSlot = null }) => {
     e.stopPropagation();
     if (!isOpen) {
       if (toast?.showToast) {
-        toast.showToast('error', 'Ordering is currently closed (Available 9:30 AM – 10:30 AM)');
+        toast.showToast('error', `Ordering is currently closed (Available ${getOrderingTimeWindowText(orderingSlot)})`);
       }
       return;
     }
@@ -47,7 +47,7 @@ const TodayAtMhpSection = ({ featuredItems = [], orderingSlot = null }) => {
         setAddedItems(prev => ({ ...prev, [item._id || item.foodId]: false }));
       }, 1500);
     } else if (toast?.showToast) {
-      toast.showToast('error', 'Ordering is currently closed (Available 9:30 AM – 10:30 AM)');
+      toast.showToast('error', `Ordering is currently closed (Available ${getOrderingTimeWindowText(orderingSlot)})`);
     }
   };
 
@@ -55,7 +55,7 @@ const TodayAtMhpSection = ({ featuredItems = [], orderingSlot = null }) => {
     e.stopPropagation();
     if (!isOpen) {
       if (toast?.showToast) {
-        toast.showToast('error', 'Ordering is currently closed (Available 9:30 AM – 10:30 AM)');
+        toast.showToast('error', `Ordering is currently closed (Available ${getOrderingTimeWindowText(orderingSlot)})`);
       }
       return;
     }

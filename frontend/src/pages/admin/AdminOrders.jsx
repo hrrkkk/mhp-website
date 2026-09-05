@@ -231,7 +231,7 @@ const AdminOrders = () => {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-lg font-extrabold text-[#183A2A]">Order {ord.orderNumber}</span>
                     <span className="px-2.5 py-0.5 rounded-lg text-xs font-mono font-extrabold bg-[#183A2A] text-[#FFF7E8]">
-                      Bill: {ord.billingNumber || `MHP-BILL-${ord.orderNumber}`}
+                      Bill: {ord.billingNumber || ord.orderNumber}
                     </span>
                     <MHPBadge variant={getStatusBadgeVariant(ord.status)}>
                       {ord.status === 'READY_FOR_PICKUP' ? 'READY' : ord.status}

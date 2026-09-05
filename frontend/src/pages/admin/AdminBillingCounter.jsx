@@ -284,7 +284,7 @@ const AdminBillingCounter = () => {
                         BILLING NUMBER
                       </span>
                       <h2 className="text-2xl sm:text-3xl font-mono font-black text-[#183A2A] tracking-wide select-all">
-                        {ord.billingNumber || `MHP-BILL-${ord.orderNumber}`}
+                        {ord.billingNumber || ord.orderNumber}
                       </h2>
                       <div className="flex items-center gap-2 pt-1 text-xs text-[#7D967E]">
                         <span className="font-extrabold text-[#183A2A]">Order ID: #{ord.orderNumber}</span>
@@ -392,7 +392,7 @@ const AdminBillingCounter = () => {
             <div className="space-y-1">
               <MHPBadge variant="orange">Detailed Billing Ticket</MHPBadge>
               <h3 className="font-mono font-black text-2xl text-[#183A2A]">
-                {selectedOrder.billingNumber || `MHP-BILL-${selectedOrder.orderNumber}`}
+                {selectedOrder.billingNumber || selectedOrder.orderNumber}
               </h3>
               <p className="text-xs text-[#7D967E] font-medium">Placed: {new Date(selectedOrder.placedAt || selectedOrder.createdAt).toLocaleString()}</p>
             </div>

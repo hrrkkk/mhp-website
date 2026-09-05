@@ -82,7 +82,7 @@ const SignatureDishesSection = ({ featuredItems = [] }) => {
   const handleAddToCart = () => {
     if (!isOrderingOpen) {
       if (toast?.showToast) {
-        toast.showToast('error', 'Ordering is currently closed (Available 9:30 AM – 10:30 AM)');
+        toast.showToast('error', `Ordering is currently closed (Available ${getOrderingTimeWindowText(orderingSlot)})`);
       }
       return;
     }
@@ -96,7 +96,7 @@ const SignatureDishesSection = ({ featuredItems = [] }) => {
         setIsAdded(false);
       }, 1500);
     } else if (toast?.showToast) {
-      toast.showToast('error', 'Ordering is currently closed (Available 9:30 AM – 10:30 AM)');
+      toast.showToast('error', `Ordering is currently closed (Available ${getOrderingTimeWindowText(orderingSlot)})`);
     }
   };
 
