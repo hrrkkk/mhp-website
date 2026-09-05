@@ -41,22 +41,22 @@ import {
  * 4. Instant Floating Cart Bar for 1-click checkout
  */
 const DINING_CATEGORIES = [
-  { id: 'All', label: 'All Dishes' },
-  { id: 'Starters', label: 'Starters' },
-  { id: 'Biryani', label: 'Biryani' },
-  { id: 'Rice', label: 'Rice Bowls' },
-  { id: 'Noodles', label: 'Noodles' },
-  { id: 'Beverages', label: 'Beverages' },
-  { id: 'Burgers & Pizza', label: 'Burgers & Pizza' },
-  { id: 'Curries & Breads', label: 'Curries & Breads' },
-  { id: 'Breakfast', label: 'Breakfast' }
+  { id: 'All', label: 'All Dishes', icon: '🍽️' },
+  { id: 'Starters', label: 'Starters', icon: '🍢' },
+  { id: 'Biryani', label: 'Biryani', icon: '🍲' },
+  { id: 'Rice', label: 'Rice Bowls', icon: '🍚' },
+  { id: 'Noodles', label: 'Noodles', icon: '🍜' },
+  { id: 'Beverages', label: 'Beverages', icon: '🥤' },
+  { id: 'Burgers & Pizza', label: 'Burgers & Pizza', icon: '🍕' },
+  { id: 'Curries & Breads', label: 'Curries & Breads', icon: '🫓' },
+  { id: 'Breakfast', label: 'Breakfast', icon: '🍳' }
 ];
 
 const DELIVERY_CATEGORIES = [
-  { id: 'All', label: 'All Delivery Items' },
-  { id: 'Starters', label: 'Starters (Veg & Non-Veg)' },
-  { id: 'Rice', label: 'Rice Bowls (Veg & Non-Veg)' },
-  { id: 'Biryani', label: 'Biryanis (Veg & Non-Veg)' }
+  { id: 'All', label: 'All Delivery', icon: '🛵' },
+  { id: 'Starters', label: 'Starters', icon: '🍢' },
+  { id: 'Rice', label: 'Rice Bowls', icon: '🍚' },
+  { id: 'Biryani', label: 'Biryani', icon: '🍲' }
 ];
 
 const MenuPage = () => {
@@ -567,61 +567,37 @@ const MenuPage = () => {
   return (
     <div className="bg-[#FFF7E8] text-[#202522] min-h-screen pb-32">
       
-      {/* HEADER SECTION: Search Bar & Fast Category Bar */}
-      <div className="bg-[#183A2A] text-[#FFF7E8] pt-6 pb-8 px-4 sm:px-6 lg:px-8 shadow-xl relative preserve-3d border-b border-[#7D967E]/30">
-        <div className="max-w-7xl mx-auto space-y-6">
-          
-          {/* Top Title & Search 🔍 Bar */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <ChefHat className="w-5 h-5 text-[#F47B20]" />
-                <span className="text-xs font-black text-[#F47B20] uppercase tracking-widest">
-                  VFSTR CAMPUS CAFETERIA
-                </span>
-              </div>
-              <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-[#FFF7E8] mt-1">
-                Explore MHP Menu
-              </h1>
+      {/* HEADER TITLE CONTAINER */}
+      <div className="bg-[#183A2A] text-[#FFF7E8] pt-6 pb-4 px-4 sm:px-6 lg:px-8 border-b border-[#7D967E]/30 relative preserve-3d">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <ChefHat className="w-5 h-5 text-[#F47B20]" />
+              <span className="text-xs font-black text-[#F47B20] uppercase tracking-widest">
+                VFSTR CAMPUS CAFETERIA
+              </span>
             </div>
-
-            {/* Prominent Search 🔍 Input */}
-            <div className="relative w-full md:w-96">
-              <Search className="w-5 h-5 text-[#7D967E] absolute left-4 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search dishes (e.g. Chicken 65, Biryani, Dosa)..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#FFF7E8]/10 border border-[#7D967E]/40 backdrop-blur-md text-sm font-semibold text-[#FFF7E8] placeholder-[#FFF7E8]/60 focus:outline-none focus:border-[#F47B20] focus:ring-2 focus:ring-[#F47B20]/40 transition-all"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#FFF7E8]/70 hover:text-white"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
+            <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-[#FFF7E8] mt-0.5">
+              Explore MHP Menu
+            </h1>
           </div>
 
-          {/* 🍽️ SECTION SWITCHER BAR: 1. DINING vs 2. DELIVERY */}
-          <div className="bg-[#FFF7E8]/10 p-1.5 rounded-2xl border border-[#7D967E]/40 grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl mx-auto shadow-inner">
+          {/* Section Switcher: 🍽️ Dining vs 🛵 Delivery */}
+          <div className="bg-[#FFF7E8]/10 p-1 rounded-2xl border border-[#7D967E]/40 flex items-center gap-1.5 shadow-inner self-stretch sm:self-auto">
             <button
               type="button"
               onClick={() => {
                 setSelectedMode('dining');
                 setSelectedCategory('All');
               }}
-              className={`py-3 px-5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              className={`flex-1 sm:flex-none py-2 px-3 sm:px-4 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 selectedMode === 'dining'
                   ? 'bg-[#FFF7E8] text-[#183A2A] shadow-md scale-[1.01]'
                   : 'text-[#FFF7E8]/80 hover:text-white hover:bg-[#FFF7E8]/10'
               }`}
             >
-              <span className="text-base">🍽️</span>
-              <span>1. DINING MENU (ALL ITEMS)</span>
+              <span>🍽️</span>
+              <span>1. DINING MENU</span>
             </button>
 
             <button
@@ -630,72 +606,94 @@ const MenuPage = () => {
                 setSelectedMode('delivery');
                 setSelectedCategory('All');
               }}
-              className={`py-3 px-5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              className={`flex-1 sm:flex-none py-2 px-3 sm:px-4 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 selectedMode === 'delivery'
                   ? 'bg-[#F47B20] text-white shadow-md scale-[1.01]'
                   : 'text-[#FFF7E8]/80 hover:text-white hover:bg-[#FFF7E8]/10'
               }`}
             >
-              <span className="text-base">🛵</span>
-              <span>2. DELIVERY MENU (SPECIALS ONLY)</span>
+              <span>🛵</span>
+              <span>2. DELIVERY MENU</span>
             </button>
           </div>
+        </div>
+      </div>
 
-          {/* Delivery Strict Restrictions Notice Banner */}
-          {selectedMode === 'delivery' && (
-            <div className="bg-[#F47B20]/20 border border-[#F47B20]/50 p-3 rounded-2xl text-center text-xs font-bold text-[#FFF7E8] space-y-0.5">
-              <span>🛵 <strong>Delivery Section Active:</strong> Starters, Rice Bowls, and Biryanis (Veg & Non-Veg) only.</span>
-              <span className="block text-[11px] text-[#FFF7E8]/80 font-normal">
-                (Breakfast, Beverages, Burgers, Pizzas & Sandwiches are strictly available under 🍽️ <strong>Dining Menu</strong>).
-              </span>
-            </div>
-          )}
+      {/* STICKY TOP CATEGORY & SEARCH NAVIGATION BAR (Amazon Reference Style) */}
+      <div className="sticky top-0 z-40 bg-[#183A2A]/95 backdrop-blur-xl border-b border-[#7D967E]/40 shadow-xl text-[#FFF7E8] transition-all">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 space-y-2.5">
+          
+          {/* Top Line: Search Input */}
+          <div className="relative w-full">
+            <Search className="w-4.5 h-4.5 text-[#7D967E] absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search dishes (e.g. Dosa, Biryani, Chicken 65, Shakes)..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-[#FFF7E8]/10 border border-[#7D967E]/40 text-xs sm:text-sm font-semibold text-[#FFF7E8] placeholder-[#FFF7E8]/60 focus:outline-none focus:border-[#F47B20] focus:ring-2 focus:ring-[#F47B20]/40 transition-all"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#FFF7E8]/70 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
 
-          {/* 🏷️ FAST CATEGORY PILLS BAR */}
-          <div className="space-y-2 pt-2">
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-              {(selectedMode === 'delivery' ? DELIVERY_CATEGORIES : DINING_CATEGORIES).map((cat) => (
+          {/* Amazon Reference Style Category Cards Bar with Icons & Active Underline */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {(selectedMode === 'delivery' ? DELIVERY_CATEGORIES : DINING_CATEGORIES).map((cat) => {
+              const active = selectedCategory === cat.id;
+              return (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-5 py-2.5 rounded-2xl text-xs font-extrabold whitespace-nowrap transition-all duration-200 cursor-pointer ${
-                    selectedCategory === cat.id
-                      ? 'bg-[#F47B20] text-white shadow-lg shadow-[#F47B20]/30 scale-105'
+                  className={`relative flex flex-col items-center justify-center gap-1 px-3.5 py-2 rounded-2xl text-xs font-extrabold whitespace-nowrap transition-all duration-200 cursor-pointer min-w-[70px] sm:min-w-[80px] ${
+                    active
+                      ? 'bg-[#F47B20] text-white shadow-lg shadow-[#F47B20]/30 scale-105 border border-white/30'
                       : 'bg-[#FFF7E8]/10 text-[#FFF7E8]/90 hover:bg-[#FFF7E8]/20 border border-[#7D967E]/30'
                   }`}
                 >
-                  {cat.label}
+                  <span className="text-base leading-none">{cat.icon}</span>
+                  <span className="text-[10px] sm:text-[11px] font-bold tracking-tight">{cat.label}</span>
+
+                  {/* Active Indicator Underline (Amazon Reference Style) */}
+                  {active && (
+                    <span className="w-5 h-0.5 bg-white rounded-full mt-0.5 shadow-sm animate-pulse" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Sub-Filters: Veg / Non-Veg / Seafood */}
+          <div className="flex items-center justify-between pt-1 border-t border-[#7D967E]/20 text-xs">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-bold text-[#7D967E] uppercase">Dietary:</span>
+              {['All', 'Veg', 'Non-Veg', 'Seafood'].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setFoodTypeFilter(type)}
+                  className={`px-2.5 py-0.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all ${
+                    foodTypeFilter === type
+                      ? 'bg-[#FFF7E8] text-[#183A2A] shadow-xs'
+                      : 'text-[#FFF7E8]/70 hover:text-[#FFF7E8]'
+                  }`}
+                >
+                  {type}
                 </button>
               ))}
             </div>
 
-            {/* Sub-Filters: Veg / Non-Veg / Seafood */}
-            <div className="flex items-center justify-between pt-2 border-t border-[#7D967E]/20 text-xs">
-              <div className="flex items-center gap-1.5 bg-[#FFF7E8]/10 p-1 rounded-xl border border-[#7D967E]/30">
-                <span className="text-[10px] font-bold text-[#7D967E] px-2 uppercase">Dietary:</span>
-                {['All', 'Veg', 'Non-Veg', 'Seafood'].map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setFoodTypeFilter(type)}
-                    className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                      foodTypeFilter === type
-                        ? 'bg-[#FFF7E8] text-[#183A2A] shadow-xs'
-                        : 'text-[#FFF7E8]/70 hover:text-[#FFF7E8]'
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
+            {orderingSlot && (
+              <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-medium text-[#FFF7E8]/80">
+                <Clock className="w-3.5 h-3.5 text-[#F47B20]" />
+                <span>Pickup: <strong>{orderingSlot.pickupWindow || '12:00 — 1:00 PM'}</strong></span>
               </div>
-
-              {orderingSlot && (
-                <div className="hidden sm:flex items-center gap-2 text-[11px] font-medium text-[#FFF7E8]/80">
-                  <Clock className="w-3.5 h-3.5 text-[#F47B20]" />
-                  <span>Pickup: <strong>{orderingSlot.pickupWindow || '12:00 — 1:00 PM'}</strong></span>
-                </div>
-              )}
-            </div>
-
+            )}
           </div>
 
         </div>
