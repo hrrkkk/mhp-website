@@ -182,7 +182,7 @@ const TodayAtMhpSection = ({ featuredItems = [], orderingSlot = null }) => {
           </div>
 
           {displayItems && displayItems.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-6">
               {displayItems.map((item) => {
                 const isAdded = addedItems[item._id || item.foodId];
                 const isNonVeg = item.foodType === 'Non-Veg';
@@ -190,11 +190,11 @@ const TodayAtMhpSection = ({ featuredItems = [], orderingSlot = null }) => {
                 return (
                   <div
                     key={item._id || item.foodId}
-                    className="bg-[#204935]/80 hover:bg-[#204935] border border-[#7D967E]/40 hover:border-[#F47B20]/60 rounded-3xl p-4 flex flex-col justify-between transition-all duration-300 shadow-xl group hover:-translate-y-1"
+                    className="bg-[#204935]/80 hover:bg-[#204935] border border-[#7D967E]/40 hover:border-[#F47B20]/60 rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 flex flex-col justify-between transition-all duration-300 shadow-xl group hover:-translate-y-1"
                   >
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       {/* Item Image */}
-                      <div className="relative h-44 rounded-2xl overflow-hidden bg-[#183A2A]">
+                      <div className="relative h-28 sm:h-44 rounded-xl sm:rounded-2xl overflow-hidden bg-[#183A2A]">
                         <img
                           src={getImageUrl(item.image)}
                           alt={item.name}
@@ -205,13 +205,13 @@ const TodayAtMhpSection = ({ featuredItems = [], orderingSlot = null }) => {
                             e.target.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80";
                           }}
                         />
-                        <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#183A2A]/90 border border-[#7D967E]/40 text-[10px] font-bold text-[#FFF7E8] backdrop-blur-xs">
-                          <span className={`w-2 h-2 rounded-full ${isNonVeg ? 'bg-rose-500' : 'bg-emerald-500'}`} />
+                        <div className="absolute top-1.5 left-1.5 sm:top-3 sm:left-3 flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-[#183A2A]/90 border border-[#7D967E]/40 text-[8px] sm:text-[10px] font-bold text-[#FFF7E8] backdrop-blur-xs">
+                          <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${isNonVeg ? 'bg-rose-500' : 'bg-emerald-500'}`} />
                           <span>{item.foodType || 'Veg'}</span>
                         </div>
                         
                         {item.popular && (
-                          <div className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full bg-[#F47B20] text-white text-[10px] font-black uppercase tracking-wider shadow-md">
+                          <div className="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 px-1.5 sm:px-2.5 py-0.5 rounded-full bg-[#F47B20] text-white text-[8px] sm:text-[10px] font-black uppercase tracking-wider shadow-md">
                             POPULAR
                           </div>
                         )}
@@ -219,14 +219,14 @@ const TodayAtMhpSection = ({ featuredItems = [], orderingSlot = null }) => {
 
                       {/* Item Details */}
                       <div>
-                        <span className="text-[10px] font-extrabold text-[#7D967E] uppercase tracking-wider block">
+                        <span className="text-[9px] sm:text-[10px] font-extrabold text-[#7D967E] uppercase tracking-wider block">
                           {item.category || 'Special'}
                         </span>
-                        <h3 className="font-display font-extrabold text-lg text-[#FFF7E8] group-hover:text-[#F47B20] transition-colors line-clamp-1">
+                        <h3 className="font-display font-extrabold text-xs sm:text-lg text-[#FFF7E8] group-hover:text-[#F47B20] transition-colors line-clamp-1">
                           {item.name}
                         </h3>
                         {item.description && (
-                          <p className="text-xs text-[#7D967E] line-clamp-2 mt-1 font-medium">
+                          <p className="text-[10px] sm:text-xs text-[#7D967E] line-clamp-1 sm:line-clamp-2 mt-0.5 sm:mt-1 font-medium hidden xs:block">
                             {item.description}
                           </p>
                         )}
@@ -234,10 +234,10 @@ const TodayAtMhpSection = ({ featuredItems = [], orderingSlot = null }) => {
                     </div>
 
                     {/* Price & Action CTAs */}
-                    <div className="pt-4 mt-4 border-t border-[#7D967E]/30 flex items-center justify-between gap-2">
+                    <div className="pt-2 sm:pt-4 mt-2 sm:mt-4 border-t border-[#7D967E]/30 flex items-center justify-between gap-1 sm:gap-2">
                       <div>
-                        <span className="text-[10px] text-[#7D967E] uppercase block font-bold">PRICE</span>
-                        <span className="font-display font-extrabold text-xl text-[#F47B20]">
+                        <span className="text-[9px] sm:text-[10px] text-[#7D967E] uppercase hidden sm:block font-bold">PRICE</span>
+                        <span className="font-display font-extrabold text-sm sm:text-xl text-[#F47B20]">
                           ₹{item.price || item.unitPrice || 0}
                         </span>
                       </div>
@@ -246,10 +246,10 @@ const TodayAtMhpSection = ({ featuredItems = [], orderingSlot = null }) => {
                         <button
                           type="button"
                           disabled
-                          className="px-3 py-2 rounded-xl text-[11px] font-extrabold bg-rose-950/80 text-rose-300 border border-rose-800/60 cursor-not-allowed opacity-80"
+                          className="px-2 py-1 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl text-[9px] sm:text-[11px] font-extrabold bg-rose-950/80 text-rose-300 border border-rose-800/60 cursor-not-allowed opacity-80"
                           title={`Ordering window is ${getOrderingTimeWindowText(orderingSlot)}`}
                         >
-                          <span>Closed ({getOrderingTimeWindowText(orderingSlot)})</span>
+                          <span>Closed</span>
                         </button>
                       ) : (
                         <div className="flex items-center gap-2">

@@ -54,9 +54,10 @@ const DINING_CATEGORIES = [
 
 const DELIVERY_CATEGORIES = [
   { id: 'All', label: 'All Delivery', icon: '🛵' },
+  { id: 'Biryani', label: 'Biryani', icon: '🍲' },
+  { id: 'Noodles', label: 'Noodles', icon: '🍜' },
   { id: 'Starters', label: 'Starters', icon: '🍢' },
-  { id: 'Rice', label: 'Rice Bowls', icon: '🍚' },
-  { id: 'Biryani', label: 'Biryani', icon: '🍲' }
+  { id: 'Rice', label: 'Rice Bowls', icon: '🍚' }
 ];
 
 const MenuPage = () => {
@@ -68,7 +69,6 @@ const MenuPage = () => {
   const urlMode = searchParams.get('mode');
 
   const [foodItems, setFoodItems] = useState([]);
-  const [favoritesData, setFavoritesData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Default mode to 'dining' so users land directly on the full menu containing all items
@@ -125,7 +125,6 @@ const MenuPage = () => {
   useEffect(() => {
     fetchFoodItems();
     fetchOrderingSlot();
-    fetchFavorites();
   }, []);
 
   const fetchFoodItems = async () => {
@@ -174,16 +173,7 @@ const MenuPage = () => {
     }
   };
 
-  const fetchFavorites = async () => {
-    try {
-      const res = await api.get('/future-menu/favorites');
-      if (res && res.data) {
-        setFavoritesData(res.data);
-      }
-    } catch (err) {
-      console.warn('Could not fetch favorites from API:', err);
-    }
-  };
+
 
   // Filtered Food Items logic
   const filteredItems = useMemo(() => {
@@ -206,11 +196,12 @@ const MenuPage = () => {
 
         if (isExcluded) return false;
 
-        // STRICTLY INCLUDE ONLY: Starters, Rice Bowls (Rice / Pulao), Biryanis (Veg & Non-Veg)
+        // STRICTLY INCLUDE ONLY: Starters, Rice Bowls (Rice / Pulao), Biryanis (Veg & Non-Veg), Noodles & Fast Food
         const isAllowedDeliveryItem = 
           cat.includes('starter') || sub.includes('starter') ||
           cat.includes('biryani') || sub.includes('biryani') || name.includes('biryani') ||
-          cat.includes('rice') || sub.includes('rice') || cat.includes('pulao') || name.includes('pulao') || name.includes('rice bowl') || name.includes('fried rice');
+          cat.includes('rice') || sub.includes('rice') || cat.includes('pulao') || name.includes('pulao') || name.includes('rice bowl') || name.includes('fried rice') ||
+          cat.includes('fast food') || sub.includes('noodle') || name.includes('noodle') || cat.includes('noodle');
 
         if (!isAllowedDeliveryItem) return false;
       }
@@ -226,13 +217,13 @@ const MenuPage = () => {
 
       // 4. Category Filter
       if (selectedCategory === 'Biryani') {
-        if (!cat.includes('biryani') && !cat.includes('pulao')) return false;
+        if (!cat.includes('biryani') && !sub.includes('biryani') && !name.includes('biryani') && !cat.includes('pulao')) return false;
       } else if (selectedCategory === 'Rice') {
         if (!cat.includes('rice') && !sub.includes('rice') && !cat.includes('pulao') && !cat.includes('biryani') && !name.includes('rice')) return false;
       } else if (selectedCategory === 'Starters') {
         if (!cat.includes('starter')) return false;
       } else if (selectedCategory === 'Noodles') {
-        if (!cat.includes('noodle') && !sub.includes('noodle') && !name.includes('noodle')) return false;
+        if (!cat.includes('noodle') && !sub.includes('noodle') && !name.includes('noodle') && !cat.includes('fast food')) return false;
       } else if (selectedCategory === 'Beverages') {
         if (!cat.includes('mocktail') && !cat.includes('juice') && !cat.includes('shake') && !cat.includes('beverage')) return false;
       } else if (selectedCategory === 'Burgers & Pizza') {
@@ -366,7 +357,6 @@ const MenuPage = () => {
                 setPlacedOrder(confirmRes.data.order || confirmRes.data);
                 setCartModalOpen(false);
                 clearCart();
-                fetchFavorites();
                 showToast('success', '🎉 Order placed & confirmed!');
               } catch (confirmErr) {
                 console.error('Confirm payment error:', confirmErr);
@@ -405,7 +395,6 @@ const MenuPage = () => {
           setPlacedOrder(confirmedOrder);
           setCartModalOpen(false);
           clearCart();
-          fetchFavorites();
           showToast('success', '🎉 Order placed successfully!');
         }
       }
@@ -445,10 +434,10 @@ const MenuPage = () => {
     return (
       <div 
         key={item._id} 
-        className="bg-[#FFFFFF] border border-[#7D967E]/30 hover:border-[#F47B20]/60 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col justify-between overflow-hidden relative"
+        className="bg-[#FFFFFF] border border-[#7D967E]/30 hover:border-[#F47B20]/60 rounded-2xl sm:rounded-3xl shadow-xs hover:shadow-xl transition-all duration-300 group flex flex-col justify-between overflow-hidden relative"
       >
         {/* Food Image Header */}
-        <div className="h-44 overflow-hidden relative bg-[#183A2A]/5">
+        <div className="h-28 sm:h-44 overflow-hidden relative bg-[#183A2A]/5">
           <SmartImage
             src={item.image}
             category={item.category}
@@ -457,27 +446,27 @@ const MenuPage = () => {
           />
 
           {/* Veg / Non-Veg / Seafood Badge */}
-          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FFFFFF]/95 text-[10px] font-extrabold uppercase border border-[#7D967E]/30 backdrop-blur-md shadow-xs text-[#202522]">
-            <span className={`w-2 h-2 rounded-full ${
+          <div className="absolute top-1.5 left-1.5 sm:top-3 sm:left-3 flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-[#FFFFFF]/95 text-[8px] sm:text-[10px] font-extrabold uppercase border border-[#7D967E]/30 backdrop-blur-md shadow-xs text-[#202522]">
+            <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
               isSeafood ? 'bg-cyan-500' : isNonVeg ? 'bg-rose-500' : 'bg-emerald-500'
             }`} />
             <span>{isSeafood ? 'Seafood' : isNonVeg ? 'Non-Veg' : 'Veg'}</span>
           </div>
 
           {/* Category Pill */}
-          <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-[#183A2A]/90 backdrop-blur-md text-[#FFF7E8] text-[10px] font-extrabold uppercase shadow-xs">
+          <div className="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-[#183A2A]/90 backdrop-blur-md text-[#FFF7E8] text-[8px] sm:text-[10px] font-extrabold uppercase shadow-xs max-w-[80px] sm:max-w-none truncate">
             {item.category}
           </div>
         </div>
 
         {/* Content Body */}
-        <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
-          <div className="space-y-1">
-            <h3 className="font-display font-extrabold text-base text-[#183A2A] group-hover:text-[#F47B20] transition-colors leading-snug">
+        <div className="p-2.5 sm:p-4 space-y-1.5 sm:space-y-3 flex-1 flex flex-col justify-between">
+          <div className="space-y-0.5 sm:space-y-1">
+            <h3 className="font-display font-extrabold text-xs sm:text-base text-[#183A2A] group-hover:text-[#F47B20] transition-colors leading-tight sm:leading-snug line-clamp-1 sm:line-clamp-none">
               {item.name}
             </h3>
             {item.description && (
-              <p className="text-xs text-[#202522]/75 line-clamp-2 leading-relaxed font-sans">
+              <p className="text-[10px] sm:text-xs text-[#202522]/75 line-clamp-1 sm:line-clamp-2 leading-tight sm:leading-relaxed font-sans">
                 {item.description}
               </p>
             )}
@@ -485,14 +474,14 @@ const MenuPage = () => {
 
           {/* Portion Dropdown (if multiple prices exist) */}
           {hasOptions && (
-            <div className="pt-1">
+            <div className="pt-0.5 sm:pt-1">
               <select
                 value={currentOption?.label}
                 onChange={(e) => {
                   const opt = item.priceOptions.find(o => o.label === e.target.value);
                   handleOptionChange(item._id, opt);
                 }}
-                className="w-full text-xs bg-[#FFF7E8] border border-[#7D967E]/30 text-[#183A2A] rounded-xl px-2 py-1 font-bold focus:outline-none focus:border-[#F47B20]"
+                className="w-full text-[10px] sm:text-xs bg-[#FFF7E8] border border-[#7D967E]/30 text-[#183A2A] rounded-lg sm:rounded-xl px-1.5 py-0.5 sm:px-2 sm:py-1 font-bold focus:outline-none focus:border-[#F47B20]"
               >
                 {item.priceOptions.map((opt, idx) => (
                   <option key={idx} value={opt.label}>
@@ -504,10 +493,10 @@ const MenuPage = () => {
           )}
 
           {/* Price & Instant Add / [- 1 +] Controls */}
-          <div className="pt-3 border-t border-[#7D967E]/20 flex items-center justify-between gap-2 mt-auto">
+          <div className="pt-2 sm:pt-3 border-t border-[#7D967E]/20 flex items-center justify-between gap-1 sm:gap-2 mt-auto">
             <div>
-              <span className="text-[10px] text-[#7D967E] font-bold block uppercase">Price</span>
-              <span className="text-xl font-mono font-black text-[#F47B20]">
+              <span className="text-[9px] sm:text-[10px] text-[#7D967E] font-bold hidden sm:block uppercase">Price</span>
+              <span className="text-sm sm:text-xl font-mono font-black text-[#F47B20]">
                 ₹{displayPrice}
               </span>
             </div>
@@ -517,42 +506,42 @@ const MenuPage = () => {
               <button
                 type="button"
                 disabled
-                className="px-3 py-2 rounded-xl text-[11px] font-extrabold bg-gray-200 text-gray-500 border border-gray-300 cursor-not-allowed flex items-center gap-1 opacity-80"
+                className="px-2 py-1 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl text-[9px] sm:text-[11px] font-extrabold bg-gray-200 text-gray-500 border border-gray-300 cursor-not-allowed flex items-center gap-1 opacity-80"
                 title={`Ordering window is ${getOrderingTimeWindowText(orderingSlot)}`}
               >
-                <span>Closed ({getOrderingTimeWindowText(orderingSlot)})</span>
+                <span>Closed</span>
               </button>
             ) : cartQuantity > 0 ? (
-              <div className="flex items-center gap-1.5 bg-[#183A2A] text-white p-1 rounded-2xl shadow-md border border-[#7D967E]/40">
+              <div className="flex items-center gap-1 sm:gap-1.5 bg-[#183A2A] text-white p-0.5 sm:p-1 rounded-xl sm:rounded-2xl shadow-md border border-[#7D967E]/40">
                 <button
                   type="button"
                   onClick={() => updateQuantity(cartItemId, -1)}
-                  className="w-7 h-7 rounded-xl bg-[#204935] hover:bg-rose-600 text-white flex items-center justify-center font-black transition-colors"
+                  className="w-5 h-5 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-[#204935] hover:bg-rose-600 text-white flex items-center justify-center font-black transition-colors"
                   title="Reduce Quantity"
                 >
-                  <Minus className="w-3.5 h-3.5" />
+                  <Minus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 </button>
                 
-                <span className="px-2 text-xs font-black text-[#FFF7E8] min-w-[20px] text-center">
+                <span className="px-1 text-[10px] sm:text-xs font-black text-[#FFF7E8] min-w-[14px] sm:min-w-[20px] text-center">
                   {cartQuantity}
                 </span>
 
                 <button
                   type="button"
                   onClick={() => updateQuantity(cartItemId, 1)}
-                  className="w-7 h-7 rounded-xl bg-[#F47B20] hover:bg-[#FF882E] text-white flex items-center justify-center font-black transition-colors"
+                  className="w-5 h-5 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-[#F47B20] hover:bg-[#FF882E] text-white flex items-center justify-center font-black transition-colors"
                   title="Increase Quantity"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 </button>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={() => handleAddToCart(item)}
-                className="px-4 py-2 rounded-xl text-xs font-extrabold bg-[#F47B20] hover:bg-[#FF882E] text-white shadow-md transition-all hover:scale-105 active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                className="px-2.5 py-1 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-extrabold bg-[#F47B20] hover:bg-[#FF882E] text-white shadow-md transition-all hover:scale-105 active:scale-95 flex items-center gap-1 sm:gap-1.5 cursor-pointer"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>ADD</span>
               </button>
             )}
@@ -725,39 +714,7 @@ const MenuPage = () => {
             </div>
           </div>
         )}
-        
-        {/* ================= 🔥 STUDENT FAVORITES / MHP PICKS SECTION ================= */}
-        {selectedCategory === 'All' && !searchQuery && favoritesData && favoritesData.items && favoritesData.items.length > 0 && (
-          <div className="bg-[#FFFFFF] p-6 rounded-3xl border-2 border-[#F47B20]/40 shadow-xl space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#7D967E]/20 pb-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <Flame className="w-5 h-5 text-[#F47B20] fill-[#F47B20]" />
-                  <h2 className="font-display font-extrabold text-xl sm:text-2xl text-[#183A2A]">
-                    {favoritesData.title}
-                  </h2>
-                </div>
-                <p className="text-xs text-[#7D967E] font-semibold mt-0.5">
-                  {favoritesData.subtitle}
-                </p>
-              </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase border ${
-                  favoritesData.hasOrderData 
-                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                    : 'bg-[#FFF7E8] text-[#F47B20] border-[#F47B20]/40'
-                }`}>
-                  {favoritesData.hasOrderData ? '📈 Ranked by Campus Orders' : '✨ MHP PICKS (Honest Selection)'}
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {favoritesData.items.slice(0, 4).map(item => renderFoodCard(item))}
-            </div>
-          </div>
-        )}
 
         {loading ? (
           <LoadingSkeleton count={8} />
@@ -778,7 +735,7 @@ const MenuPage = () => {
               <span className="text-[#F47B20]">Click + ADD to quickly add items</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-6">
               {filteredItems.map(item => renderFoodCard(item))}
             </div>
           </div>
