@@ -1,21 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle2, Clock, MapPin, PackageCheck, Star, Send, ShieldCheck, FileText, AlertCircle, Printer } from 'lucide-react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import ThermalPrintReceipt from './ThermalPrintReceipt';
+import { printThermalReceipt } from '../../services/printerService';
 
 /**
  * MhpOfficialBill Component
  * Renders official MHP bill (e.g. mhp001), itemized prices, parcel charges, pickup point,
  * thermal printer print button, interactive Received confirmation box, and rating form.
  */
-const MhpOfficialBill = ({ order, onStatusUpdate }) => {
+const MhpOfficialBill = ({ order, onStatusUpdate, autoPrint = false }) => {
   const { showToast } = useToast();
   const [showThermalPrint, setShowThermalPrint] = useState(false);
   const [receivedChoice, setReceivedChoice] = useState(
     (order?.status === 'ORDER RECEIVED' || order?.status === 'COMPLETED' || order?.orderStatus === 'COMPLETED') ? 'YES' : null
   );
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  useEffect(() => {
+    if (autoPrint && order) {
+      const timer = setTimeout(() => {
+        printThermalReceipt(order);
+        showToast('info', 'Automatically sent thermal receipt to connected printer!');
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [order, autoPrint]);
 
   // Rating & Feedback State
   const [rating, setRating] = useState(5);
