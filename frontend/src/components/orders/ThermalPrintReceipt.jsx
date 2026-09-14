@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Printer, X, Check, Copy, Settings, Sparkles, FileText, CheckCircle2 } from 'lucide-react';
-import { getPrinterSettings, savePrinterSettings, triggerBrowserPrint, printThermalReceipt } from '../../services/printerService';
+import { getPrinterSettings, savePrinterSettings, triggerBrowserPrint, printThermalReceipt, formatCleanBillingNumber } from '../../services/printerService';
 import { useToast } from '../../context/ToastContext';
 
 /**
@@ -24,7 +24,7 @@ const ThermalPrintReceipt = ({ order, onClose, autoPrint = false }) => {
 
   if (!order) return null;
 
-  const billNo = order.billingNumber || order.orderNumber || (order._id ? `mhp${order._id.slice(-3)}` : 'mhp001');
+  const billNo = formatCleanBillingNumber(order.billingNumber || order.orderNumber, order._id);
   const isDelivery = order.orderType === 'Delivery' || order.orderType === 'Parcel' || order.orderMode === 'Parcel';
   const orderTypeDisplay = isDelivery ? 'PARCEL / TAKEAWAY' : 'DINING COUNTER';
   const pickupPoint = order.pickupPoint || order.pickupLocation || (isDelivery ? 'N BLOCK Counter' : 'Dining Area');
@@ -39,8 +39,8 @@ const ThermalPrintReceipt = ({ order, onClose, autoPrint = false }) => {
   const formattedTime = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
   const handlePrint = () => {
-    printThermalReceipt(order, settings);
-    showToast('info', 'Opening printer dialog for connected printer!');
+    printThermalReceipt(order, settings, true);
+    showToast('info', '⚡ Spooled print job to thermal printer!');
   };
 
   const handleToggleWidth = (w) => {
@@ -52,17 +52,13 @@ const ThermalPrintReceipt = ({ order, onClose, autoPrint = false }) => {
   const handleCopyText = () => {
     const textReceipt = `
 ========================================
-         ${settings.storeTitle}
-     ${settings.storeSubtitle}
-       Helpline: ${settings.storePhone}
+         MY HOSUR PALACE
+   VFSTR Campus Hub, Vadlamudi
 ========================================
-OFFICIAL TAX INVOICE - TEST / LIVE BILL
 BILL NO     : ${billNo}
 DATE        : ${formattedDate} ${formattedTime}
 ORDER TYPE  : ${orderTypeDisplay}
 PICKUP POINT: ${pickupPoint}
-CUSTOMER    : ${order.customerName || 'Campus Student'}
-PHONE / ID  : ${order.customerPhone || 'N/A'} (${order.studentId || 'N/A'})
 PAYMENT     : ${order.paymentMethod || 'UPI / TEST_MODE'} (${order.paymentStatus || 'PAID'})
 ----------------------------------------
 ITEMS BREAKDOWN:
@@ -70,8 +66,6 @@ ${items.map(i => `${(i.quantity || 1)}x ${(i.name || '').padEnd(20)} ₹${((i.un
 ----------------------------------------
 Subtotal     : ₹${subtotal}
 ${parcelCharge > 0 ? `Parcel Charge: ₹${parcelCharge}\n` : ''}GRAND TOTAL  : ₹${totalAmount}
-========================================
-${settings.footerNote}
 ========================================
 `.trim();
 
@@ -186,16 +180,10 @@ ${settings.footerNote}
             {/* STORE LOGO & HEADER */}
             <div className="text-center space-y-1 pb-2 border-b border-dashed border-black">
               <div className="font-black text-base tracking-wider uppercase">
-                *** {settings.storeTitle} ***
+                MY HOSUR PALACE
               </div>
               <div className="text-[10px] font-bold">
-                {settings.storeSubtitle}
-              </div>
-              <div className="text-[10px]">
-                Campus Helpline: {settings.storePhone}
-              </div>
-              <div className="text-[9px] font-black uppercase pt-1 tracking-widest bg-gray-100 py-0.5 rounded">
-                OFFICIAL TAX RECEIPT
+                VFSTR Campus Hub, Vadlamudi
               </div>
             </div>
 
@@ -219,10 +207,8 @@ ${settings.footerNote}
               </div>
             </div>
 
-            {/* CUSTOMER INFO */}
+            {/* PAYMENT INFO */}
             <div className="py-2 border-b border-dashed border-black text-[10px] space-y-0.5">
-              <div><strong>CUSTOMER:</strong> {order.customerName || 'Campus Student'}</div>
-              <div><strong>PHONE/ID:</strong> {order.customerPhone || 'N/A'} ({order.studentId || 'N/A'})</div>
               <div><strong>PAYMENT:</strong> {order.paymentMethod || 'UPI / TEST'} <span className="font-black">[{order.paymentStatus || 'PAID'}]</span></div>
             </div>
 
@@ -268,19 +254,6 @@ ${settings.footerNote}
                 <span>GRAND TOTAL:</span>
                 <span className="text-base">₹{totalAmount}</span>
               </div>
-            </div>
-
-            {/* BARCODE / VERIFICATION STAMP */}
-            <div className="py-3 text-center space-y-1.5">
-              <div className="font-mono font-black text-xs tracking-widest border-2 border-black p-1 inline-block">
-                |||| ||| |||||| ||| |||||||
-              </div>
-              <div className="text-[9px] font-bold">
-                TOKEN VERIFICATION: #{billNo.slice(-6).toUpperCase()}
-              </div>
-              <p className="text-[8px] text-gray-600 leading-tight pt-1 border-t border-dotted border-black">
-                {settings.footerNote}
-              </p>
             </div>
 
           </div>

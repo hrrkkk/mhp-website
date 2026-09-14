@@ -40,21 +40,43 @@ export const savePrinterSettings = (settings) => {
   }
 };
 
+const KITCHEN_PRINTED_STORAGE_KEY = 'mhp_kitchen_printed_order_ids';
+
+export const getKitchenPrintedOrderIds = () => {
+  try {
+    const saved = localStorage.getItem(KITCHEN_PRINTED_STORAGE_KEY);
+    if (saved) return new Set(JSON.parse(saved));
+  } catch (err) {}
+  return new Set();
+};
+
+export const markOrderAsKitchenPrinted = (orderId) => {
+  if (!orderId) return;
+  try {
+    const current = getKitchenPrintedOrderIds();
+    current.add(orderId);
+    const arr = Array.from(current).slice(-500);
+    localStorage.setItem(KITCHEN_PRINTED_STORAGE_KEY, JSON.stringify(arr));
+  } catch (err) {}
+};
+
+export const isOrderKitchenPrinted = (orderId) => {
+  if (!orderId) return false;
+  const current = getKitchenPrintedOrderIds();
+  return current.has(orderId);
+};
+
 /**
  * Generates a realistic mock order payload for instant printer testing.
  */
 export const createMockTestOrder = () => {
   const date = new Date();
-  const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
-  const randomNum = Math.floor(100 + Math.random() * 900);
-  const billNo = `mhp${dateStr}${randomNum}`;
+  const billNo = 'mhp001';
 
   return {
     _id: `test_ord_${Date.now()}`,
     billingNumber: billNo,
     orderNumber: billNo,
-    customerName: 'Test Student (Printer Test)',
-    customerPhone: '9876543210',
     studentId: '211FA04000',
     orderType: 'Parcel',
     orderMode: 'Parcel',
@@ -77,16 +99,40 @@ export const createMockTestOrder = () => {
   };
 };
 
+export const formatCleanBillingNumber = (rawNum, fallbackId) => {
+  if (!rawNum) {
+    if (fallbackId && typeof fallbackId === 'string') {
+      const digits = fallbackId.replace(/\D/g, '');
+      return `mhp${digits.slice(-3).padStart(3, '0')}`;
+    }
+    return 'mhp001';
+  }
+  const str = String(rawNum).trim();
+  if (/^mhp\d{10,}$/i.test(str)) {
+    const lastDigits = str.slice(-3);
+    return `mhp${lastDigits}`;
+  }
+  if (/^mhp\d+$/i.test(str)) {
+    const numPart = str.slice(3);
+    return `mhp${String(parseInt(numPart, 10)).padStart(3, '0')}`;
+  }
+  const digits = str.replace(/\D/g, '');
+  if (digits.length >= 3) {
+    return `mhp${digits.slice(-3)}`;
+  }
+  return 'mhp001';
+};
+
 /**
  * Prints thermal receipt via Popup Window + Hidden Iframe Fallback.
  * This guarantees 100% reliability across Chrome, Edge, Brave, and Windows POS printers,
  * bypassing React modal z-index or visibility clipping bugs.
  */
-export const printThermalReceipt = (order, customSettings = null) => {
+export const printThermalReceipt = (order, customSettings = null, forceIframe = false) => {
   if (!order || typeof window === 'undefined') return false;
 
   const settings = customSettings || getPrinterSettings();
-  const billNo = order.billingNumber || order.orderNumber || (order._id ? `mhp${order._id.slice(-3)}` : 'mhp001');
+  const billNo = formatCleanBillingNumber(order.billingNumber || order.orderNumber, order._id);
   const isDelivery = order.orderType === 'Delivery' || order.orderType === 'Parcel' || order.orderMode === 'Parcel';
   const orderTypeDisplay = isDelivery ? 'PARCEL / TAKEAWAY' : 'DINING COUNTER';
   const pickupPoint = order.pickupPoint || order.pickupLocation || (isDelivery ? 'N BLOCK Counter' : 'Dining Area');
@@ -146,10 +192,8 @@ export const printThermalReceipt = (order, customSettings = null) => {
 <body>
   <div class="receipt-container">
     
-    <div class="text-center font-black" style="font-size: 14px;">*** ${settings.storeTitle || 'MY HOSUR PALACE'} ***</div>
-    <div class="text-center font-bold" style="font-size: 10px;">${settings.storeSubtitle || 'VFSTR Campus Hub, Vadlamudi'}</div>
-    <div class="text-center" style="font-size: 9px;">Campus Helpline: ${settings.storePhone || '+91 7672022351'}</div>
-    <div class="text-center font-black uppercase header-tag">OFFICIAL TAX RECEIPT</div>
+    <div class="text-center font-black" style="font-size: 14px;">MY HOSUR PALACE</div>
+    <div class="text-center font-bold" style="font-size: 10px;">VFSTR Campus Hub, Vadlamudi</div>
     
     <div class="border-dashed"></div>
 
@@ -173,8 +217,6 @@ export const printThermalReceipt = (order, customSettings = null) => {
     <div class="border-dashed"></div>
 
     <div style="font-size: 10px;">
-      <div><strong>CUSTOMER:</strong> ${order.customerName || 'Campus Student'}</div>
-      <div><strong>PHONE/ID:</strong> ${order.customerPhone || 'N/A'} (${order.studentId || 'N/A'})</div>
       <div><strong>PAYMENT:</strong> ${order.paymentMethod || 'UPI / TEST'} [${order.paymentStatus || 'PAID'}]</div>
     </div>
 
@@ -223,14 +265,6 @@ export const printThermalReceipt = (order, customSettings = null) => {
 
     <div class="border-dashed"></div>
 
-    <div class="text-center" style="margin-top: 8px;">
-      <div class="font-black" style="letter-spacing: 2px; font-size: 12px; border: 1px dashed #000; padding: 3px; display: inline-block;">
-        |||| ||| |||||| ||| |||||||
-      </div>
-      <div class="font-bold" style="font-size: 9px; margin-top: 3px;">TOKEN VERIFICATION: #${billNo.slice(-6).toUpperCase()}</div>
-      <div style="font-size: 8px; margin-top: 4px; color: #333333;">${settings.footerNote || 'Thank you for dining at MHP!'}</div>
-    </div>
-
   </div>
 
   <script>
@@ -238,26 +272,28 @@ export const printThermalReceipt = (order, customSettings = null) => {
       setTimeout(function() {
         window.focus();
         window.print();
-      }, 250);
+      }, 150);
     };
   </script>
 </body>
 </html>`;
 
-  // Try direct print via Popup Window first
-  try {
-    const printWin = window.open('', '_blank', 'width=450,height=600,top=100,left=100');
-    if (printWin) {
-      printWin.document.open();
-      printWin.document.write(htmlContent);
-      printWin.document.close();
-      return true;
+  // For automatic printing or when forced via iframe, print using hidden iframe spooler directly (bypasses popup blockers)
+  if (!forceIframe) {
+    try {
+      const printWin = window.open('', '_blank', 'width=450,height=600,top=100,left=100');
+      if (printWin) {
+        printWin.document.open();
+        printWin.document.write(htmlContent);
+        printWin.document.close();
+        return true;
+      }
+    } catch (err) {
+      console.warn('Popup print blocked, switching to print iframe fallback:', err);
     }
-  } catch (err) {
-    console.warn('Popup print blocked, switching to print iframe fallback:', err);
   }
 
-  // Fallback to hidden print iframe
+  // Hidden print iframe spooler (works 100% silently in background without popup blockers)
   let printFrame = document.getElementById('mhp-thermal-print-frame');
   if (!printFrame) {
     printFrame = document.createElement('iframe');
@@ -277,9 +313,13 @@ export const printThermalReceipt = (order, customSettings = null) => {
   doc.close();
 
   setTimeout(() => {
-    printFrame.contentWindow.focus();
-    printFrame.contentWindow.print();
-  }, 300);
+    try {
+      printFrame.contentWindow.focus();
+      printFrame.contentWindow.print();
+    } catch (err) {
+      console.error('Direct thermal print error:', err);
+    }
+  }, 200);
 
   return true;
 };

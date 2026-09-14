@@ -47,47 +47,43 @@ function formatBillingDate(orderDate) {
 }
 
 /**
- * Generates sequential billing numbers per date.
- * Format: "mhp<DATE><001>" (e.g., mhp20260905001, mhp20260905002, ...)
- * Starts at 001 for each day and increments continuously.
+ * Generates sequential clean billing numbers.
+ * Format: "mhp001", "mhp002", "mhp003", ...
  */
-function generateBillingNumber(orderDate) {
-  const dateStr = formatBillingDate(orderDate);
-  const prefix = `mhp${dateStr}`;
+function generateBillingNumber() {
+  const prefix = 'mhp';
 
   const allBills = db.find('bills', {}) || [];
   const allOrders = db.find('orders', {}) || [];
 
   const existingNumbers = new Set();
   allBills.forEach(b => {
-    if (b.billingNumber && b.billingNumber.startsWith(prefix)) {
-      existingNumbers.add(b.billingNumber);
-    }
+    if (b.billingNumber) existingNumbers.add(b.billingNumber);
   });
   allOrders.forEach(o => {
-    if (o.billingNumber && o.billingNumber.startsWith(prefix)) {
-      existingNumbers.add(o.billingNumber);
-    }
-    if (o.orderNumber && o.orderNumber.startsWith(prefix)) {
-      existingNumbers.add(o.orderNumber);
-    }
+    if (o.billingNumber) existingNumbers.add(o.billingNumber);
+    if (o.orderNumber) existingNumbers.add(o.orderNumber);
   });
 
   let maxSeq = 0;
   existingNumbers.forEach(num => {
-    const seqPart = num.slice(prefix.length);
-    const seqNum = parseInt(seqPart, 10);
-    if (!isNaN(seqNum) && seqNum > maxSeq) {
-      maxSeq = seqNum;
+    if (typeof num === 'string' && num.toLowerCase().startsWith('mhp')) {
+      const seqPart = num.slice(3); // part after 'mhp'
+      if (/^\d{1,6}$/.test(seqPart)) {
+        const seqNum = parseInt(seqPart, 10);
+        if (!isNaN(seqNum) && seqNum > maxSeq) {
+          maxSeq = seqNum;
+        }
+      }
     }
   });
 
   let nextSeq = maxSeq + 1;
-  let candidate = `${prefix}${String(nextSeq).padStart(3, '0')}`;
+  let candidate = `mhp${String(nextSeq).padStart(3, '0')}`;
 
   while (existingNumbers.has(candidate)) {
     nextSeq++;
-    candidate = `${prefix}${String(nextSeq).padStart(3, '0')}`;
+    candidate = `mhp${String(nextSeq).padStart(3, '0')}`;
   }
 
   return candidate;

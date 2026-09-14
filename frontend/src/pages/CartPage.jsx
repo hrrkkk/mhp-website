@@ -376,7 +376,7 @@ const CartPage = () => {
             <OrderStatusTracker order={placedOrder} />
 
             {/* OFFICIAL MHP BILL COMPONENT WITH ITEMIZATION, RECEIVED BOX (YES/NO), & FEEDBACK */}
-            <MhpOfficialBill order={placedOrder} autoPrint={true} />
+            <MhpOfficialBill order={placedOrder} autoPrint={false} />
 
             <div className="bg-white p-6 rounded-3xl border border-[#7D967E]/30 space-y-4 shadow-md text-center">
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">

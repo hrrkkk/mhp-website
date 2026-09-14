@@ -29,7 +29,14 @@ import {
 import { MHPCard, MHPButton, MHPBadge } from '../../components/admin/MHPAdminComponents';
 import ThermalPrintReceipt from '../../components/orders/ThermalPrintReceipt';
 import PrinterSettingsModal from '../../components/orders/PrinterSettingsModal';
-import { createMockTestOrder } from '../../services/printerService';
+import { 
+  createMockTestOrder, 
+  printThermalReceipt, 
+  getPrinterSettings, 
+  formatCleanBillingNumber,
+  isOrderKitchenPrinted,
+  markOrderAsKitchenPrinted
+} from '../../services/printerService';
 
 const AdminBillingCounter = () => {
   const { showToast } = useToast();
@@ -40,25 +47,38 @@ const AdminBillingCounter = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [newOrderCount, setNewOrderCount] = useState(0);
+  const [isNetworkSlow, setIsNetworkSlow] = useState(false);
 
   // Thermal Printing States
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [activePrintOrder, setActivePrintOrder] = useState(null);
 
-  const prevOrderIdsRef = useRef(new Set());
-
   const isMountedRef = useRef(true);
+
+  const getCachedKitchenOrders = () => {
+    try {
+      const saved = localStorage.getItem('mhp_cached_kitchen_orders');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [];
+  };
+
+  const saveCachedKitchenOrders = (ordersList) => {
+    try {
+      localStorage.setItem('mhp_cached_kitchen_orders', JSON.stringify(ordersList));
+    } catch (e) {}
+  };
 
   useEffect(() => {
     isMountedRef.current = true;
     fetchBillingData();
     
-    // 8-second lightweight polling interval for real-time incoming orders
+    // 3-second fast polling interval for real-time Swiggy-style incoming kitchen orders
     const interval = setInterval(() => {
       if (isMountedRef.current) {
         fetchBillingData(true);
       }
-    }, 8000);
+    }, 3000);
 
     return () => {
       isMountedRef.current = false;
@@ -71,36 +91,65 @@ const AdminBillingCounter = () => {
       if (!isBackground && isMountedRef.current) setLoading(true);
 
       const [ordersRes, slotRes] = await Promise.all([
-        api.get('/future-menu/admin/orders').catch(() => ({ data: [] })),
+        api.get('/future-menu/admin/orders').catch(err => {
+          console.warn('Network slow or disconnected, using local kitchen cache:', err.message);
+          setIsNetworkSlow(true);
+          return { data: getCachedKitchenOrders() };
+        }),
         api.get('/ordering-slot').catch(() => null)
       ]);
 
       if (!isMountedRef.current) return;
 
-      const fetchedOrders = ordersRes.data || [];
+      const rawFetched = ordersRes.data || [];
+      const fetchedOrders = rawFetched.length > 0 ? rawFetched : getCachedKitchenOrders();
+
+      if (rawFetched.length > 0) {
+        setIsNetworkSlow(false);
+        saveCachedKitchenOrders(rawFetched);
+      }
+
       if (slotRes?.data) setOrderingSlot(slotRes.data);
 
-      // Detect new incoming orders for visual notification
-      const currentIds = new Set(fetchedOrders.map(o => o._id));
-      if (prevOrderIdsRef.current.size > 0) {
-        let freshCount = 0;
-        fetchedOrders.forEach(o => {
-          if (!prevOrderIdsRef.current.has(o._id)) {
-            freshCount++;
+      // Real-Time Swiggy-Style Kitchen Thermal Printer Spooler
+      const printerSettings = getPrinterSettings();
+      let newPrintedCount = 0;
+
+      fetchedOrders.forEach(o => {
+        const orderId = o._id || o.id || o.orderNumber;
+        if (!orderId) return;
+
+        const alreadyPrinted = isOrderKitchenPrinted(orderId);
+        if (!alreadyPrinted) {
+          const placedTime = o.placedAt ? new Date(o.placedAt).getTime() : (o.createdAt ? new Date(o.createdAt).getTime() : Date.now());
+          const isRecentOrder = (Date.now() - placedTime) < (30 * 60 * 1000); // Placed within last 30 minutes
+
+          // Auto-print recent unprinted orders directly to kitchen thermal printer
+          if (printerSettings.autoPrintOnOrder && isRecentOrder) {
+            markOrderAsKitchenPrinted(orderId);
+            printThermalReceipt(o, printerSettings, true);
+            newPrintedCount++;
+          } else {
+            // Mark historical orders as processed so they don't re-print on terminal setup
+            markOrderAsKitchenPrinted(orderId);
           }
-        });
-        if (freshCount > 0 && isMountedRef.current) {
-          setNewOrderCount(prev => prev + freshCount);
-          showToast('info', `${freshCount} new order(s) arrived at the Billing Counter!`);
         }
+      });
+
+      if (newPrintedCount > 0 && isMountedRef.current) {
+        showToast('success', `⚡ ${newPrintedCount} new customer order(s) received! Kitchen thermal bill generated & printed automatically.`);
       }
-      prevOrderIdsRef.current = currentIds;
 
       if (isMountedRef.current) {
         setOrders(fetchedOrders);
       }
     } catch (err) {
       console.warn('Error fetching billing counter data:', err.message);
+      setIsNetworkSlow(true);
+      const cached = getCachedKitchenOrders();
+      if (isMountedRef.current && cached.length > 0) {
+        setOrders(cached);
+      }
     } finally {
       if (!isBackground && isMountedRef.current) setLoading(false);
     }
@@ -161,9 +210,18 @@ const AdminBillingCounter = () => {
       <MHPCard className="!p-6 space-y-5">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#7D967E]/20 pb-4">
           <div>
-            <div className="flex items-center gap-2 text-xs font-black text-[#F47B20] uppercase tracking-widest mb-1">
-              <Receipt className="w-4 h-4 text-[#F47B20]" />
-              PHYSICAL COUNTER TERMINAL
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 text-xs font-black text-[#F47B20] uppercase tracking-widest">
+                <Receipt className="w-4 h-4 text-[#F47B20]" />
+                PHYSICAL COUNTER TERMINAL
+              </div>
+
+              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#FFF7E8] border border-[#7D967E]/30">
+                <span className={`w-2 h-2 rounded-full ${isNetworkSlow ? 'bg-amber-500 animate-ping' : 'bg-emerald-500 animate-pulse'}`} />
+                <span className="text-[#183A2A]">
+                  {isNetworkSlow ? '📶 Slow Internet (Local Offline Cache Active)' : '📶 Kitchen Live Auto-Spooler'}
+                </span>
+              </div>
             </div>
             <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-[#183A2A]">
               MHP Billing Counter
@@ -177,8 +235,8 @@ const AdminBillingCounter = () => {
             <MHPButton
               onClick={() => {
                 const mock = createMockTestOrder();
-                setActivePrintOrder(mock);
-                showToast('info', 'Generated mock test order! Ready to print.');
+                printThermalReceipt(mock, null, true);
+                showToast('success', '⚡ Test order generated & automatically sent to thermal printer!');
               }}
               variant="secondary"
               size="sm"
@@ -315,10 +373,10 @@ const AdminBillingCounter = () => {
                         BILLING NUMBER
                       </span>
                       <h2 className="text-2xl sm:text-3xl font-mono font-black text-[#183A2A] tracking-wide select-all">
-                        {ord.billingNumber || ord.orderNumber}
+                        {formatCleanBillingNumber(ord.billingNumber || ord.orderNumber, ord._id)}
                       </h2>
                       <div className="flex items-center gap-2 pt-1 text-xs text-[#7D967E]">
-                        <span className="font-extrabold text-[#183A2A]">Order ID: #{ord.orderNumber}</span>
+                        <span className="font-extrabold text-[#183A2A]">Order ID: #{formatCleanBillingNumber(ord.orderNumber || ord.billingNumber, ord._id)}</span>
                         <span>•</span>
                         <span className="flex items-center gap-1 font-semibold">
                           <Clock className="w-3 h-3 text-[#7D967E]" />
@@ -385,7 +443,10 @@ const AdminBillingCounter = () => {
 
                   <div className="flex items-center gap-2">
                     <MHPButton
-                      onClick={() => setActivePrintOrder(ord)}
+                      onClick={() => {
+                        printThermalReceipt(ord, null, true);
+                        showToast('info', `Sent Bill #${ord.billingNumber || ord.orderNumber} to printer!`);
+                      }}
                       variant="outline"
                       size="sm"
                     >

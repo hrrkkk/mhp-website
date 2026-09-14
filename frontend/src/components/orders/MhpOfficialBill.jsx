@@ -3,7 +3,7 @@ import { CheckCircle2, Clock, MapPin, PackageCheck, Star, Send, ShieldCheck, Fil
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import ThermalPrintReceipt from './ThermalPrintReceipt';
-import { printThermalReceipt } from '../../services/printerService';
+import { printThermalReceipt, formatCleanBillingNumber } from '../../services/printerService';
 
 /**
  * MhpOfficialBill Component
@@ -21,9 +21,9 @@ const MhpOfficialBill = ({ order, onStatusUpdate, autoPrint = false }) => {
   useEffect(() => {
     if (autoPrint && order) {
       const timer = setTimeout(() => {
-        printThermalReceipt(order);
-        showToast('info', 'Automatically sent thermal receipt to connected printer!');
-      }, 500);
+        printThermalReceipt(order, null, true);
+        showToast('info', '⚡ Automatic receipt sent directly to thermal printer!');
+      }, 100);
       return () => clearTimeout(timer);
     }
   }, [order, autoPrint]);
@@ -37,7 +37,7 @@ const MhpOfficialBill = ({ order, onStatusUpdate, autoPrint = false }) => {
 
   if (!order) return null;
 
-  const billNo = order.billingNumber || order.orderNumber || (order._id ? `mhp${order._id.slice(-3)}` : 'mhp001');
+  const billNo = formatCleanBillingNumber(order.billingNumber || order.orderNumber, order._id);
   const isDelivery = order.orderType === 'Delivery' || order.orderType === 'Parcel' || order.orderMode === 'Parcel' || order.orderMode === 'Delivery';
   const orderTypeDisplay = isDelivery ? 'Delivery' : 'Dining';
   const pickupPoint = order.pickupPoint || order.pickupLocation || (isDelivery ? 'N BLOCK Counter' : 'Dining Area');
