@@ -1,32 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { CheckCircle2, Clock, MapPin, PackageCheck, Star, Send, ShieldCheck, FileText, AlertCircle, Printer } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle2, Clock, MapPin, PackageCheck, Star, Send, ShieldCheck, FileText, AlertCircle } from 'lucide-react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
-import ThermalPrintReceipt from './ThermalPrintReceipt';
-import { printThermalReceipt, formatCleanBillingNumber } from '../../services/printerService';
+import { formatCleanBillingNumber } from '../../services/printerService';
 
 /**
  * MhpOfficialBill Component
- * Renders official MHP bill (e.g. mhp001), itemized prices, parcel charges, pickup point,
- * thermal printer print button, interactive Received confirmation box, and rating form.
+ * Renders official MHP digital bill (e.g. mhp001), itemized prices, parcel charges, pickup point,
+ * interactive Received confirmation box, and rating form.
  */
-const MhpOfficialBill = ({ order, onStatusUpdate, autoPrint = false }) => {
+const MhpOfficialBill = ({ order, onStatusUpdate }) => {
   const { showToast } = useToast();
-  const [showThermalPrint, setShowThermalPrint] = useState(false);
   const [receivedChoice, setReceivedChoice] = useState(
     (order?.status === 'ORDER RECEIVED' || order?.status === 'COMPLETED' || order?.orderStatus === 'COMPLETED') ? 'YES' : null
   );
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-
-  useEffect(() => {
-    if (autoPrint && order) {
-      const timer = setTimeout(() => {
-        printThermalReceipt(order, null, true);
-        showToast('info', '⚡ Automatic receipt sent directly to thermal printer!');
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [order, autoPrint]);
 
   // Rating & Feedback State
   const [rating, setRating] = useState(5);
@@ -117,13 +105,6 @@ const MhpOfficialBill = ({ order, onStatusUpdate, autoPrint = false }) => {
             <span className="font-mono font-black text-2xl text-[#F47B20] tracking-wider block">
               {billNo}
             </span>
-            <button
-              onClick={() => setShowThermalPrint(true)}
-              className="mt-1 px-3 py-1.5 rounded-xl bg-[#183A2A] hover:bg-[#234c38] text-[#FFF7E8] text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-sm border border-[#7D967E]/40"
-            >
-              <Printer className="w-3.5 h-3.5 text-[#F47B20]" />
-              <span>Print Bill</span>
-            </button>
           </div>
         </div>
 
@@ -141,14 +122,6 @@ const MhpOfficialBill = ({ order, onStatusUpdate, autoPrint = false }) => {
           </div>
         </div>
       </div>
-
-      {/* THERMAL RECEIPT PRINT MODAL */}
-      {showThermalPrint && (
-        <ThermalPrintReceipt
-          order={order}
-          onClose={() => setShowThermalPrint(false)}
-        />
-      )}
 
       {/* 2. ITEMIZED ITEMS TABLE & PRICES */}
       <div className="space-y-3">
