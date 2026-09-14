@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Printer, X, Check, Copy, Settings, Sparkles, FileText, CheckCircle2 } from 'lucide-react';
-import { getPrinterSettings, savePrinterSettings, triggerBrowserPrint } from '../../services/printerService';
+import { getPrinterSettings, savePrinterSettings, triggerBrowserPrint, printThermalReceipt } from '../../services/printerService';
 import { useToast } from '../../context/ToastContext';
 
 /**
@@ -39,8 +39,8 @@ const ThermalPrintReceipt = ({ order, onClose, autoPrint = false }) => {
   const formattedTime = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
   const handlePrint = () => {
-    triggerBrowserPrint();
-    showToast('info', 'Sent receipt job to connected printer!');
+    printThermalReceipt(order, settings);
+    showToast('info', 'Opening printer dialog for connected printer!');
   };
 
   const handleToggleWidth = (w) => {
