@@ -21,10 +21,15 @@ import {
   CreditCard,
   Tag,
   AlertCircle,
-  Sparkles
+  Sparkles,
+  Printer,
+  Settings
 } from 'lucide-react';
 
 import { MHPCard, MHPButton, MHPBadge } from '../../components/admin/MHPAdminComponents';
+import ThermalPrintReceipt from '../../components/orders/ThermalPrintReceipt';
+import PrinterSettingsModal from '../../components/orders/PrinterSettingsModal';
+import { createMockTestOrder } from '../../services/printerService';
 
 const AdminBillingCounter = () => {
   const { showToast } = useToast();
@@ -35,6 +40,10 @@ const AdminBillingCounter = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [newOrderCount, setNewOrderCount] = useState(0);
+
+  // Thermal Printing States
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [activePrintOrder, setActivePrintOrder] = useState(null);
 
   const prevOrderIdsRef = useRef(new Set());
 
@@ -164,7 +173,29 @@ const AdminBillingCounter = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <MHPButton
+              onClick={() => {
+                const mock = createMockTestOrder();
+                setActivePrintOrder(mock);
+                showToast('info', 'Generated mock test order! Ready to print.');
+              }}
+              variant="secondary"
+              size="sm"
+            >
+              <Printer className="w-4 h-4 text-[#F47B20]" />
+              <span>⚡ Test Order & Print</span>
+            </MHPButton>
+
+            <MHPButton
+              onClick={() => setShowSettingsModal(true)}
+              variant="outline"
+              size="sm"
+            >
+              <Settings className="w-4 h-4 text-[#183A2A]" />
+              <span>Printer Settings</span>
+            </MHPButton>
+
             <MHPButton
               onClick={() => { setNewOrderCount(0); fetchBillingData(); }}
               variant="outline"
@@ -354,6 +385,15 @@ const AdminBillingCounter = () => {
 
                   <div className="flex items-center gap-2">
                     <MHPButton
+                      onClick={() => setActivePrintOrder(ord)}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <Printer className="w-3.5 h-3.5 text-[#F47B20]" />
+                      <span>Print</span>
+                    </MHPButton>
+
+                    <MHPButton
                       onClick={() => handleToggleBillingStatus(ord._id, ord.billingStatus)}
                       variant={isBilled ? 'secondary' : 'primary'}
                       size="sm"
@@ -422,15 +462,41 @@ const AdminBillingCounter = () => {
               <span className="text-2xl font-mono font-black text-[#F47B20]">₹ {selectedOrder.total || selectedOrder.totalAmount}</span>
             </div>
 
-            <MHPButton
-              onClick={() => setSelectedOrder(null)}
-              variant="primary"
-              className="w-full"
-            >
-              Close Ticket
-            </MHPButton>
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <MHPButton
+                onClick={() => setActivePrintOrder(selectedOrder)}
+                variant="secondary"
+                className="w-full"
+              >
+                <Printer className="w-4 h-4 text-[#F47B20]" />
+                <span>Print Ticket</span>
+              </MHPButton>
+
+              <MHPButton
+                onClick={() => setSelectedOrder(null)}
+                variant="primary"
+                className="w-full"
+              >
+                Close Ticket
+              </MHPButton>
+            </div>
           </div>
         </div>
+      )}
+
+      {/* THERMAL PRINT RECEIPT MODAL */}
+      {activePrintOrder && (
+        <ThermalPrintReceipt
+          order={activePrintOrder}
+          onClose={() => setActivePrintOrder(null)}
+        />
+      )}
+
+      {/* PRINTER SETTINGS MODAL */}
+      {showSettingsModal && (
+        <PrinterSettingsModal
+          onClose={() => setShowSettingsModal(false)}
+        />
       )}
 
     </div>

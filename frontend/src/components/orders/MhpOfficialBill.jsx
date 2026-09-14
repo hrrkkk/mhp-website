@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Clock, MapPin, PackageCheck, Star, Send, ShieldCheck, FileText, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Clock, MapPin, PackageCheck, Star, Send, ShieldCheck, FileText, AlertCircle, Printer } from 'lucide-react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import ThermalPrintReceipt from './ThermalPrintReceipt';
 
 /**
  * MhpOfficialBill Component
  * Renders official MHP bill (e.g. mhp001), itemized prices, parcel charges, pickup point,
- * interactive Received (YES / NO) confirmation box, and post-delivery rating & feedback form.
+ * thermal printer print button, interactive Received confirmation box, and rating form.
  */
 const MhpOfficialBill = ({ order, onStatusUpdate }) => {
   const { showToast } = useToast();
+  const [showThermalPrint, setShowThermalPrint] = useState(false);
   const [receivedChoice, setReceivedChoice] = useState(
     (order?.status === 'ORDER RECEIVED' || order?.status === 'COMPLETED' || order?.orderStatus === 'COMPLETED') ? 'YES' : null
   );
@@ -99,11 +101,18 @@ const MhpOfficialBill = ({ order, onStatusUpdate }) => {
             </div>
           </div>
 
-          <div className="text-right">
+          <div className="text-right flex flex-col items-end gap-1">
             <span className="text-[10px] text-[#7D967E] font-black uppercase tracking-wider block">BILL NO</span>
             <span className="font-mono font-black text-2xl text-[#F47B20] tracking-wider block">
               {billNo}
             </span>
+            <button
+              onClick={() => setShowThermalPrint(true)}
+              className="mt-1 px-3 py-1.5 rounded-xl bg-[#183A2A] hover:bg-[#234c38] text-[#FFF7E8] text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-sm border border-[#7D967E]/40"
+            >
+              <Printer className="w-3.5 h-3.5 text-[#F47B20]" />
+              <span>Print Bill</span>
+            </button>
           </div>
         </div>
 
@@ -121,6 +130,14 @@ const MhpOfficialBill = ({ order, onStatusUpdate }) => {
           </div>
         </div>
       </div>
+
+      {/* THERMAL RECEIPT PRINT MODAL */}
+      {showThermalPrint && (
+        <ThermalPrintReceipt
+          order={order}
+          onClose={() => setShowThermalPrint(false)}
+        />
+      )}
 
       {/* 2. ITEMIZED ITEMS TABLE & PRICES */}
       <div className="space-y-3">
