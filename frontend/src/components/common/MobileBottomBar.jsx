@@ -50,7 +50,7 @@ const MobileBottomBar = () => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#183A2A]/95 backdrop-blur-xl border-t border-[#7D967E]/40 shadow-2xl px-2 py-1.5 preserve-3d">
+    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#183A2A]/95 backdrop-blur-xl border-t border-[#7D967E]/40 shadow-2xl px-2 py-1.5">
       <div className="flex items-center justify-around max-w-md mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;

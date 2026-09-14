@@ -17,7 +17,6 @@
     background-color: var(--mhp-bg);
     color: var(--mhp-text);
     overflow-x: hidden;
-    overscroll-behavior-y: contain;
     font-family: 'Plus Jakarta Sans', sans-serif;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;

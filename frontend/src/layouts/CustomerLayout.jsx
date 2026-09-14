@@ -11,7 +11,7 @@ import StickyTopCartBar from '../components/common/StickyTopCartBar';
 
 const CustomerLayout = () => {
   return (
-    <div className="min-h-screen bg-[#FFF7E8] text-[#202522] flex flex-col selection:bg-[#F47B20] selection:text-white relative overflow-x-hidden preserve-3d pb-16 md:pb-0">
+    <div className="min-h-screen bg-[#FFF7E8] text-[#202522] flex flex-col selection:bg-[#F47B20] selection:text-white relative overflow-x-hidden pb-16 md:pb-0">
       {/* Real-time Internet Connectivity Monitor */}
       <NetworkOfflineBanner />
 
@@ -25,7 +25,7 @@ const CustomerLayout = () => {
       <Navbar />
 
       {/* Main Customer Page Content */}
-      <main className="flex-1 relative z-10 preserve-3d">
+      <main className="flex-1 relative z-10">
         <ErrorBoundary>
           <Outlet />
         </ErrorBoundary>
