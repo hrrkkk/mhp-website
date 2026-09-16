@@ -44,9 +44,9 @@ const DINING_CATEGORIES = [
   { id: 'All', label: 'All Dishes', icon: '🍽️' },
   { id: 'Starters', label: 'Starters (All)', icon: '🍢' },
   { id: 'Biryani', label: 'Biryanis Only', icon: '🍲' },
+  { id: 'Noodles', label: 'Noodles Only', icon: '🍜' },
   { id: 'Pulao & Rice', label: 'Pulao & Rice Bowls', icon: '🍚' },
   { id: 'Breakfast', label: 'Breakfast & Tiffins', icon: '🍳' },
-  { id: 'Noodles', label: 'Noodles & Fast Food', icon: '🍜' },
   { id: 'Curries & Breads', label: 'Curries & Breads', icon: '🫓' },
   { id: 'Burgers & Pizza', label: 'Burgers, Pizza & Wraps', icon: '🍕' },
   { id: 'Beverages', label: 'Beverages & Shakes', icon: '🥤' }
@@ -56,8 +56,8 @@ const DELIVERY_CATEGORIES = [
   { id: 'All', label: 'All Delivery', icon: '🛵' },
   { id: 'Starters', label: 'Starters (All)', icon: '🍢' },
   { id: 'Biryani', label: 'Biryanis Only', icon: '🍲' },
+  { id: 'Noodles', label: 'Noodles Only', icon: '🍜' },
   { id: 'Pulao & Rice', label: 'Pulao & Rice Bowls', icon: '🍚' },
-  { id: 'Noodles', label: 'Noodles & Fast Food', icon: '🍜' },
   { id: 'Curries & Breads', label: 'Curries & Breads', icon: '🫓' }
 ];
 
@@ -222,12 +222,14 @@ const MenuPage = () => {
       } else if (selectedCategory === 'Biryani') {
         const isTrueBiryani = (cat === 'biryani' || sub.includes('biryani') || name.includes('biryani')) && !name.includes('pulao') && !cat.includes('pulao');
         if (!isTrueBiryani) return false;
-      } else if (selectedCategory === 'Pulao & Rice' || selectedCategory === 'Rice') {
-        const isPulaoOrRice = cat.includes('pulao') || name.includes('pulao') || cat.includes('rice') || sub.includes('rice') || name.includes('rice');
-        const isBiryani = name.includes('biryani') || cat === 'biryani';
-        if (!isPulaoOrRice || isBiryani) return false;
       } else if (selectedCategory === 'Noodles') {
-        if (!cat.includes('noodle') && !sub.includes('noodle') && !name.includes('noodle') && !cat.includes('fast food')) return false;
+        const isTrueNoodle = cat.includes('noodle') || sub.includes('noodle') || name.includes('noodle');
+        if (!isTrueNoodle) return false;
+      } else if (selectedCategory === 'Pulao & Rice' || selectedCategory === 'Rice') {
+        const isPulaoOrRice = cat.includes('pulao') || name.includes('pulao') || cat.includes('rice') || sub.includes('rice') || name.includes('rice') || cat.includes('fast food');
+        const isBiryani = name.includes('biryani') || cat === 'biryani';
+        const isNoodle = name.includes('noodle') || cat.includes('noodle');
+        if (!isPulaoOrRice || isBiryani || isNoodle) return false;
       } else if (selectedCategory === 'Beverages') {
         if (!cat.includes('mocktail') && !cat.includes('juice') && !cat.includes('shake') && !cat.includes('beverage')) return false;
       } else if (selectedCategory === 'Burgers & Pizza') {
