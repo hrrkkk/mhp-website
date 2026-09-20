@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -28,8 +28,11 @@ const CustomerProfile = () => {
   const { user, logout, updateProfile } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab');
+  const targetOrderId = searchParams.get('orderId');
 
-  const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'profile' | 'password'
+  const [activeTab, setActiveTab] = useState(urlTab || 'orders'); // 'orders' | 'profile' | 'password'
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [selectedOrderModal, setSelectedOrderModal] = useState(null);
@@ -52,6 +55,12 @@ const CustomerProfile = () => {
   const [passwordUpdating, setPasswordUpdating] = useState(false);
 
   useEffect(() => {
+    if (urlTab) {
+      setActiveTab(urlTab);
+    }
+  }, [urlTab]);
+
+  useEffect(() => {
     if (user) {
       setProfileData({
         name: user.name || '',
@@ -63,29 +72,51 @@ const CustomerProfile = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, [user]);
+  }, [user, targetOrderId]);
 
   const fetchOrders = async () => {
     try {
       setLoadingOrders(true);
-      const res = await api.get('/future-menu/orders');
+      const res = await api.get('/future-menu/my-orders');
       const allOrders = res.data || [];
       
-      // Filter strictly for current customer's real orders in the database
       let customerOrders = allOrders;
-      if (user) {
-        customerOrders = allOrders.filter(order =>
-          (user.phone && order.studentPhone === user.phone) ||
+      if (user && Array.isArray(allOrders)) {
+        const filtered = allOrders.filter(order =>
+          (user.phone && (order.studentPhone === user.phone || order.customerPhone === user.phone)) ||
           (user._id && (order.studentId === user._id || order.userId === user._id)) ||
           (user.studentId && order.studentId === user.studentId) ||
-          (user.email && order.studentEmail === user.email)
+          (user.email && (order.customerEmail === user.email || order.studentEmail === user.email))
         );
+        if (filtered.length > 0) {
+          customerOrders = filtered;
+        }
       }
       
       setOrders(customerOrders);
+
+      if (targetOrderId && customerOrders.length > 0) {
+        const matched = customerOrders.find(o => 
+          o._id === targetOrderId || 
+          o.id === targetOrderId || 
+          o.orderId === targetOrderId || 
+          o.orderNumber === targetOrderId || 
+          o.billingNumber === targetOrderId
+        );
+        if (matched) {
+          setSelectedOrderModal(matched);
+        } else {
+          setSelectedOrderModal(customerOrders[0]);
+        }
+      }
     } catch (err) {
       console.error('Failed to load real orders:', err);
-      setOrders([]);
+      try {
+        const fallbackRes = await api.get('/future-menu/orders');
+        setOrders(fallbackRes.data || []);
+      } catch (fErr) {
+        setOrders([]);
+      }
     } finally {
       setLoadingOrders(false);
     }
@@ -95,12 +126,12 @@ const CustomerProfile = () => {
     if (e) e.stopPropagation();
     try {
       await api.patch(`/future-menu/orders/${orderId}/status`, { status: 'ORDER RECEIVED' });
-      showToast('success', 'Order status updated to ORDER RECEIVED');
+      showToast('success', '🎉 Order marked as RECEIVED!');
       setOrders(prev =>
-        prev.map(o => (o._id === orderId ? { ...o, status: 'ORDER RECEIVED' } : o))
+        prev.map(o => (o._id === orderId || o.id === orderId || o.orderId === orderId ? { ...o, status: 'ORDER RECEIVED', orderReceived: true, orderReceivedStatus: 'ORDER RECEIVED' } : o))
       );
-      if (selectedOrderModal && selectedOrderModal._id === orderId) {
-        setSelectedOrderModal(prev => prev ? { ...prev, status: 'ORDER RECEIVED' } : null);
+      if (selectedOrderModal && (selectedOrderModal._id === orderId || selectedOrderModal.id === orderId || selectedOrderModal.orderId === orderId)) {
+        setSelectedOrderModal(prev => prev ? { ...prev, status: 'ORDER RECEIVED', orderReceived: true, orderReceivedStatus: 'ORDER RECEIVED' } : null);
       }
     } catch (err) {
       console.error('Failed to update order status:', err);

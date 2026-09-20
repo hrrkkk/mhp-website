@@ -67,6 +67,43 @@ export const isOrderKitchenPrinted = (orderId) => {
 };
 
 /**
+ * Plays a high-clarity dual-tone Swiggy merchant order chime ("Ding-Dong!")
+ * using Web Audio API so it works across 100% of browsers without needing external audio MP3 files.
+ */
+export const playSwiggyChime = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+
+    const playTone = (freq, startTime, duration) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime);
+      gain.gain.setValueAtTime(0.35, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    };
+
+    const now = ctx.currentTime;
+    // Classic Swiggy dual chime frequencies: E5 (659.25Hz) & A5 (880Hz)
+    playTone(659.25, now, 0.22);
+    playTone(880.00, now + 0.18, 0.45);
+  } catch (err) {
+    console.warn('Audio chime playback notice:', err);
+  }
+};
+
+/**
  * Generates a realistic mock order payload for instant printer testing.
  */
 export const createMockTestOrder = () => {

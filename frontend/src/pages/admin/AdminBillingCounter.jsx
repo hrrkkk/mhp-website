@@ -35,7 +35,8 @@ import {
   getPrinterSettings, 
   formatCleanBillingNumber,
   isOrderKitchenPrinted,
-  markOrderAsKitchenPrinted
+  markOrderAsKitchenPrinted,
+  playSwiggyChime
 } from '../../services/printerService';
 
 const AdminBillingCounter = () => {
@@ -127,6 +128,7 @@ const AdminBillingCounter = () => {
           // Auto-print recent unprinted orders directly to kitchen thermal printer
           if (printerSettings.autoPrintOnOrder && isRecentOrder) {
             markOrderAsKitchenPrinted(orderId);
+            playSwiggyChime();
             printThermalReceipt(o, printerSettings, true);
             newPrintedCount++;
           } else {
@@ -137,7 +139,7 @@ const AdminBillingCounter = () => {
       });
 
       if (newPrintedCount > 0 && isMountedRef.current) {
-        showToast('success', `⚡ ${newPrintedCount} new customer order(s) received! Kitchen thermal bill generated & printed automatically.`);
+        showToast('success', `⚡ ${newPrintedCount} new customer order(s) received! Audio chime played & thermal bill spooled automatically.`);
       }
 
       if (isMountedRef.current) {
@@ -235,14 +237,17 @@ const AdminBillingCounter = () => {
             <MHPButton
               onClick={() => {
                 const mock = createMockTestOrder();
+                playSwiggyChime();
+                markOrderAsKitchenPrinted(mock._id);
                 printThermalReceipt(mock, null, true);
-                showToast('success', '⚡ Test order generated & automatically sent to thermal printer!');
+                setOrders(prev => [mock, ...prev.filter(o => o._id !== mock._id)]);
+                showToast('success', '⚡ Test Order Triggered! Swiggy audio chime played & 80mm bill spooled successfully.');
               }}
               variant="secondary"
               size="sm"
             >
               <Printer className="w-4 h-4 text-[#F47B20]" />
-              <span>⚡ Test Order & Print</span>
+              <span>⚡ Test Swiggy Order & Print</span>
             </MHPButton>
 
             <MHPButton

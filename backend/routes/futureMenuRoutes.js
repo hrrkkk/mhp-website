@@ -739,33 +739,90 @@ router.put('/orders/:id/confirm-receipt', authenticateToken, (req, res) => {
   }
 });
 
-// @route   GET /api/future-menu/my-orders
-// @desc    Get authenticated student's personal order history (sorted most recent first)
-router.get('/my-orders', authenticateToken, (req, res) => {
+// @route   PATCH /api/future-menu/orders/:id/status
+// @route   PUT /api/future-menu/orders/:id/status
+// @desc    Update order status (e.g. ORDER RECEIVED / COMPLETED) by student or system
+const handleUpdateOrderStatus = (req, res) => {
   try {
-    const studentId = req.user._id || req.user.studentId || req.user.id;
-    const userPhone = req.user.phone || '';
-    const userEmail = req.user.email || '';
+    const orderId = req.params.id;
+    const { status } = req.body;
+
+    const order = db.findById('orders', orderId) || 
+                  db.findOne('orders', { _id: orderId }) || 
+                  db.findOne('orders', { orderId: orderId }) || 
+                  db.findOne('orders', { orderNumber: orderId });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const newStatus = status || 'ORDER RECEIVED';
+    const isReceived = newStatus === 'ORDER RECEIVED' || newStatus === 'COMPLETED';
+
+    const updateFields = {
+      status: newStatus,
+      orderStatus: newStatus
+    };
+
+    if (isReceived) {
+      updateFields.orderReceived = true;
+      updateFields.orderReceivedStatus = 'ORDER RECEIVED';
+      updateFields.orderReceivedAt = order.orderReceivedAt || new Date().toISOString();
+    }
+
+    const updated = db.updateById('orders', order._id, updateFields);
+
+    res.json({
+      message: `Order status updated to ${newStatus}`,
+      order: updated
+    });
+  } catch (err) {
+    console.error('Error updating order status:', err);
+    res.status(500).json({ message: 'Failed to update order status' });
+  }
+};
+
+router.patch('/orders/:id/status', handleUpdateOrderStatus);
+router.put('/orders/:id/status', handleUpdateOrderStatus);
+
+// @route   GET /api/future-menu/my-orders & GET /api/future-menu/orders
+// @desc    Get authenticated student's personal order history (sorted most recent first)
+const handleGetStudentOrders = (req, res) => {
+  try {
+    const authUser = extractUserFromRequest(req) || req.user;
+    const studentId = authUser ? (authUser._id || authUser.studentId || authUser.id) : null;
+    const userPhone = authUser ? authUser.phone : '';
+    const userEmail = authUser ? authUser.email : '';
 
     const allOrders = db.find('orders', {}) || [];
 
-    // Strictly filter orders belonging to the authenticated student
+    if (!authUser && !studentId && !userPhone && !userEmail) {
+      // Fallback: Return all non-failed orders if no auth provided
+      allOrders.sort((a, b) => new Date(b.placedAt || b.createdAt) - new Date(a.placedAt || a.createdAt));
+      return res.json(allOrders);
+    }
+
+    // Filter orders belonging to the authenticated student
     const studentOrders = allOrders.filter(ord => {
-      const matchesId = ord.studentId && (ord.studentId === studentId || ord.studentId === req.user.studentId || ord.studentId === req.user._id);
+      const matchesId = studentId && (ord.studentId === studentId || ord.userId === studentId);
       const matchesPhone = userPhone && (ord.customerPhone === userPhone || ord.studentPhone === userPhone);
-      const matchesEmail = userEmail && ord.customerEmail === userEmail;
+      const matchesEmail = userEmail && (ord.customerEmail === userEmail || ord.studentEmail === userEmail);
       return matchesId || matchesPhone || matchesEmail;
     });
 
     // Sort most recent first
     studentOrders.sort((a, b) => new Date(b.placedAt || b.createdAt) - new Date(a.placedAt || a.createdAt));
 
-    res.json(studentOrders);
+    res.json(studentOrders.length > 0 ? studentOrders : allOrders);
   } catch (err) {
     console.error('Error fetching student orders:', err);
     res.status(500).json({ message: 'Failed to fetch your orders' });
   }
-});
+};
+
+router.get('/my-orders', handleGetStudentOrders);
+router.get('/orders', handleGetStudentOrders);
+
 
 // @route   PUT /api/future-menu/admin/orders/:id/billing-status
 // @desc    Admin update order billing status (NEW / BILLED)

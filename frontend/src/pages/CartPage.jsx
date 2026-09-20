@@ -133,6 +133,16 @@ const CartPage = () => {
         totalAmount: grandTotalAmount
       };
 
+      const handleOrderSuccess = (order) => {
+        setPlacedOrder(order);
+        clearCart();
+        showToast('success', '🎉 Order confirmed! Redirecting to My Orders...');
+        const targetId = order._id || order.id || order.orderId || order.orderNumber || '';
+        setTimeout(() => {
+          navigate(`/profile?tab=orders&orderId=${encodeURIComponent(targetId)}`);
+        }, 1200);
+      };
+
       try {
         const res = await api.post('/future-menu/orders/initiate-payment', orderPayload);
         if (res.data && (res.data.paymentSession || res.data.order)) {
@@ -161,9 +171,8 @@ const CartPage = () => {
                     razorpayPaymentId: response.razorpay_payment_id,
                     razorpayOrderId: response.razorpay_order_id
                   });
-                  setPlacedOrder(confirmRes.data.order || confirmRes.data);
-                  clearCart();
-                  showToast('success', '🎉 Order placed & confirmed!');
+                  const confirmed = confirmRes.data.order || confirmRes.data;
+                  handleOrderSuccess(confirmed);
                 } catch (confirmErr) {
                   console.error('Confirm payment error:', confirmErr);
                   const errorMsg = confirmErr.response?.data?.error || confirmErr.response?.data?.message || 'Payment verification failed.';
@@ -199,15 +208,11 @@ const CartPage = () => {
               }
             } catch (confirmErr) {}
 
-            setPlacedOrder(confirmedOrder);
-            clearCart();
-            showToast('success', '🎉 Order placed successfully!');
+            handleOrderSuccess(confirmedOrder);
           }
         } else {
           const orderRes = await api.post('/future-menu/orders', orderPayload);
-          setPlacedOrder(orderRes.data.order || orderRes.data);
-          clearCart();
-          showToast('success', 'Order placed successfully!');
+          handleOrderSuccess(orderRes.data.order || orderRes.data);
         }
       } catch (payErr) {
         if (payErr.response && payErr.response.status === 400) {
@@ -215,9 +220,7 @@ const CartPage = () => {
         }
         console.warn('Payment session initiate warning, using direct test order fallback:', payErr.message);
         const orderRes = await api.post('/future-menu/orders', orderPayload);
-        setPlacedOrder(orderRes.data.order || orderRes.data);
-        clearCart();
-        showToast('success', 'Order placed successfully!');
+        handleOrderSuccess(orderRes.data.order || orderRes.data);
       }
     } catch (err) {
       console.error('Place order error:', err);
@@ -380,12 +383,17 @@ const CartPage = () => {
 
             <div className="bg-white p-6 rounded-3xl border border-[#7D967E]/30 space-y-4 shadow-md text-center">
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Link 
-                  to="/profile" 
-                  className="w-full sm:w-auto py-3 px-8 rounded-xl bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs font-extrabold transition-all shadow-md text-center"
+                <button 
+                  type="button"
+                  onClick={() => {
+                    const targetId = placedOrder._id || placedOrder.id || placedOrder.orderId || placedOrder.orderNumber || '';
+                    navigate(`/profile?tab=orders&orderId=${encodeURIComponent(targetId)}`);
+                  }}
+                  className="w-full sm:w-auto py-3.5 px-8 rounded-xl bg-[#F47B20] hover:bg-[#FF882E] text-white text-xs font-black transition-all shadow-md text-center flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  View My Orders
-                </Link>
+                  <ShoppingBag className="w-4 h-4" />
+                  <span>View My Orders & Click Received</span>
+                </button>
                 <Link 
                   to="/menu" 
                   className="w-full sm:w-auto py-3 px-6 rounded-xl bg-gray-100 hover:bg-gray-200 text-[#183A2A] text-xs font-extrabold transition-all text-center"
